@@ -970,6 +970,29 @@ Near-miss-sættet ligger i `eval/near-misses.json` med en begrundelse pr. foresp
 er ikke pynt: den er hvad en vedligeholder har brug for den dag en forespørgsel er blevet ubelejlig
 og fristelsen er at slette den frem for at rette kollisionen.
 
+### Hvad vagten fanger, og hvad den ikke gør
+
+`scripts/check-precision.ts` kører to tjek, og de dækker hver sin halvdel:
+
+| Tjek | Fanger | Blind over for |
+|---|---|---|
+| **Optaget near-miss-sæt** (`eval/near-misses.json`) | En capability der kolliderer med et spørgsmål nogen allerede har skrevet ned | En beskrivelse der er for bred for et spørgsmål ingen har tilføjet |
+| **Krydstjek af eksempelforespørgsler** | To deskriptorer der er vokset ind i hinanden — ingen skal skrive noget, dataene ligger allerede i registryet | Kollisioner med forespørgsler uden for registryet |
+
+Den første grænse er reel og skal siges højt: `ui.dataTable` 1.1.0 ville være sluppet igennem, hvis
+React-forespørgslen ikke tilfældigvis havde ligget i sættet siden Fase 2. Derfor siger vagtens
+succesbesked **hvad der blev tjekket** frem for at antyde en godkendelse:
+
+```text
+✓ none of the 14 recorded near-miss queries reaches MATCH, and no capability
+  wins another's example query.
+  Queries outside the set are not checked. When you add a capability, add the
+  questions it should not answer.
+```
+
+Sættets værdi skalerer med hvor ærligt det fodres. Derfor bærer hver forespørgsel en begrundelse:
+en near-miss med en skrevet grund er en nogen har tænkt over.
+
 > **Konsekvens for `PRD-FEAT-019`** (Capability Packager): en Skill der genererer aliases stille
 > automatiserer præcis det trin der to gange har kostet præcision — og den ville gøre det for
 > capabilities ingen holder øje med. Marie har bygget den til at nægte. Det er rigtigt.

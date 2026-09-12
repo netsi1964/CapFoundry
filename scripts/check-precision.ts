@@ -16,6 +16,21 @@
  *
  * Run from `deno task prepare`, and it fails rather than warns: a warning
  * printed by a script that also fixes things gets scrolled past.
+ *
+ * Two checks, and they cover different halves of the problem.
+ *
+ * The recorded set catches a capability that collides with a question someone
+ * already thought to write down. Its reach is exactly the set's contents: a
+ * description too broad for a query nobody added is invisible to it, which is
+ * how ui.dataTable 1.1.0 would have passed if the React query had not happened
+ * to be there since phase 2. So the success line says what was checked rather
+ * than implying a clearance.
+ *
+ * The cross-check needs nobody to write anything. Every capability ships
+ * example queries that should resolve to *it*; if one of them resolves to a
+ * different capability, two descriptors have grown into each other. That is
+ * free evidence, already in the registry, and it catches collisions between
+ * capabilities rather than collisions with imagined questions.
  */
 
 import { join } from "@std/path";
@@ -65,6 +80,42 @@ try {
     }
   }
 
+  // Cross-check: nobody has to write these down. They are already in the
+  // registry, and a capability winning another's example query means two
+  // descriptors have grown into each other.
+  const collisions: { owner: string; winner: string; query: string; confidence: number }[] = [];
+
+  for (const record of cfcm.list()) {
+    for (const query of record.exampleQueries) {
+      const result = await cfcm.search(query);
+      const top = result.candidates[0]?.record.name;
+      if (result.status === "MATCH" && top && top !== record.name) {
+        collisions.push({
+          owner: record.name,
+          winner: top,
+          query,
+          confidence: result.confidence,
+        });
+      }
+    }
+  }
+
+  if (collisions.length > 0) {
+    console.error(
+      `\n✗ ${collisions.length} capability example query/ies resolve to the wrong capability.\n`,
+    );
+    for (const c of collisions) {
+      console.error(`  "${c.query}"`);
+      console.error(`    belongs to ${c.owner}`);
+      console.error(`    won by     ${c.winner} at ${c.confidence}\n`);
+    }
+    console.error(
+      "Two descriptors have grown into each other. Narrow whichever one reached into the other's\n" +
+        "territory — this is the same precision cost as a near-miss, but between capabilities.\n",
+    );
+    Deno.exit(1);
+  }
+
   if (failures.length > 0) {
     console.error(
       `\n✗ ${failures.length} of ${queries.length} near-miss queries now reach MATCH.\n`,
@@ -83,7 +134,14 @@ try {
     Deno.exit(1);
   }
 
-  console.log(`✓ ${queries.length} near-miss queries all stay below MATCH`);
+  // Deliberately not "all clear". The set is finite and hand-written, so this
+  // says what was checked rather than implying the registry is safe.
+  console.log(
+    `✓ none of the ${queries.length} recorded near-miss queries reaches MATCH, and no ` +
+      `capability wins another's example query.\n` +
+      `  Queries outside the set are not checked. When you add a capability, add the questions ` +
+      `it should not answer.`,
+  );
 } finally {
   await Deno.remove(home, { recursive: true }).catch(() => {});
 }
