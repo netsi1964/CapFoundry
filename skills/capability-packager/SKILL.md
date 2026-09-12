@@ -85,6 +85,18 @@ and example queries at once will pull in queries from unrelated domains — that
 distance capability came to match an edit-distance query at 0.57 confidence. Aliases that are too
 broad are as expensive as aliases that are too narrow.
 
+## 6. Add the queries it should _not_ answer
+
+A capability's aliases decide what finds it. The near-miss set decides what should not, and it is
+the only thing standing between a well-meant description and a wrong match —
+`deno task
+check-precision` can only check queries somebody wrote down.
+
+So when you package something, propose two or three queries from adjacent domains that this
+capability must **not** claim, with a reason each, for `eval/near-misses.json`. A geocoder should
+not answer a routing question. A sorting table should not answer a React virtualisation question.
+Adding them costs a minute and is the only way the guard covers your capability at all.
+
 ## What this skill does not do
 
 No automatic conversion, and no unattended runs. If the process has not been done by hand for the
