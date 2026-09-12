@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-12T13:24:26.363Z",
+  "generatedAt": "2026-09-12T14:29:40.478Z",
   "capabilities": [
     {
       "schemaVersion": 1,
@@ -44,7 +44,7 @@
       "cfpLocation": "capabilities/CapFoundry.csv.detectDelimiter",
       "artifactLocation": "capabilities/CapFoundry.csv.detectDelimiter/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T13:24:26.363Z"
+      "indexedAt": "2026-09-12T14:29:40.478Z"
     },
     {
       "schemaVersion": 1,
@@ -88,7 +88,7 @@
       "cfpLocation": "capabilities/CapFoundry.date.businessDaysBetween",
       "artifactLocation": "capabilities/CapFoundry.date.businessDaysBetween/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T13:24:26.363Z"
+      "indexedAt": "2026-09-12T14:29:40.478Z"
     },
     {
       "schemaVersion": 1,
@@ -136,7 +136,7 @@
       "cfpLocation": "capabilities/CapFoundry.geo.distance",
       "artifactLocation": "capabilities/CapFoundry.geo.distance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T13:24:26.363Z"
+      "indexedAt": "2026-09-12T14:29:40.478Z"
     },
     {
       "schemaVersion": 1,
@@ -193,7 +193,7 @@
       "cfpLocation": "capabilities/CapFoundry.geo.geocode",
       "artifactLocation": "capabilities/CapFoundry.geo.geocode/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T13:24:26.363Z"
+      "indexedAt": "2026-09-12T14:29:40.478Z"
     },
     {
       "schemaVersion": 1,
@@ -241,7 +241,7 @@
       "cfpLocation": "capabilities/CapFoundry.json.schema.infer",
       "artifactLocation": "capabilities/CapFoundry.json.schema.infer/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T13:24:26.363Z"
+      "indexedAt": "2026-09-12T14:29:40.478Z"
     },
     {
       "schemaVersion": 1,
@@ -294,7 +294,7 @@
       "cfpLocation": "capabilities/CapFoundry.sun.times",
       "artifactLocation": "capabilities/CapFoundry.sun.times/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T13:24:26.363Z"
+      "indexedAt": "2026-09-12T14:29:40.478Z"
     },
     {
       "schemaVersion": 1,
@@ -339,7 +339,7 @@
       "cfpLocation": "capabilities/CapFoundry.text.editDistance",
       "artifactLocation": "capabilities/CapFoundry.text.editDistance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T13:24:26.363Z"
+      "indexedAt": "2026-09-12T14:29:40.478Z"
     },
     {
       "schemaVersion": 1,
@@ -383,13 +383,13 @@
       "cfpLocation": "capabilities/CapFoundry.text.slugify",
       "artifactLocation": "capabilities/CapFoundry.text.slugify/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T13:24:26.363Z"
+      "indexedAt": "2026-09-12T14:29:40.478Z"
     },
     {
       "schemaVersion": 1,
       "name": "CapFoundry.ui.dataTable",
-      "version": "1.0.0",
-      "description": "Generate a framework-free, accessible sortable table as an HTML Custom Element",
+      "version": "1.1.0",
+      "description": "Generate a framework-free, accessible sortable table as an HTML Custom Element, with an openable preview",
       "aliases": [
         "sortable table component",
         "html custom element table",
@@ -403,7 +403,8 @@
         "i need an accessible html table widget without react",
         "create a custom element that renders rows with column sorting",
         "vanilla javascript data table with keyboard accessible sorting",
-        "build a framework free table component from a column spec"
+        "build a framework free table component from a column spec",
+        "render a sortable table i can open in a browser from these rows"
       ],
       "tags": [
         "ui",
@@ -413,13 +414,13 @@
         "table",
         "accessibility"
       ],
-      "inputSummary": "A column spec plus optional caption, empty text and element name",
-      "outputSummary": "Custom Element JavaScript source and a usage snippet, ready to paste",
+      "inputSummary": "A column spec, optional sample rows, plus caption, empty text and element name",
+      "outputSummary": "Custom Element source, a usage snippet with your rows, and a standalone HTML preview",
       "runtime": "deno",
       "effect": "PURE",
       "artifact": {
         "type": "typescript",
-        "sha256": "35b84126cbbdc4d489dd5ad1c0a46939b0f368a32ae3b8add2ab092951e52080"
+        "sha256": "d2728ba416b70b34c0e21226a2b47750a8a45325933835e42c527da50acdd55a"
       },
       "exposure": {
         "execution": true,
@@ -428,7 +429,7 @@
       "cfpLocation": "capabilities/CapFoundry.ui.dataTable",
       "artifactLocation": "capabilities/CapFoundry.ui.dataTable/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T13:24:26.363Z"
+      "indexedAt": "2026-09-12T14:29:40.478Z"
     },
     {
       "schemaVersion": 1,
@@ -472,7 +473,7 @@
       "cfpLocation": "capabilities/CapFoundry.validation.iban",
       "artifactLocation": "capabilities/CapFoundry.validation.iban/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T13:24:26.363Z"
+      "indexedAt": "2026-09-12T14:29:40.478Z"
     }
   ]
 }

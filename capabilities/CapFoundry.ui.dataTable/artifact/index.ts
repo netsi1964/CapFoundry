@@ -36,6 +36,16 @@ export interface ColumnSpec {
 
 export interface DataTableInput {
   columns: ColumnSpec[];
+  /**
+   * Sample rows, keyed by column key.
+   *
+   * Optional, and they do not become part of the component — a generator that
+   * baked your data into a reusable element would have produced something
+   * reusable by nobody. They are used to fill in the usage example and to
+   * render a standalone preview, so what comes back is a file you can open
+   * rather than a snippet you have to wire up first.
+   */
+  rows?: Record<string, unknown>[];
   sortable?: boolean;
   caption?: string;
   emptyText?: string;
@@ -49,8 +59,21 @@ export interface DataTableOutput {
   javascript: string;
   /** A runnable snippet showing how to mount it and supply rows. */
   usageExample: string;
+  /**
+   * A complete standalone HTML document: the component, the rows, nothing else.
+   *
+   * Written by embedding the same component rather than by rendering the table
+   * a second time here. Two renderers that have to agree is a bug waiting for
+   * the day someone changes one of them — so the browser does the rendering,
+   * exactly as it will in the project this ends up in.
+   */
+  preview: string;
   columnCount: number;
+  rowCount: number;
 }
+
+/** Samples for a preview, not a dataset. */
+const MAX_ROWS = 100;
 
 const RESERVED_NAMES = new Set([
   "annotation-xml",
@@ -77,6 +100,14 @@ function assertElementName(name: string): void {
   if (RESERVED_NAMES.has(name)) {
     throw new RangeError(`elementName "${name}" is reserved by the HTML specification`);
   }
+}
+
+/** Escapes text for embedding in HTML. Only the title needs it; cells use textContent. */
+function escapeHtml(text: string): string {
+  return text.replace(
+    /[&<>"]/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!),
+  );
 }
 
 /** Escapes a value for embedding in a JavaScript string literal. */
@@ -131,6 +162,20 @@ export default function dataTable(input: DataTableInput): DataTableOutput {
       align,
       sortable: (column.sortable ?? true) && tableSortable,
     };
+  });
+
+  const rows = input.rows ?? [];
+  if (!Array.isArray(rows)) throw new TypeError("rows must be an array of objects");
+  if (rows.length > MAX_ROWS) {
+    throw new RangeError(
+      `rows holds ${rows.length} entries; at most ${MAX_ROWS} are accepted. These are samples for ` +
+        "the preview, not a dataset — a component is generated once and then fed at runtime.",
+    );
+  }
+  rows.forEach((row, i) => {
+    if (!row || typeof row !== "object" || Array.isArray(row)) {
+      throw new TypeError(`rows[${i}] must be an object keyed by column key`);
+    }
   });
 
   const className = elementName
@@ -313,23 +358,61 @@ if (!customElements.get(${jsString(elementName)})) {
 export default ${className};
 `;
 
-  const sampleRow = columns
-    .map((c) => `${JSON.stringify(c.key)}: ${c.type === "number" ? "1" : '"…"'}`)
-    .join(", ");
+  // Real rows when given, otherwise one placeholder shaped like the columns.
+  const exampleRows = rows.length > 0 ? rows : [
+    Object.fromEntries(
+      columns.map((c) => [c.key, c.type === "number" ? 1 : c.type === "date" ? "2026-01-01" : "…"]),
+    ),
+  ];
+  const rowsLiteral = JSON.stringify(exampleRows, null, 2)
+    .split("\n")
+    .map((line, i) => (i === 0 ? line : `  ${line}`))
+    .join("\n");
 
   const usageExample = `<script type="module" src="./${elementName}.js"></script>
 
 <${elementName} id="table"></${elementName}>
 
 <script type="module">
-  document.getElementById("table").rows = [
-    { ${sampleRow} },
-  ];
+  document.getElementById("table").rows = ${rowsLiteral};
 
   document.getElementById("table")
     .addEventListener("sort-change", (e) => console.log(e.detail));
 </script>
 `;
 
-  return { elementName, javascript, usageExample, columnCount: columns.length };
+  // A whole document, so `cfcm invoke … | jq -r .preview > t.html` opens.
+  // JSON.stringify escapes the rows, and </script> inside a string literal
+  // would otherwise end the block early — the one injection an HTML document
+  // built this way is actually exposed to.
+  const safeRows = JSON.stringify(exampleRows).replace(/<\/script/gi, "<\\/script");
+
+  const preview = `<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>${escapeHtml(caption || elementName)}</title>
+<style>
+  body { font: 14px system-ui, sans-serif; margin: 2rem; color-scheme: light dark; }
+  table { border-collapse: collapse; }
+  caption { text-align: start; font-weight: 600; padding-block-end: .5rem; }
+  th, td { border: 1px solid color-mix(in srgb, currentColor 25%, transparent); padding: .35rem .7rem; }
+  th button { font: inherit; background: none; border: 0; padding: 0; cursor: pointer; color: inherit; }
+</style>
+
+<${elementName} id="preview"></${elementName}>
+
+<script type="module">
+${javascript}
+document.getElementById("preview").rows = ${safeRows};
+</script>
+`;
+
+  return {
+    elementName,
+    javascript,
+    usageExample,
+    preview,
+    columnCount: columns.length,
+    rowCount: rows.length,
+  };
 }

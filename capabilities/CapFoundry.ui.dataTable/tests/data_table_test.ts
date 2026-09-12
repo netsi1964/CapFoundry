@@ -165,3 +165,88 @@ Deno.test("rejects an unknown column type or align", () => {
     RangeError,
   );
 });
+
+// ---- rows, the usage example and the preview (1.1.0) ----
+
+const ROWS = [
+  { name: "Nordlys Analyse ApS", amount: 12450, due: "2026-09-30" },
+  { name: "Fjordbyg Entreprise A/S", amount: 3200.5, due: "2026-10-15" },
+  { name: "Vestegnens Kommune", amount: 87999.95, due: "2026-09-18" },
+  { name: "Søgaard & Vinther I/S", amount: 450, due: "2026-11-01" },
+];
+
+Deno.test("rows are reported and reach the usage example", () => {
+  const out = dataTable({ columns: COLUMNS, rows: ROWS });
+  assertEquals(out.rowCount, 4);
+  for (const row of ROWS) assertStringIncludes(out.usageExample, row.name);
+});
+
+Deno.test("rows never become part of the component", () => {
+  // A generator that baked the caller's data into a reusable element would
+  // have produced something reusable by nobody.
+  const out = dataTable({ columns: COLUMNS, rows: ROWS });
+  for (const row of ROWS) {
+    assert(
+      !out.javascript.includes(row.name),
+      `${row.name} leaked into the component rather than staying sample data`,
+    );
+  }
+});
+
+Deno.test("without rows the example falls back to a shaped placeholder", () => {
+  const out = dataTable({ columns: COLUMNS });
+  assertEquals(out.rowCount, 0);
+  assertStringIncludes(out.usageExample, '"name"');
+  assertStringIncludes(out.usageExample, '"amount"');
+});
+
+Deno.test("the preview is a whole document that carries the component and the rows", () => {
+  const out = dataTable({ columns: COLUMNS, rows: ROWS, elementName: "netsi-table" });
+  assertStringIncludes(out.preview, "<!doctype html>");
+  // The same component, embedded — not a second renderer that has to agree
+  // with the first.
+  assertStringIncludes(out.preview, "class NetsiTable");
+  assertStringIncludes(out.preview, '<netsi-table id="preview">');
+  assertStringIncludes(out.preview, "Nordlys Analyse ApS");
+});
+
+Deno.test("a closing script tag in row data cannot end the preview's script block", () => {
+  // The one injection a document assembled this way is actually exposed to.
+  const out = dataTable({
+    columns: COLUMNS,
+    rows: [{ name: "</script><img src=x onerror=alert(1)>", amount: 1 }],
+  });
+  assert(!out.preview.includes("</script><img"), "row data closed the script block");
+  assertStringIncludes(out.preview, "<\\/script>");
+});
+
+Deno.test("a caption with markup is escaped in the preview title", () => {
+  const out = dataTable({ columns: COLUMNS, caption: '<img src=x> & "quoted"' });
+  assertStringIncludes(out.preview, "<title>&lt;img src=x&gt; &amp; &quot;quoted&quot;</title>");
+});
+
+Deno.test("rows are capped, with the reason given", () => {
+  const many = Array.from({ length: 101 }, (_, i) => ({ name: `r${i}`, amount: i }));
+  const err = assertThrows(() => dataTable({ columns: COLUMNS, rows: many }), RangeError);
+  assertStringIncludes(err.message, "not a dataset");
+});
+
+Deno.test("rejects rows that are not objects", () => {
+  assertThrows(() => dataTable({ columns: COLUMNS, rows: ["a"] as never }), TypeError);
+  assertThrows(() => dataTable({ columns: COLUMNS, rows: [[1, 2]] as never }), TypeError);
+});
+
+Deno.test("a row missing a column is allowed and left to the component", () => {
+  // The component renders an empty cell; refusing here would make the
+  // capability stricter than the thing it generates.
+  const out = dataTable({ columns: COLUMNS, rows: [{ name: "only a name" }] });
+  assertEquals(out.rowCount, 1);
+  assertStringIncludes(out.preview, "only a name");
+});
+
+Deno.test("output stays deterministic with rows", () => {
+  const first = JSON.stringify(dataTable({ columns: COLUMNS, rows: ROWS }));
+  for (let i = 0; i < 20; i++) {
+    assertEquals(JSON.stringify(dataTable({ columns: COLUMNS, rows: ROWS })), first);
+  }
+});

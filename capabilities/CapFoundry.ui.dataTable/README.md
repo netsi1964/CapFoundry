@@ -4,10 +4,38 @@ Generates a standards-based HTML Custom Element for a sortable data table.
 
 ```json
 { "columns": [{ "key": "name", "label": "Name" },
-              { "key": "amount", "label": "Amount", "type": "number" }],
-  "sortable": true }
-→ { "elementName": "cf-data-table", "javascript": "…", "usageExample": "…", "columnCount": 2 }
+               { "key": "amount", "label": "Amount", "type": "number" }],
+  "rows": [{ "name": "Nordlys Analyse ApS", "amount": 12450 }],
+  "caption": "Invoices" }
+→ { "elementName": "cf-data-table", "javascript": "…", "usageExample": "…",
+    "preview": "<!doctype html>…", "columnCount": 2, "rowCount": 1 }
 ```
+
+```bash
+cfcm invoke CapFoundry.ui.dataTable "$(cat table.json)" | jq -r .preview > table.html
+open table.html
+```
+
+## Rows are samples, not data
+
+`rows` is optional and never becomes part of the component. A generator that baked the caller's data
+into a reusable element would have produced something reusable by nobody. They fill in the usage
+example, so what you paste already has your columns in it, and they populate `preview`.
+
+Capped at 100, and the refusal says why: these are samples for a preview, not a dataset. A component
+is generated once and fed at runtime.
+
+## The preview has one renderer, not two
+
+`preview` is a complete HTML document that **embeds the component** and sets `.rows` on it. It does
+not render the table a second time in TypeScript.
+
+Two renderers that have to agree is a bug waiting for the day someone changes one of them — and the
+browser is going to do the rendering in the real project anyway, so it may as well do it here.
+
+The one injection a document assembled this way is exposed to is a `</script>` inside row data
+ending the block early. That is escaped, and there is a test that puts
+`</script><img src=x onerror=…>` in a cell.
 
 ## Why this capability exists
 
