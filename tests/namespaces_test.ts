@@ -10,6 +10,7 @@
 import { assert, assertEquals, assertRejects, assertStringIncludes } from "@std/assert";
 import { join } from "@std/path";
 import { Cfcm } from "../cfcm/core.ts";
+import type { RegistryIndex } from "../cfcm/types.ts";
 import { CfcmError } from "../cfcm/types.ts";
 import { parseConfig } from "../cfcm/config/config.ts";
 
@@ -43,34 +44,48 @@ async function withCfcm(fn: (cfcm: Cfcm) => Promise<void>) {
   }
 }
 
-Deno.test("every public capability is indexed", async () => {
+/**
+ * The published registry is the source of truth for what is public.
+ *
+ * These counts were literals until the ninth capability broke three tests at
+ * once, which taught the wrong lesson: that adding a capability is expected to
+ * turn the suite red. The question worth asking is whether CFCM indexes
+ * exactly what the registry publishes — no more, and nothing dropped — and
+ * that question has the same answer at nine capabilities as at ninety.
+ */
+async function publishedCapabilityNames(): Promise<string[]> {
+  const index = JSON.parse(
+    await Deno.readTextFile(join(REPO_ROOT, "registry/index.json")),
+  ) as RegistryIndex;
+  return index.capabilities.map((c) => c.name).sort();
+}
+
+Deno.test("every published capability is indexed, and nothing else is public", async () => {
+  const published = await publishedCapabilityNames();
+  assert(published.length > 0, "the registry is empty; the assertion would be vacuous");
+
   await withCfcm((cfcm) => {
-    const names = cfcm.list().filter((r) => r.namespaceType === "public").map((r) => r.name);
-    assertEquals(names.sort(), [
-      "CapFoundry.csv.detectDelimiter",
-      "CapFoundry.date.businessDaysBetween",
-      "CapFoundry.geo.distance",
-      "CapFoundry.json.schema.infer",
-      "CapFoundry.sun.times",
-      "CapFoundry.text.editDistance",
-      "CapFoundry.text.slugify",
-      "CapFoundry.ui.dataTable",
-      "CapFoundry.validation.iban",
-    ]);
+    const loaded = cfcm.list().filter((r) => r.namespaceType === "public").map((r) => r.name);
+    assertEquals(loaded.sort(), published);
     return Promise.resolve();
   });
 });
 
 Deno.test("public, private and local form one search space (OBJ-6)", async () => {
+  const published = await publishedCapabilityNames();
+
   await withCfcm((cfcm) => {
     const byType = new Map<string, number>();
     for (const record of cfcm.list()) {
       byType.set(record.namespaceType, (byType.get(record.namespaceType) ?? 0) + 1);
     }
-    assertEquals(byType.get("public"), 9);
+
+    // The fixtures are exactly one each, and that is the claim: a private and
+    // a machine-local capability sit in the same space as everything public.
+    assertEquals(byType.get("public"), published.length);
     assertEquals(byType.get("private"), 1);
     assertEquals(byType.get("local"), 1);
-    assertEquals(cfcm.size, 11);
+    assertEquals(cfcm.size, published.length + 2);
     return Promise.resolve();
   });
 });
@@ -196,7 +211,11 @@ Deno.test("a misconfigured private namespace does not stop the working sources",
 
     const cfcm = await Cfcm.create({ config, localRoot: join(home, "local") });
 
-    assertEquals(cfcm.size, 9, "the public registry should still load");
+    assertEquals(
+      cfcm.size,
+      (await publishedCapabilityNames()).length,
+      "the public registry should still load",
+    );
     const ghost = cfcm.sourceReports.find((r) => r.id === "Ghost");
     assertEquals(ghost?.status, "unavailable");
     assertStringIncludes(ghost?.detail ?? "", "does not exist");

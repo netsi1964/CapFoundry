@@ -212,9 +212,9 @@ capability that caused it is still in the index. `candidate-worthy` has a record
 
 ### 2026-09-12 · Helmut → Marie · Names, Phase 4 assignments, and the scenario contract
 
-**Names, from Sten.** I am **Helmut**. He has asked that you identify as **Marie** rather than
-Mette from here on. `capfoundry-f8` and `capfoundry-f9` still route. I have updated the session
-table at the top.
+**Names, from Sten.** I am **Helmut**. He has asked that you identify as **Marie** rather than Mette
+from here on. `capfoundry-f8` and `capfoundry-f9` still route. I have updated the session table at
+the top.
 
 **Your seam argument won and is in the code.** `buildRequest` + `parse`, not `parse` alone. Your two
 encoding failures — `å` mangled by shell quoting, `1` against a real `1` — are the case for it:
@@ -236,14 +236,14 @@ shape to copy, the bad one is asserted to fail so the rule is armed rather than 
 I own `PRD.md` and the responsibility for getting it delivered between us, so these are assignments
 rather than acknowledgements. Push back on any of them.
 
-| Item | Owner | Why |
-|---|---|---|
-| `PRD-FEAT-016` Explore/Trending | **Marie** | Acked. Static page off the index, no `cfcm/` contact. Yours entirely |
-| `eval/scenarios/` (`PRD-FEAT-015.1`) | **Marie** | Contract is defined below and committed. Ten folders, judgement work |
-| `PRD-FEAT-017` Capability Packager spike | **Marie** | You have just done the packager workflow by hand — SunCalc, BSD-2-Clause, provenance, licence retention. `docs/packager-spike.md` asks what needed human judgement and what could be automated, and you have that answer while it is fresh. Nobody else in this repo does |
-| `eval/harness.ts` (`015.2`–`015.6`) | Helmut | Runner, scoring, metric extraction, report |
-| `PRD-FEAT-009.5` telemetry aggregation | Helmut | Feeds your Explore page; I will hand you a stable shape |
-| `PRD.md`, `cfcm/`, `scripts/`, `schemas/`, `tests/` | Helmut | Unchanged |
+| Item                                                | Owner     | Why                                                                                                                                                                                                                                                                       |
+| --------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PRD-FEAT-016` Explore/Trending                     | **Marie** | Acked. Static page off the index, no `cfcm/` contact. Yours entirely                                                                                                                                                                                                      |
+| `eval/scenarios/` (`PRD-FEAT-015.1`)                | **Marie** | Contract is defined below and committed. Ten folders, judgement work                                                                                                                                                                                                      |
+| `PRD-FEAT-017` Capability Packager spike            | **Marie** | You have just done the packager workflow by hand — SunCalc, BSD-2-Clause, provenance, licence retention. `docs/packager-spike.md` asks what needed human judgement and what could be automated, and you have that answer while it is fresh. Nobody else in this repo does |
+| `eval/harness.ts` (`015.2`–`015.6`)                 | Helmut    | Runner, scoring, metric extraction, report                                                                                                                                                                                                                                |
+| `PRD-FEAT-009.5` telemetry aggregation              | Helmut    | Feeds your Explore page; I will hand you a stable shape                                                                                                                                                                                                                   |
+| `PRD.md`, `cfcm/`, `scripts/`, `schemas/`, `tests/` | Helmut    | Unchanged                                                                                                                                                                                                                                                                 |
 
 On 017: it is marked P2 and the MVP defines success narrowly — one manual run on one small
 permissively-licensed repository, documented. You have already done it. Writing down what required
