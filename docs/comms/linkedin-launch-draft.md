@@ -10,80 +10,81 @@ line if the README scoreboard lands first.
 
 ## The post
 
-I kept watching models reinvent the wheel.
+**Draft 3 — Fry-metoden. Audience: developers evaluating AI in the SDLC.**
 
-Not badly — usually correctly. The same haversine formula, the same CSV delimiter sniffer, the same
-slug function, written fresh in every session, with no memory that any of it had ever been solved
-before.
+---
 
-So I built CapFoundry: a registry an agent asks *before* it generates.
+**Your AI writes the same function every week. That's not the expensive part.**
 
-Three things turned out to be less obvious than I expected.
+You've watched it happen. You ask for something small — distance between two coordinates, a CSV
+delimiter sniffer, a slug function — and the model writes it. Correctly. In four seconds.
 
-**"No match" has to be a normal answer.** A registry that's embarrassed to say it has nothing starts
-returning things that nearly fit — and a near-miss is worse than no answer, because the agent
-actually uses it.
+And you've seen it write that same function before. Last month, in another repo, slightly
+differently.
 
-Mine failed this, and I only found out by accident. An agent asked for the edit distance between two
-strings. My registry returned a *geographic* distance capability — not hedged, not flagged as
-uncertain, but a confident MATCH at 0.568. One word, "distance", appearing across the capability's
-name, aliases, description, summaries and example queries at once. The agent rejected it and wrote
-the code itself, which is the only reason I noticed. The test suite had missed it because my
-near-miss case used the word "levenshtein", which the index had never seen and weighted heavily
-enough to push the score under the threshold. I'd written a test that confirmed the answer I was
-hoping for.
+It feels like speed. Here's why it isn't.
 
-**Enforcement beats promises.** A skill that says "I don't touch the network" is making a promise. A
-capability that declares `effect: PURE` runs in a subprocess with no permission flags at all — plus
-a few more that close the holes zero permissions leaves open. I'd assumed zero permissions *was* a
-sandbox until I tested it: a static import of a remote URL gets fetched by the module loader before
-any permission check runs. The flag list is the threat model, not tidiness.
+Every session starts empty, which means the model has no memory that the problem was ever solved. So
+it solves it again — and because it is generating rather than retrieving, it solves it *slightly*
+differently each time. Which means the version sitting in your repo is one somebody has to read. And
+the next one. And the one after that.
 
-**Skills and capabilities aren't competitors.** Skills change how a model behaves; capabilities
-produce values. "When is it worth searching?" can't be a capability — that's judgement, not
-computation. But skills lack what packaging gives you: no checksum, no provenance, no licence trail.
-You can't verify that the skill running is the one you reviewed.
+Before AI, reinventing a utility was expensive enough that you'd go looking for an existing one
+first. That friction was doing real work, and nobody misses it.
 
-It's an experiment, not a product. Seven conditions that would falsify the idea were written down
-before the first line of code. Three of them aren't measured yet — and one number I'd already
-reported as 0.000 turned out to be 0.105, which is in the changelog rather than quietly fixed.
+**The problem isn't that AI writes bad code. It's that it writes good code cheaply enough that
+nothing ever accumulates.**
 
-If you're working in this space I'd like to hear where you think it breaks. The question I'm least
-sure about: is search-before-generate worth the latency, or does the model just write the thing
-faster than it can look it up?
+So I've been building the unglamorous half: a registry an agent searches before it generates.
+Versioned contracts, permissions the runtime enforces rather than the model promising, and "no
+match" as a perfectly normal answer — because a registry that's embarrassed to say it has nothing
+starts recommending things that nearly fit.
+
+It's an experiment and it's allowed to fail. Seven conditions that would falsify it were written
+down before the first line of code, and the verdict gets published whichever way it lands.
+
+If you're putting AI into your SDLC: where do you think this breaks?
 
 [REPO LINK]
 
 ---
 
+**Self-check.** Written for SOME (LinkedIn), ~275 words. you:I ratio roughly 8:1. The reveal is
+counterintuitive: the reader expects the complaint to be about code quality, and it is about
+accumulation — that cheap, correct generation removed the friction that used to force reuse.
+
+**Alternative anchor**, if the function example feels too small: the moment you open a PR and
+recognise a helper you are certain already exists somewhere in the monorepo — same sensation,
+closer to the reviewer's experience than the author's.
+
+**Alternative headline:** "AI made writing code cheap. It also made forgetting it free."
+
 ## Notes on the draft
 
-**Why it opens on reinvention rather than on the registry.** The problem is felt by the audience
-daily; the solution isn't. Leading with the architecture makes it a product announcement, which is
-the thing least likely to get replies.
+**Draft 3 replaced draft 2 entirely.** Sten's note was that the post focused on the wrong thing: the
+bugs encountered while building are not relevant to a presentation of the concept. He was right, and
+the reason is worth keeping. The near-miss story was a good story about *me*, in a post that needed
+to be about the reader's problem. A launch post that opens on its author's debugging asks the reader
+to care about the project before they have been given a reason to.
 
-**Draft 2: the anecdote was wrong in draft 1, and the correction improved it.** I had written the
-failure as a hedged `PARTIAL_MATCH` at 0.508. Verified against the index at commit 6a2a471, the real
-figures are 0.4656 for the short phrasing and a confident **MATCH at 0.5679** for "compute the edit
-distance between two strings". The system did not hedge — it recommended a geographic function for a
-string problem and meant it, which is worse for CapFoundry and better as an illustration. Draft 1
-also claimed the agent "read the match evidence" before rejecting it; the transcript shows it judged
-the capability unrelated from its contract, with nothing to show it inspected `matchedOn`. That
-sentence is now gone. It was the one a reader would have tested.
+**What survived the cut, and why.** "No match has to be a normal answer" stayed, compressed to one
+clause, because it is a design claim rather than an anecdote — it tells a developer something about
+how the thing behaves. The 0.5679 near-miss, the levenshtein test that confirmed its author's hopes,
+the SEC-10 discovery about zero permissions: all cut. Every one of them is genuinely interesting and
+none of them belongs in the first thing someone reads.
 
-**Why the near-miss example is the centre.** It's the only part nobody else is saying, it's real
-rather than illustrative, and it demonstrates the design decision instead of asserting it. It also
-shows the system failing gracefully, which reads as more honest than a success story.
+**Why the falsification line stayed.** It is the one sentence that distinguishes this from a product
+announcement, it costs two lines, and it is verifiable — the conditions predate the first commit
+(`45fa959` vs `37849e3`).
 
-**Why the falsification line is near the end rather than the hook.** It's the strongest claim but it
-only means something after the reader knows what's being falsified. Opening with it sounds like
-positioning.
+**The SDLC audience changed the frame.** Draft 2 addressed people building AI tooling. Draft 3
+addresses people deciding whether to let AI into their pipeline, which is a larger and more sceptical
+group. For them the interesting claim is not "search is better than generation" but "generated code
+that nobody accumulates is a review cost you pay forever" — a lifecycle argument, not a tooling one.
 
-**The closing question is genuinely open.** Latency versus generation cost is the weakest point in
-the premise, and asking about it invites the objection rather than waiting to be hit with it.
-Inviting the strongest counter-argument is also the thing most likely to produce real replies rather
-than congratulations.
+**The closing question is unchanged** and still invites the strongest objection. It is the sentence
+most likely to produce replies rather than congratulations.
 
-**One thing deliberately left out:** that two Claude Code sessions built this in parallel and
-coordinated through a file in the repo. It's the most interesting thing here, but it's a different
-post and it would swallow this one.
+**Still deliberately left out:** that two Claude Code sessions built this in parallel and coordinated
+through a file in the repo. It remains the most interesting thing here and it would still swallow the
+post.
