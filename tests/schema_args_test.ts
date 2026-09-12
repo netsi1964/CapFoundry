@@ -7,7 +7,7 @@
  * that guesses at the shape of someone's input becomes a bug report.
  */
 
-import { assertEquals, assertStringIncludes, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertStringIncludes, assertThrows } from "@std/assert";
 import { buildInput as build, describeArgs } from "../cfcm/util/schema_args.ts";
 
 /** buildInput returns unknown by design; tests know the shape they asked for. */
