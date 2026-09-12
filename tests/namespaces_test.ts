@@ -51,6 +51,7 @@ Deno.test("every public capability is indexed", async () => {
       "CapFoundry.date.businessDaysBetween",
       "CapFoundry.geo.distance",
       "CapFoundry.json.schema.infer",
+      "CapFoundry.sun.times",
       "CapFoundry.text.editDistance",
       "CapFoundry.text.slugify",
       "CapFoundry.ui.dataTable",
@@ -66,10 +67,10 @@ Deno.test("public, private and local form one search space (OBJ-6)", async () =>
     for (const record of cfcm.list()) {
       byType.set(record.namespaceType, (byType.get(record.namespaceType) ?? 0) + 1);
     }
-    assertEquals(byType.get("public"), 8);
+    assertEquals(byType.get("public"), 9);
     assertEquals(byType.get("private"), 1);
     assertEquals(byType.get("local"), 1);
-    assertEquals(cfcm.size, 10);
+    assertEquals(cfcm.size, 11);
     return Promise.resolve();
   });
 });
@@ -195,7 +196,7 @@ Deno.test("a misconfigured private namespace does not stop the working sources",
 
     const cfcm = await Cfcm.create({ config, localRoot: join(home, "local") });
 
-    assertEquals(cfcm.size, 8, "the public registry should still load");
+    assertEquals(cfcm.size, 9, "the public registry should still load");
     const ghost = cfcm.sourceReports.find((r) => r.id === "Ghost");
     assertEquals(ghost?.status, "unavailable");
     assertStringIncludes(ghost?.detail ?? "", "does not exist");

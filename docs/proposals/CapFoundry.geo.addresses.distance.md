@@ -1,6 +1,6 @@
 # Forslag: `CapFoundry.geo.addresses.distance`
 
-**Status:** udkast til diskussion · **Dato:** 2026-09-12 · **Berører:** `PRD-FEAT-001`, `PRD-FEAT-006`, `SEC-1`, `SEC-10`
+**Status:** udkast til diskussion · **Dato:** 2026-09-12 · **Opdateret:** 2026-09-12 (§5 efter `9a109b5`) · **Berører:** `PRD-FEAT-001`, `PRD-FEAT-006`, `SEC-1`, `SEC-10`
 
 Afstand mellem to *adresser eller byer* — angivet som tekst, på tværs af landegrænser — i stedet for
 mellem to koordinatpar.
@@ -191,40 +191,28 @@ Vejafstand er bevidst udeladt. Det er et ruteproblem, ikke et geometriproblem, o
 fejltilstande (ingen rute over vand, færger, grænselukninger). Hvis det skal med, bør det være en
 selvstændig `CapFoundry.geo.route` med `mode` og `duration` — ikke et flag på denne her.
 
-## 5. Tre ting i platformen der skal flytte sig først
+## 5. Platformstatus — to af tre blokkere er væk
 
-Det her er den egentlige pointe i forslaget. Capability'en er ikke det svære.
+*Opdateret 2026-09-12 efter `9a109b5`. Da forslaget blev skrevet var alle tre åbne.*
 
-**5.1 Sandboxen afviser alt ikke-`PURE`.** `cfcm/runtime/execute.ts:103` kaster
-`EFFECT_UNSUPPORTED` før den overhovedet spawner. Så `geo.addresses.distance` kan ikke eksekveres i
-dag, uanset hvor rigtig kontrakten er. Der skal træffes et valg: enten udvides sandboxen med scoped
-`--allow-net`, eller også udstilles capability'en kun som artefakt (`exposure.execution: false`) så
-brugeren selv kører den med egne rettigheder.
+**5.1 Sandboxen kører nu NETWORK.** ~~Afviser alt ikke-`PURE`.~~ `cfcm/runtime/execute.ts:117`
+tillader `PURE` og `NETWORK`; `READ` og `WRITE` afvises eksplicit. Et NETWORK-artefakt uden tildelte
+hosts fejler med `NETWORK_NOT_PERMITTED` frem for at køre uden netværk.
 
-Artefakt-vejen er markant billigere og kan leveres nu. Den er værd at overveje som første skridt.
+**5.2 `permissions.network` findes.** ~~Ingen måde at deklarere hosts.~~ Feltet er i
+`capability.schema.json`, påkrævet når `effect` er `NETWORK`, og håndhæves som
+`--allow-net=<hosts>`. Designet er en **intersektion**: deklarationen er en ansøgning, ikke en
+tildeling, og `cfcm.json`s `execution.network.allow` afgør hvad der faktisk gives — slukket som
+udgangspunkt. Det er strammere end det jeg foreslog, og bedre: en capability kan ikke give sig selv
+adgang ved at bede om den.
 
-**5.2 Der er ingen måde at deklarere *hvilke* hosts en capability må nå.**
-`capability.schema.json` har `additionalProperties: false` og intet permissions-felt.
-`cfcm.json` har `permissions.network`, men på *source*-niveau — ikke per capability. Uden en
-deklaration bliver scoped netværk til `--allow-net` uden begrænsning, og så er SEC-1 reelt væk for
-NETWORK-capabilities.
+`--no-remote` og `--no-npm` er beholdt, så SEC-10 er stadig lukket.
 
-Forslag til minimal udvidelse, bag `schemaVersion: 2`:
-
-```jsonc
-"permissions": {
-  "network": ["nominatim.openstreetmap.org"]
-}
-```
-
-Håndhævet som `--allow-net=nominatim.openstreetmap.org`. Validatoren afviser `effect: NETWORK` uden
-et ikke-tomt `permissions.network`. **Bemærk SEC-10 gælder stadig:** `--no-remote` og `--no-npm`
-skal blive på, også når netværk åbnes, ellers er module-loaderen en exfiltrationskanal igen.
-
-**5.3 Test- og provenance-modellen antager determinisme.** Tests kan ikke kalde et live-API i CI —
-det er flakey, rate-limited og gør en rød build til støj. Der skal bruges optagede fixtures, og så
-skal artefaktet have et injicerbart fetch-lag. Det er en lille ændring i artefaktets form, men den
-skal besluttes bevidst, for den bliver mønsteret for hver eneste NETWORK-capability efter denne.
+**5.3 Test- og provenance-modellen antager stadig determinisme.** Den eneste tilbageværende.
+NETWORK-tests kan ikke kalde et live-API i CI — det er flakey, rate-limited og gør en rød build til
+støj. Der skal bruges optagede fixtures, og artefaktet skal have et injicerbart fetch-lag. Lille
+ændring i artefaktets form, men den bliver mønsteret for hver NETWORK-capability efter den første,
+så den bør besluttes bevidst frem for at opstå.
 
 ## 6. Valg af udbyder
 
@@ -244,13 +232,13 @@ kontrakten og gøre outputtet umuligt at holde stabilt.
 
 ## 7. Foreslået rækkefølge
 
-1. **Beslut 5.1** — scoped netværk i sandboxen, eller artefakt-kun. Alt andet afhænger af det.
-2. `schemaVersion: 2` med `permissions.network` + validatorregel (5.2).
-3. Fixture-mønsteret for NETWORK-tests (5.3) — én gang, så det er sat for alle senere.
+1. ~~Scoped netværk i sandboxen~~ — gjort i `9a109b5`.
+2. ~~`permissions.network` + validatorregel~~ — gjort, som intersektion med lokal policy.
+3. **Fixture-mønsteret for NETWORK-tests** (5.3) — én gang, så det er sat for alle senere.
 4. `CapFoundry.geo.geocode` som første NETWORK-capability. Mindre overflade, samme problemer.
 5. `CapFoundry.geo.addresses.distance` som komposition ovenpå.
 
-Trin 1–3 er platformarbejde og bør ikke gemme sig inde i en capability-PR.
+Trin 3 er platformarbejde og bør ikke gemme sig inde i en capability-PR. Vejen er nu fri fra trin 4.
 
 ---
 

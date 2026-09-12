@@ -1,0 +1,18 @@
+{
+  "origin": "derived",
+  "author": "Netsi",
+  "repository": "https://github.com/netsi1964/CapFoundry",
+  "createdAt": "2026-09-12",
+  "license": "BSD-2-Clause",
+  "derivedFrom": [
+    {
+      "name": "SunCalc",
+      "version": "2.0.2",
+      "author": "Volodymyr Agafonkin",
+      "repository": "https://github.com/mourner/suncalc",
+      "license": "BSD-2-Clause",
+      "retrievedAt": "2026-09-12"
+    }
+  ],
+  "notes": "The astronomy is a TypeScript port of SunCalc v2.0.2 (index.js), implementing Meeus 'Astronomical Algorithms' ch. 15 and 25. Numerics are unchanged from upstream and cross-checked against it across 78 phase times at 8 locations including polar cases; the largest deviation was sub-second and came from trimming milliseconds in the ISO output. The contract around the maths — validated input, ISO 8601 rendering, IANA time zones and explicit polar day/night flags — is new. Upstream's BSD-2-Clause notice is retained verbatim in license/LICENSE as redistribution requires."
+}

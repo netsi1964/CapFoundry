@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 1,
+  "name": "CapFoundry.sun.times",
+  "version": "1.0.0",
+  "description": "Calculate sunrise, sunset, twilight and golden hour for a date and location",
+  "aliases": [
+    "sunrise and sunset times",
+    "what time does the sun rise",
+    "golden hour calculator",
+    "twilight times",
+    "day length for a location",
+    "solar noon",
+    "blue hour and dusk",
+    "midnight sun and polar night"
+  ],
+  "exampleQueries": [
+    "what time does the sun rise and set at these coordinates",
+    "calculate golden hour for a photo shoot on a given date",
+    "how long is the day at this latitude in December",
+    "when does civil twilight end tonight",
+    "find solar noon for a location",
+    "does the sun set at all here in midsummer"
+  ],
+  "tags": [
+    "sun",
+    "sunrise",
+    "sunset",
+    "twilight",
+    "astronomy",
+    "golden-hour",
+    "solar",
+    "daylight"
+  ],
+  "inputSummary": "A latitude, longitude and ISO date, plus optional observer height and IANA time zone",
+  "outputSummary": "Each solar phase as an ISO 8601 instant or null, with solar noon and polar day/night flags",
+  "runtime": "deno",
+  "effect": "PURE",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "lat",
+      "lon",
+      "date"
+    ],
+    "properties": {
+      "lat": {
+        "type": "number",
+        "minimum": -90,
+        "maximum": 90
+      },
+      "lon": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      },
+      "date": {
+        "type": "string",
+        "minLength": 8,
+        "maxLength": 40,
+        "description": "ISO 8601 date (2026-06-21) or instant (2026-06-21T10:00:00Z)"
+      },
+      "height": {
+        "type": "number",
+        "minimum": 0,
+        "description": "Observer height above the horizon, in metres"
+      },
+      "timeZone": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "description": "IANA time zone for rendering output, e.g. Europe/Copenhagen. Defaults to UTC"
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "date",
+      "timeZone",
+      "coordinates",
+      "solarNoon",
+      "nadir",
+      "times",
+      "polarDay",
+      "polarNight"
+    ],
+    "properties": {
+      "date": {
+        "type": "string"
+      },
+      "timeZone": {
+        "type": "string"
+      },
+      "coordinates": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lon": {
+            "type": "number"
+          }
+        }
+      },
+      "solarNoon": {
+        "type": "string"
+      },
+      "nadir": {
+        "type": "string"
+      },
+      "times": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sunrise",
+          "sunset",
+          "sunriseEnd",
+          "sunsetStart",
+          "dawn",
+          "dusk",
+          "nauticalDawn",
+          "nauticalDusk",
+          "nightEnd",
+          "night",
+          "goldenHourEnd",
+          "goldenHour"
+        ],
+        "properties": {
+          "sunrise": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sunset": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sunriseEnd": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sunsetStart": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dawn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dusk": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "nauticalDawn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "nauticalDusk": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "nightEnd": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "night": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "goldenHourEnd": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "goldenHour": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "polarDay": {
+        "type": "boolean"
+      },
+      "polarNight": {
+        "type": "boolean"
+      }
+    }
+  },
+  "artifact": {
+    "type": "typescript",
+    "entrypoint": "./artifact/index.ts",
+    "sha256": "e99f6af2ace95cdf1f3176ee292f69671e883d285aa8b2688b350bad9ecb353c"
+  },
+  "exposure": {
+    "execution": true,
+    "artifact": true
+  },
+  "limits": {
+    "timeoutMs": 5000
+  },
+  "tests": "./tests/"
+}
