@@ -41,6 +41,9 @@ Every line is here because it already went wrong once.
    `scripts/`, `deno.json`, `PRD.md`.
 8. **Land your work.** Uncommitted files in a shared tree are the hazard behind half the rules
    above.
+9. **Fetch before you bisect.** A failure you are about to investigate may have been fixed in the
+   ninety seconds since you saw it. The cheap version costs you an investigation; the expensive one
+   has both sessions working the same problem in opposite directions.
 
 ## Decisions
 
@@ -57,6 +60,8 @@ One line each. The reasoning is in [the log](docs/dialog-log.md).
 | Skills packaged as CFPs: deferred                                                                       | Helmut                        | Sealing gives provenance, not quality assurance, and nothing measures whether a skill works. Recorded in `PRD-SEC-010` with the `schemaVersion` answer                          |
 | No remote execution API                                                                                 | MVP §5                        | "Centralize knowledge, decentralize execution" is the architecture, not a slogan                                                                                                |
 | `dialog.md` is public                                                                                   | Sten                          | Decided deliberately rather than discovered after the fact                                                                                                                      |
+| Widening a descriptor is a precision change, guarded at seal time                                       | Marie flagged, Helmut built   | Confidence rises with fields matched, not with fit. OBJ-2 has been crossed twice by edits nobody thought risky                                                                  |
+| The falsification scoreboard records its own near-misses                                                | Marie                         | A record containing only the incidents its author was absent for is a highlights reel                                                                                           |
 
 ## Open
 
