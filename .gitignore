@@ -5,3 +5,6 @@ eval/reports/*.md
 !eval/reports/.gitkeep
 *.log
 .DS_Store
+
+# Local CFCM configuration (cfcm.example.json is the template)
+cfcm.json
