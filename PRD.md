@@ -968,6 +968,30 @@ ved at en forælder med `--allow-net` nåede dr.dk mens dens barn blev afvist.
 | Signerede CFP'er, delta-CFCM-pakker, assurance-niveauer | Registryet får eksterne bidragydere |
 | Organisationsregistries, remote executor, flere runtimes | Efterspørgsel dokumenteret i Explores `Missing` |
 
+### Registreret beslutning: skills pakket som CFP'er
+
+Foreslået i `docs/proposals/skills-vs-capabilities.md`. Argumentet holder: en skill har i dag ingen
+`sha256`, ingen provenance, ingen licens i pakken og ingen forsegling, så du kan ikke verificere at
+den skill der kører er den du reviewede. CFP-formatet løser præcis det.
+
+**Udskudt, og den stærkeste grund står i forslaget selv:** forsegling giver herkomst, ikke
+kvalitetssikring. Der findes intet der måler om en skill *virker*. Det gør værdien reel men smal —
+forsyningskæde, ikke korrekthed — og smal værdi er netop hvad der skal vente på evidens (§26).
+
+Skemaspørgsmålet er afgjort på forhånd så det ikke skal udledes igen: `outputSchema` ville skulle
+gøres betinget af `artifact.type`, hvilket er en **brydende ændring af deskriptoren og et
+`schemaVersion` 2-bump** — ikke et additivt felt. Formen ville være:
+
+```jsonc
+{
+  "artifact": { "type": "instructions", "entrypoint": "./artifact/SKILL.md", "sha256": "..." },
+  "exposure": { "execution": false, "artifact": true }
+}
+```
+
+Værd at bemærke: A/B-harnesset er den nærmeste ting til en test for en skill, og scenariet
+`search-should-be-skipped` er allerede mærket «Skill-kvalitet» i `PRD-FEAT-015`.
+
 ### Udskudt uanset resultat
 
 OBJ-8's rentes rente-effekt (§2.8) kræver en længere måleperiode end MVP'en. Design en opfølgende måling — kør ikke MVP'en længere for at ramme den.

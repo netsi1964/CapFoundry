@@ -69,8 +69,17 @@ if (check) {
   }
   console.log(`✓ ${OUTPUT} is in sync (${records.length} capabilities)`);
 } else {
-  await Deno.mkdir("./registry", { recursive: true });
-  await Deno.writeTextFile(OUTPUT, serialized);
-  const bytes = new TextEncoder().encode(serialized).length;
-  console.log(`✓ ${OUTPUT} — ${records.length} capabilities, ${(bytes / 1024).toFixed(1)} KB`);
+  // Only write when the capabilities actually changed. The timestamps move on
+  // every build, so writing unconditionally left a modified index in the
+  // working tree after every `deno task prepare` — noise that is easy to sweep
+  // into an unrelated commit, and more so when two people share the tree.
+  const current = await pathExists(OUTPUT) ? await Deno.readTextFile(OUTPUT) : null;
+  if (current !== null && comparable(JSON.parse(current) as RegistryIndex) === comparable(index)) {
+    console.log(`✓ ${OUTPUT} unchanged (${records.length} capabilities)`);
+  } else {
+    await Deno.mkdir("./registry", { recursive: true });
+    await Deno.writeTextFile(OUTPUT, serialized);
+    const bytes = new TextEncoder().encode(serialized).length;
+    console.log(`✓ ${OUTPUT} — ${records.length} capabilities, ${(bytes / 1024).toFixed(1)} KB`);
+  }
 }
