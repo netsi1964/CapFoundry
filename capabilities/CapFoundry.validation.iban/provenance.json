@@ -1,0 +1,9 @@
+{
+  "origin": "authored",
+  "author": "Netsi",
+  "repository": "https://github.com/netsi1964/CapFoundry",
+  "createdAt": "2026-09-12",
+  "license": "Apache-2.0",
+  "derivedFrom": [],
+  "notes": "Country length table transcribed from the public ISO 13616 IBAN registry. Algorithm is ISO 7064 mod-97-10. No third-party code."
+}

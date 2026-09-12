@@ -9,7 +9,8 @@
     "check": "deno check cfcm/**/*.ts scripts/*.ts",
     "fmt": "deno fmt",
     "lint": "deno lint",
-    "ci": "deno fmt --check && deno lint && deno task check && deno task validate && deno task build-index --check && deno task test"
+    "ci": "deno fmt --check && deno lint && deno task check && deno task validate && deno run --allow-read --allow-write scripts/build-index.ts --check && deno task test",
+    "prepare": "deno fmt && deno task seal && deno task build-index"
   },
   "fmt": {
     "lineWidth": 100,

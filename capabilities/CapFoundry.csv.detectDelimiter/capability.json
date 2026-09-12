@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "name": "CapFoundry.csv.detectDelimiter",
+  "version": "1.0.0",
+  "description": "Infer which character separates fields in CSV-like text, with supporting evidence",
+  "aliases": [
+    "guess the separator",
+    "comma or semicolon",
+    "sniff a spreadsheet export",
+    "figure out the field separator",
+    "tab or pipe separated",
+    "parse an unknown flat file"
+  ],
+  "exampleQueries": [
+    "work out whether this file is comma or semicolon separated",
+    "detect the field separator in an unknown spreadsheet export",
+    "is this data tab delimited or pipe delimited",
+    "sniff the delimiter before parsing a flat file",
+    "guess how these columns are separated"
+  ],
+  "tags": [
+    "csv",
+    "parsing",
+    "data",
+    "import",
+    "inference"
+  ],
+  "inputSummary": "CSV-like text plus optional candidate characters and a row limit",
+  "outputSummary": "The likely delimiter, a confidence, the field count and per-candidate evidence",
+  "runtime": "deno",
+  "effect": "PURE",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "text"
+    ],
+    "properties": {
+      "text": {
+        "type": "string"
+      },
+      "candidates": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 10,
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1
+        }
+      },
+      "maxRows": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10000
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "delimiter",
+      "confidence",
+      "fieldCount",
+      "evidence",
+      "reason"
+    ],
+    "properties": {
+      "delimiter": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "confidence": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "fieldCount": {
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "evidence": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "delimiter",
+            "modalFieldCount",
+            "consistency",
+            "averagePerRow",
+            "rowsExamined",
+            "score"
+          ],
+          "properties": {
+            "delimiter": {
+              "type": "string"
+            },
+            "modalFieldCount": {
+              "type": "integer"
+            },
+            "consistency": {
+              "type": "number"
+            },
+            "averagePerRow": {
+              "type": "number"
+            },
+            "rowsExamined": {
+              "type": "integer"
+            },
+            "score": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "reason": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "artifact": {
+    "type": "typescript",
+    "entrypoint": "./artifact/index.ts",
+    "sha256": "730cb71934a1f5cd0f08b9cd09eac247d877a009c71caeb943f27da45264e625"
+  },
+  "exposure": {
+    "execution": true,
+    "artifact": true
+  },
+  "tests": "./tests/"
+}

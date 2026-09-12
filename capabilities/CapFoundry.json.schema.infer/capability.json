@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "name": "CapFoundry.json.schema.infer",
+  "version": "1.0.0",
+  "description": "Infer a deterministic JSON Schema from an example JSON value using explicit rules",
+  "aliases": [
+    "generate a schema from sample data",
+    "payload shape from an example",
+    "derive a contract from an api response",
+    "reverse engineer a data shape",
+    "build validation rules from an example payload",
+    "work out the structure of this json"
+  ],
+  "exampleQueries": [
+    "generate a json schema from this example api response",
+    "derive validation rules from a sample payload",
+    "what is the structure of this json data",
+    "turn these example records into a schema contract",
+    "infer types and required fields from sample json"
+  ],
+  "tags": [
+    "json",
+    "schema",
+    "validation",
+    "contract",
+    "inference",
+    "api"
+  ],
+  "inputSummary": "Any JSON value plus optional enum, format and depth options",
+  "outputSummary": "A draft 2020-12 JSON Schema, byte-stable for the same input",
+  "runtime": "deno",
+  "effect": "PURE",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "data"
+    ],
+    "properties": {
+      "data": {},
+      "options": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enumMinSamples": {
+            "type": "integer",
+            "minimum": 2
+          },
+          "enumMaxValues": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "detectFormats": {
+            "type": "boolean"
+          },
+          "includeSchemaKeyword": {
+            "type": "boolean"
+          },
+          "maxDepth": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "artifact": {
+    "type": "typescript",
+    "entrypoint": "./artifact/index.ts",
+    "sha256": "a7838e265338742ca3d65a28f892609da698bbe2d4e48a2c9a860feb74d1ecaa"
+  },
+  "exposure": {
+    "execution": true,
+    "artifact": true
+  },
+  "limits": {
+    "timeoutMs": 10000
+  },
+  "tests": "./tests/"
+}

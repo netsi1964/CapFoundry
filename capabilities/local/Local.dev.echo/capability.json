@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "name": "Local.dev.echo",
+  "version": "1.0.0",
+  "description": "Return the supplied value unchanged, as a machine-local development probe",
+  "aliases": [
+    "ping the capability manager",
+    "development round trip probe",
+    "return my payload unchanged",
+    "smoke test the local pipeline",
+    "loopback check"
+  ],
+  "exampleQueries": [
+    "echo this payload back to me unchanged",
+    "smoke test that the local capability pipeline works",
+    "run a loopback check against the capability manager",
+    "verify a round trip through local execution",
+    "development probe that returns its input"
+  ],
+  "tags": [
+    "local",
+    "development",
+    "diagnostics",
+    "probe"
+  ],
+  "inputSummary": "Any JSON value plus an optional label",
+  "outputSummary": "The same value, the label, and its nesting depth",
+  "runtime": "deno",
+  "effect": "PURE",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "value": {},
+      "label": {
+        "type": "string",
+        "maxLength": 200
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "echoed",
+      "label",
+      "depth"
+    ],
+    "properties": {
+      "echoed": {},
+      "label": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "depth": {
+        "type": "integer",
+        "minimum": 0
+      }
+    }
+  },
+  "artifact": {
+    "type": "typescript",
+    "entrypoint": "./artifact/index.ts",
+    "sha256": "488d116f9f114751d525cb4357ff9c4aa86159e183011c6339f308e59aceda4f"
+  },
+  "exposure": {
+    "execution": true,
+    "artifact": true
+  },
+  "tests": "./tests/"
+}

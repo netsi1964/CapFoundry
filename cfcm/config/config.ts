@@ -7,7 +7,7 @@
  *    first-time user gets a working search over the public registry.
  */
 
-import { dirname, isAbsolute, join } from "@std/path";
+import { dirname, isAbsolute, join, resolve } from "@std/path";
 import { CfcmError } from "../types.ts";
 import type { CfcmConfig, NamespaceConfig } from "../types.ts";
 import { DEFAULT_THRESHOLDS } from "../search/engine.ts";
@@ -120,9 +120,20 @@ export function parseConfig(raw: unknown, baseDir: string): CfcmConfig {
     );
   }
 
+  // A relative registry path resolves against the config file, exactly like a
+  // private namespace's source path. Resolving one against the config and the
+  // other against the process CWD would make the same "./x" in one file mean
+  // two different places depending on where CFCM happened to be started.
+  let registry: string | null = null;
+  if (typeof cf.registry === "string" && cf.registry.length > 0) {
+    registry = /^[a-z][a-z0-9+.-]*:\/\//i.test(cf.registry) || isAbsolute(cf.registry)
+      ? cf.registry
+      : resolve(join(baseDir, cf.registry));
+  }
+
   return {
     capfoundry: {
-      registry: typeof cf.registry === "string" ? cf.registry : null,
+      registry,
       enabled: cf.enabled === undefined ? true : cf.enabled === true,
     },
     search: {

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "name": "Netsi.demo.getCustomer",
+  "version": "1.0.0",
+  "description": "Look up an internal demo customer record by identifier",
+  "aliases": [
+    "internal customer lookup",
+    "fetch an account record",
+    "find a client by id",
+    "crm record retrieval",
+    "who is this account"
+  ],
+  "exampleQueries": [
+    "look up an internal customer by their identifier",
+    "fetch the account record for a client id",
+    "find which segment a customer belongs to",
+    "check whether an internal account is still active",
+    "get the company name behind a customer number"
+  ],
+  "tags": [
+    "internal",
+    "customer",
+    "crm",
+    "demo"
+  ],
+  "inputSummary": "An internal customer identifier",
+  "outputSummary": "Whether the customer exists and its record",
+  "runtime": "deno",
+  "effect": "PURE",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "customerId"
+    ],
+    "properties": {
+      "customerId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "found",
+      "customer"
+    ],
+    "properties": {
+      "found": {
+        "type": "boolean"
+      },
+      "customer": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "required": [
+          "customerId",
+          "name",
+          "segment",
+          "country",
+          "active"
+        ],
+        "properties": {
+          "customerId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "segment": {
+            "enum": [
+              "enterprise",
+              "smb",
+              "public"
+            ]
+          },
+          "country": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "artifact": {
+    "type": "typescript",
+    "entrypoint": "./artifact/index.ts",
+    "sha256": "676129b04f0b81722bfef79a1f89ba85383972a8a819b0238ccd5c282bc535bb"
+  },
+  "exposure": {
+    "execution": true,
+    "artifact": false
+  },
+  "tests": "./tests/"
+}

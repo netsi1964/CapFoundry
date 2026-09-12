@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "name": "CapFoundry.ui.dataTable",
+  "version": "1.0.0",
+  "description": "Generate a framework-free, accessible sortable table as an HTML Custom Element",
+  "aliases": [
+    "sortable table component",
+    "html custom element table",
+    "web component grid",
+    "vanilla js table widget",
+    "accessible data table markup",
+    "build a table without a framework"
+  ],
+  "exampleQueries": [
+    "generate a sortable table web component for these columns",
+    "i need an accessible html table widget without react",
+    "create a custom element that renders rows with column sorting",
+    "vanilla javascript data table with keyboard accessible sorting",
+    "build a framework free table component from a column spec"
+  ],
+  "tags": [
+    "ui",
+    "html",
+    "component",
+    "web-component",
+    "table",
+    "accessibility"
+  ],
+  "inputSummary": "A column spec plus optional caption, empty text and element name",
+  "outputSummary": "Custom Element JavaScript source and a usage snippet, ready to paste",
+  "runtime": "deno",
+  "effect": "PURE",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "columns"
+    ],
+    "properties": {
+      "columns": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 100,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "label"
+          ],
+          "properties": {
+            "key": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "type": {
+              "enum": [
+                "string",
+                "number",
+                "date"
+              ]
+            },
+            "align": {
+              "enum": [
+                "start",
+                "end",
+                "center"
+              ]
+            },
+            "sortable": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "sortable": {
+        "type": "boolean"
+      },
+      "caption": {
+        "type": "string",
+        "maxLength": 300
+      },
+      "emptyText": {
+        "type": "string",
+        "maxLength": 300
+      },
+      "elementName": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 100
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "elementName",
+      "javascript",
+      "usageExample",
+      "columnCount"
+    ],
+    "properties": {
+      "elementName": {
+        "type": "string"
+      },
+      "javascript": {
+        "type": "string"
+      },
+      "usageExample": {
+        "type": "string"
+      },
+      "columnCount": {
+        "type": "integer",
+        "minimum": 1
+      }
+    }
+  },
+  "artifact": {
+    "type": "typescript",
+    "entrypoint": "./artifact/index.ts",
+    "sha256": "35b84126cbbdc4d489dd5ad1c0a46939b0f368a32ae3b8add2ab092951e52080"
+  },
+  "exposure": {
+    "execution": true,
+    "artifact": true
+  },
+  "tests": "./tests/"
+}

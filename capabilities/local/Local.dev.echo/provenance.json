@@ -1,0 +1,9 @@
+{
+  "origin": "authored",
+  "author": "Netsi",
+  "repository": "https://github.com/netsi1964/CapFoundry",
+  "createdAt": "2026-09-12",
+  "license": "Apache-2.0",
+  "derivedFrom": [],
+  "notes": "Machine-local fixture proving reserved Local.* semantics. Never published to the registry."
+}

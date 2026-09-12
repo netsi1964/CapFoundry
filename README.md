@@ -16,26 +16,31 @@ The architectural shorthand is:
 
 ## Current status
 
-CapFoundry is in **early implementation**. Phase 0 and Phase 1 of the [implementation PRD](PRD.md)
-are done: CFCM runs as a local MCP server that searches a compact index, resolves and verifies an
-artifact, executes it in a zero-permission Deno subprocess, and writes local telemetry — proven end
-to end on one capability, `CapFoundry.geo.distance`.
+CapFoundry is in **early implementation**. Phases 0–2 of the [implementation PRD](PRD.md) are done:
+CFCM runs as a local MCP server that searches a compact index, resolves and verifies artifacts,
+executes them in zero-permission Deno subprocesses, and writes local telemetry.
 
-The remaining six public capabilities, the private and `Local.*` fixtures, candidate submission,
-the Capability Awareness Skill, the A/B evaluation harness and Explore are still ahead.
+Nine capabilities now share **one search space** — seven public, one private, one machine-local —
+with different policies per namespace. Measured on that index: search finds the right capability
+for 15 of 16 rephrasings that never mention its name, and none of 13 near-miss or out-of-domain
+queries produce a confident match. Overhead is ~40 ms p95 against a 250 ms budget.
+
+Still ahead: candidate submission, the Capability Awareness Skill, the A/B evaluation harness that
+decides whether any of this pays for itself, and Explore.
 
 ## Quick start
 
 Requires [Deno](https://deno.com) 2.x.
 
 ```bash
-# Verify every capability package, then build the registry index
-deno task validate
-deno task build-index
-
-# Run the full suite: search, sandbox escapes, cache integrity, telemetry redaction
-deno task test
+deno task ci        # everything CI runs: fmt, lint, types, CFP validation, index sync, tests
+deno task test      # just the suite: search, sandbox escapes, cache integrity, telemetry redaction
+deno task prepare   # after editing a capability: fmt, re-seal artifact hashes, rebuild the index
 ```
+
+`prepare` exists because the order matters: formatting changes an artifact's bytes, which
+invalidates its `sha256`, which invalidates the index. CI checks both ends independently, so a
+forgotten `seal` fails the build rather than shipping an unverified artifact.
 
 Point CFCM at this repository as its registry and register it with a coding agent:
 
@@ -53,7 +58,17 @@ claude mcp add cfcm -- deno run --allow-read --allow-write --allow-net --allow-r
 
 The agent then gets three tools — `cfcm_search`, `cfcm_invoke` and `cfcm_describe`. A confident
 search that is given input runs the capability in the same call, so the common case costs one
-round trip.
+round trip. (`cfcm_submit_candidate` arrives with Phase 3.)
+
+### Namespaces
+
+| Namespace | Source | Policy |
+|---|---|---|
+| `CapFoundry.*` | the static Git registry | public; artifacts returnable |
+| `Netsi.*` (example) | a `filesystem` source in `cfcm.json` | private; `exposure.artifact: false`, so it executes but never hands back source |
+| `Local.*` | built in, `~/.cfcm/local` | this machine only; never published, and CFCM refuses to let `Local` be declared as an external namespace |
+
+All three are searched as one space. Only the policies differ.
 
 ### A note on the sandbox
 
@@ -74,21 +89,25 @@ The current documents are:
 
 The Vision document describes where CapFoundry may go. The MVP document describes what should actually be built first. The PRD describes how to build it.
 
-## First planned capabilities
+## Capabilities
 
-The MVP starts with five small capabilities spread across domains plus two richer examples:
+All seven are implemented, each a complete CFP with tests, provenance and licence.
 
-```text
-CapFoundry.text.slugify
-CapFoundry.date.businessDaysBetween
-CapFoundry.geo.distance
-CapFoundry.validation.iban
-CapFoundry.csv.detectDelimiter
-CapFoundry.json.schema.infer
-CapFoundry.ui.dataTable
-```
+| Capability | What it does |
+|---|---|
+| `CapFoundry.text.slugify` | Locale-aware URL- and filename-safe slugs |
+| `CapFoundry.date.businessDaysBetween` | Working days, with configurable weekends and caller-supplied holidays |
+| `CapFoundry.geo.distance` | Great-circle distance between two WGS-84 points |
+| `CapFoundry.validation.iban` | ISO 13616 length, charset and mod-97 checks with machine-readable reasons |
+| `CapFoundry.csv.detectDelimiter` | Infers the field separator and returns its evidence |
+| `CapFoundry.json.schema.infer` | Deterministic JSON Schema inference — the benchmark against direct generation |
+| `CapFoundry.ui.dataTable` | Generates an accessible, framework-free sortable table Custom Element |
 
-`CapFoundry.json.schema.infer` provides a larger deterministic benchmark. `CapFoundry.ui.dataTable` tests a different part of the model by returning an HTML Custom Element artifact.
+Two of them test different parts of the model rather than being useful in themselves.
+`json.schema.infer` is the larger deterministic benchmark (MVP §37): it exists to be compared
+against asking a model to do the same job, which is only meaningful because its inference rules are
+written down. `ui.dataTable` returns **code you paste into a project** rather than a computed
+value, testing artifact delivery.
 
 ## Capability packages
 

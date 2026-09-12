@@ -1,6 +1,6 @@
 # CapFoundry MVP — Implementeringsplan (PRD)
 
-**Version 1.1** · **Sidst opdateret: 2026-09-12** · **Status: Fase 0 og Fase 1 leveret, Fase 2 er næste**
+**Version 1.2** · **Sidst opdateret: 2026-09-12** · **Status: Fase 0–2 leveret, Fase 3 er næste**
 
 Dette dokument omsætter [MVP v0.2](docs/mvp/CapFoundry-MVP-v0.2.md) til en plan der kan kodes efter. Det tilføjer ingen ambition til MVP'en — det lukker de huller der forhindrede den i at blive bygget, og det respekterer §5 (hvad vi bevidst ikke bygger), §27 (fejlreglen) og §28 (whiteboard-reglen) som bindende begrænsninger.
 
@@ -236,7 +236,7 @@ Implementerer §13 under AD-3. **Sikkerhedskritisk feature.**
 
 ---
 
-### PRD-FEAT-007 · Return modes og exposure-politik · P1 · S
+### PRD-FEAT-007 · Return modes og exposure-politik · P1 · S · ✅ leveret
 
 Implementerer §9 og §10's exposure-blok.
 
@@ -297,7 +297,7 @@ Implementerer §21 under AD-5.
 
 ---
 
-### PRD-FEAT-010 · De syv offentlige capabilities · P0/P1 · L
+### PRD-FEAT-010 · De syv offentlige capabilities · P0/P1 · L · ✅ leveret
 
 Fra §10. Hver er en komplet CFP med tests, aliases og eksempelforespørgsler.
 
@@ -322,11 +322,11 @@ Fra §10. Hver er en komplet CFP med tests, aliases og eksempelforespørgsler.
 - `010.6` skal have eksplicit dokumenterede regler for enum-inferens, required-felter, nested objekter og arrays — reglerne er kontrakten, og benchmarken mod LLM-generering er meningsløs uden dem.
 - `010.7` skal producere et Custom Element uden build-trin, uden framework, med tastaturnavigérbar og skærmlæservenlig sortering.
 
-**Åbent spørgsmål OQ-1:** §10 viser `<netsi-table>` som elementnavn for en capability i `CapFoundry.*`-namespacet. Det er inkonsistent. Forslag: `<cf-data-table>`. Kræver din afgørelse før `010.7` bygges.
+**OQ-1 afgjort:** §10 viser `<netsi-table>` for en capability i `CapFoundry.*`-namespacet, hvilket er inkonsistent. Løsningen blev ikke at vælge ét navn, men at gøre `elementName` til et **input** med default `cf-data-table`, valideret mod HTML's custom element-regler. Kalderen bestemmer, og §10's `<netsi-table>` er stadig muligt uden at låse namespacet.
 
 ---
 
-### PRD-FEAT-011 · Privat namespace-fixture · P1 · S
+### PRD-FEAT-011 · Privat namespace-fixture · P1 · S · ✅ leveret
 
 Implementerer §14. `Netsi.demo.getCustomer` mod lokale fixture-data.
 
@@ -339,7 +339,7 @@ Implementerer §14. `Netsi.demo.getCustomer` mod lokale fixture-data.
 
 ---
 
-### PRD-FEAT-012 · `Local.*`-fixture · P1 · S
+### PRD-FEAT-012 · `Local.*`-fixture · P1 · S · ✅ leveret
 
 Implementerer §15. `Local.dev.echo`.
 
@@ -702,13 +702,15 @@ Dette er fasen hvor arkitekturen kan vise sig forkert. Bliver den det, har vi ku
 
 *Opfyldt. Målt ved leverance: OBJ-3 40,5 ms p95 mod et budget på 250 ms; søgning 0,2 ms p95; 73 tests grønne. To fund undervejs — SEC-10 (remote imports omgik sandboxen) og en fejl i konfidensformlen der gav wrong-match rate 1,0 — er rettet og dækket af tests. Se «Fund fra Fase 1» nedenfor.*
 
-### Fase 2 · Bredde · ~4–5 dage · ⬅ **næste**
+### Fase 2 · Bredde · ~4–5 dage · ✅ **leveret**
 
 `PRD-FEAT-010.2`–`010.7`, `011`, `012`, `007`.
 
 **Exit:** syv offentlige + én privat + én lokal capability i ét søgerum (OBJ-6). Artefakt-retur virker på `ui.dataTable` (OBJ-7).
 
-### Fase 3 · Loopet lukkes · ~3 dage
+*Opfyldt. Ni capabilities i ét søgerum, 249 tests grønne. Målt på det rigtige indeks: **OBJ-1 = 0,938** (15/16 omskrivninger, mod et mål på 0,80) og **OBJ-2 = 0,000** (0/13 near-misses og out-of-domain, mod et loft på 0,05). Ingen forkert capability nåede toppen på et `MATCH`. To fund undervejs — F3 og F4 — er håndteret. Se «Fund fra Fase 2».*
+
+### Fase 3 · Loopet lukkes · ~3 dage · ⬅ **næste**
 
 `PRD-FEAT-013`, `014`.
 
@@ -768,6 +770,48 @@ wrong-match rate. Det er præcis den afvejning AD-2 er sat i verden for at måle
 
 ---
 
+## Fund fra Fase 2
+
+### F3 · To relative stier i samme fil betød to forskellige ting
+
+`namespaces[].source.path` blev opløst mod `cfcm.json`s egen mappe, mens `capfoundry.registry` blev
+opløst mod processens arbejdsmappe. Samme `"./x"` i samme fil pegede dermed to forskellige steder,
+afhængigt af hvor CFCM tilfældigvis blev startet. Opdaget ved at en manuel MCP-kørsel rapporterede
+`Netsi (unavailable)` for en konfiguration der så korrekt ud.
+
+Rettet: en relativ registry-sti opløses nu mod konfigurationsfilen, præcis som en namespace-sti.
+Absolutte stier og `http(s)`-URL'er røres ikke.
+
+### F4 · Formatering bryder artefakt-hashen, og det er meningen
+
+`deno fmt` omformaterer capability-artefakter, hvilket ændrer deres bytes og dermed ugyldiggør
+`artifact.sha256`. Validatoren fangede det før noget kunne eksekvere.
+
+Det er ikke en fejl — det er integritetskæden der virker. Men rækkefølgen skal være eksplicit, så
+den er nu en task: `deno task prepare` kører `fmt` → `seal` → `build-index`. CI håndhæver begge
+ender uafhængigt (`fmt --check` og `validate`), så en glemt `seal` bliver rød frem for at slippe
+igennem.
+
+### Målt søgekvalitet på det rigtige indeks
+
+| Mål | Måling | Tærskel | |
+|---|---|---|---|
+| OBJ-1 hit rate | **0,938** (15/16) | ≥ 0,80 | ✅ |
+| OBJ-2 wrong-match | **0,000** (0/13) | ≤ 0,05 | ✅ |
+| Forkert top-hit på et `MATCH` | **0** | 0 | ✅ |
+
+**Vigtigt forbehold, og det står også i `tests/objectives_test.ts`:** forespørgslerne er skrevet af
+den samme person som skrev capabilities' aliases. Målingen viser intern konsistens, ikke uafhængig
+recall. Den ærlige måling er A/B-harnesset i Fase 4, hvis scenarier er opgaveformede frem for
+forespørgselsformede. Tallene her er en regressionsvagt, ikke et bevis for at OBJ-1 og OBJ-2 er
+indfriet.
+
+Den ene miss — «how far is it from one gps point to another» — rangerer korrekt `geo.distance`
+øverst men lander på 0,51, lige under tærsklen på 0,55. Tærsklen gør altså reelt arbejde her frem
+for at være dekoration.
+
+---
+
 ## PRD-SEC-009 · Udfordringer og løsninger
 
 | ID | Udfordring | Løsning | Restrisiko |
@@ -806,7 +850,7 @@ OBJ-8's rentes rente-effekt (§2.8) kræver en længere måleperiode end MVP'en.
 
 | ID | Spørgsmål | Blokerer |
 |---|---|---|
-| **OQ-1** | Elementnavn for `ui.dataTable`: §10 viser `<netsi-table>` i et `CapFoundry.*`-namespace. Forslag `<cf-data-table>` | `PRD-FEAT-010.7` (Fase 2) |
+| ~~OQ-1~~ | ~~Elementnavn for `ui.dataTable`~~ — afgjort: `elementName` er et input med default `cf-data-table`, valideret mod HTML-reglerne | ~~Fase 2~~ |
 | **OQ-2** | Skal CFP have et arkivformat, eller er mappen nok i MVP'en? §17 lader det bevidst stå åbent | Ikke blokerende; mappen bruges |
 | ~~OQ-3~~ | ~~Hostingdomæne for registry og Explore~~ — afgjort: registry-basen er en URL *eller* en lokal sti, så hele røret kan køres uden hosting. `cfcm.example.json` peger på GitHub Pages | ~~Fase 1~~ |
 | **OQ-4** | Hvilket MIT-repo bruges til packager-spiken (`PRD-FEAT-017.2`)? | Fase 5 |
@@ -912,6 +956,14 @@ Alle 28 afsnit i MVP v0.2 er enten dækket af en feature eller er en begrænsnin
 ---
 
 ## Changelog
+
+### v1.2 — 2026-09-12
+- Fase 2 leveret: alle syv offentlige capabilities, privat fixture, `Local.*` fixture, return modes
+- Nyt afsnit «Fund fra Fase 2» med F3 (stiopløsning) og F4 (fmt bryder artefakt-hash)
+- OBJ-1 (0,938) og OBJ-2 (0,000) målt på det rigtige indeks og fastholdt som tests, med forbehold
+  om at forespørgslerne ikke er uafhængige
+- OQ-1 lukket: `elementName` er et input med default `cf-data-table`
+- `deno task prepare` tilføjet, så rækkefølgen fmt → seal → build-index er eksplicit
 
 ### v1.1 — 2026-09-12
 - Fase 0 og Fase 1 leveret og markeret i `PRD-SEC-008`

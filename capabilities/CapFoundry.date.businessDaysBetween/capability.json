@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "name": "CapFoundry.date.businessDaysBetween",
+  "version": "1.0.0",
+  "description": "Count working days between two dates, excluding weekends and supplied holidays",
+  "aliases": [
+    "working days",
+    "weekdays between dates",
+    "exclude weekends and holidays",
+    "delivery time in working days",
+    "sla days",
+    "office days count"
+  ],
+  "exampleQueries": [
+    "how many working days are there between these two dates",
+    "count weekdays excluding public holidays for an sla",
+    "number of office days in a delivery window",
+    "business days from order date to due date",
+    "weekdays between two dates with a friday saturday weekend"
+  ],
+  "tags": [
+    "date",
+    "calendar",
+    "time",
+    "business",
+    "sla"
+  ],
+  "inputSummary": "Two ISO dates plus optional weekend days, holidays and inclusivity",
+  "outputSummary": "Business days with a breakdown of calendar, weekend and holiday days",
+  "runtime": "deno",
+  "effect": "PURE",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "from",
+      "to"
+    ],
+    "properties": {
+      "from": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      },
+      "to": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      },
+      "weekend": {
+        "type": "array",
+        "maxItems": 6,
+        "items": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        }
+      },
+      "holidays": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        }
+      },
+      "inclusive": {
+        "type": "boolean"
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "businessDays",
+      "calendarDays",
+      "weekendDays",
+      "holidayDays",
+      "reversed"
+    ],
+    "properties": {
+      "businessDays": {
+        "type": "integer"
+      },
+      "calendarDays": {
+        "type": "integer"
+      },
+      "weekendDays": {
+        "type": "integer"
+      },
+      "holidayDays": {
+        "type": "integer"
+      },
+      "reversed": {
+        "type": "boolean"
+      }
+    }
+  },
+  "artifact": {
+    "type": "typescript",
+    "entrypoint": "./artifact/index.ts",
+    "sha256": "40b7d13e2db45ab0831d935ba02f28f69605dfaaecf28d6d64c3933d7c8d51fb"
+  },
+  "exposure": {
+    "execution": true,
+    "artifact": true
+  },
+  "tests": "./tests/"
+}

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "name": "CapFoundry.text.slugify",
+  "version": "1.0.0",
+  "description": "Convert arbitrary text into a stable URL-safe and filename-safe slug",
+  "aliases": [
+    "url slug",
+    "permalink",
+    "kebab case",
+    "web safe string",
+    "clean up a title for a url",
+    "seo friendly filename"
+  ],
+  "exampleQueries": [
+    "turn a blog post title into a url friendly string",
+    "make a permalink from a heading with accents",
+    "convert a product name into a safe filename",
+    "generate a kebab case identifier from free text",
+    "strip diacritics and spaces to build a web address"
+  ],
+  "tags": [
+    "text",
+    "string",
+    "url",
+    "web",
+    "normalization"
+  ],
+  "inputSummary": "Free text plus optional locale, separator, maxLength and lowercase",
+  "outputSummary": "A stable slug and whether it was truncated",
+  "runtime": "deno",
+  "effect": "PURE",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "text"
+    ],
+    "properties": {
+      "text": {
+        "type": "string"
+      },
+      "locale": {
+        "type": "string",
+        "maxLength": 35
+      },
+      "separator": {
+        "type": "string",
+        "maxLength": 1
+      },
+      "maxLength": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "lowercase": {
+        "type": "boolean"
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "slug",
+      "truncated"
+    ],
+    "properties": {
+      "slug": {
+        "type": "string"
+      },
+      "truncated": {
+        "type": "boolean"
+      }
+    }
+  },
+  "artifact": {
+    "type": "typescript",
+    "entrypoint": "./artifact/index.ts",
+    "sha256": "fa94289835b44d609e6fd008c701b9fd289834c158249636d1691c024a9a1fb6"
+  },
+  "exposure": {
+    "execution": true,
+    "artifact": true
+  },
+  "tests": "./tests/"
+}

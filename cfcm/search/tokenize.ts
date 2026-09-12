@@ -86,7 +86,7 @@ function splitCamelCase(input: string): string {
 }
 
 function stripDiacritics(input: string): string {
-  return input.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  return input.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 export function tokenize(text: string): string[] {

@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "name": "CapFoundry.validation.iban",
+  "version": "1.0.0",
+  "description": "Validate an IBAN against ISO 13616 length, charset and mod-97 checksum rules",
+  "aliases": [
+    "bank account check",
+    "international bank account number",
+    "mod 97 checksum",
+    "payment details validation",
+    "verify a bank account string",
+    "sepa account format"
+  ],
+  "exampleQueries": [
+    "check whether this bank account number is valid",
+    "validate an international bank account number before saving it",
+    "is this sepa payment detail correctly formatted",
+    "verify the checksum on a customer bank account",
+    "normalize and check a bank account string from a form"
+  ],
+  "tags": [
+    "validation",
+    "finance",
+    "banking",
+    "payments",
+    "sepa"
+  ],
+  "inputSummary": "An IBAN string, with or without spaces",
+  "outputSummary": "Validity, normalized and printed forms, country code and a machine-readable reason",
+  "runtime": "deno",
+  "effect": "PURE",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "iban"
+    ],
+    "properties": {
+      "iban": {
+        "type": "string",
+        "maxLength": 100
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "valid",
+      "normalized",
+      "countryCode",
+      "formatted",
+      "reason",
+      "message"
+    ],
+    "properties": {
+      "valid": {
+        "type": "boolean"
+      },
+      "normalized": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "countryCode": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "formatted": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "reason": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          "TOO_SHORT",
+          "INVALID_CHARACTERS",
+          "UNKNOWN_COUNTRY",
+          "WRONG_LENGTH_FOR_COUNTRY",
+          "CHECKSUM_FAILED",
+          null
+        ]
+      },
+      "message": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "artifact": {
+    "type": "typescript",
+    "entrypoint": "./artifact/index.ts",
+    "sha256": "9ecea552b4720283b48efaf6925277eabe83d04be10ba8903edf370fc60111b2"
+  },
+  "exposure": {
+    "execution": true,
+    "artifact": true
+  },
+  "tests": "./tests/"
+}

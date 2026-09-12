@@ -84,3 +84,40 @@ Deno.test("a malformed namespace entry names the offending index", () => {
   );
   assertStringIncludes(err.message, "namespaces[0].source");
 });
+
+Deno.test("a relative registry path resolves against the config file, like a namespace path", () => {
+  // The footgun this guards: the same "./x" meaning two different places
+  // depending on where CFCM happened to be started.
+  const config = parseConfig(
+    {
+      capfoundry: { registry: "./registry-mirror" },
+      namespaces: [{
+        name: "Netsi",
+        type: "private",
+        source: { type: "filesystem", path: "./caps/netsi" },
+      }],
+    },
+    "/home/dev/project",
+  );
+  assertEquals(config.capfoundry.registry, "/home/dev/project/registry-mirror");
+  assertEquals(config.namespaces[0].source.path, "/home/dev/project/caps/netsi");
+});
+
+Deno.test("a bare dot registry resolves to the config's own directory", () => {
+  assertEquals(
+    parseConfig({ capfoundry: { registry: "." } }, "/home/dev/project").capfoundry.registry,
+    "/home/dev/project",
+  );
+});
+
+Deno.test("an absolute registry path and an http registry are left alone", () => {
+  assertEquals(
+    parseConfig({ capfoundry: { registry: "/srv/registry" } }, "/home/dev").capfoundry.registry,
+    "/srv/registry",
+  );
+  assertEquals(
+    parseConfig({ capfoundry: { registry: "https://example.com/reg" } }, "/home/dev").capfoundry
+      .registry,
+    "https://example.com/reg",
+  );
+});

@@ -1,7 +1,95 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-12T10:41:23.122Z",
+  "generatedAt": "2026-09-12T11:14:26.082Z",
   "capabilities": [
+    {
+      "schemaVersion": 1,
+      "name": "CapFoundry.csv.detectDelimiter",
+      "version": "1.0.0",
+      "description": "Infer which character separates fields in CSV-like text, with supporting evidence",
+      "aliases": [
+        "guess the separator",
+        "comma or semicolon",
+        "sniff a spreadsheet export",
+        "figure out the field separator",
+        "tab or pipe separated",
+        "parse an unknown flat file"
+      ],
+      "exampleQueries": [
+        "work out whether this file is comma or semicolon separated",
+        "detect the field separator in an unknown spreadsheet export",
+        "is this data tab delimited or pipe delimited",
+        "sniff the delimiter before parsing a flat file",
+        "guess how these columns are separated"
+      ],
+      "tags": [
+        "csv",
+        "parsing",
+        "data",
+        "import",
+        "inference"
+      ],
+      "inputSummary": "CSV-like text plus optional candidate characters and a row limit",
+      "outputSummary": "The likely delimiter, a confidence, the field count and per-candidate evidence",
+      "runtime": "deno",
+      "effect": "PURE",
+      "artifact": {
+        "type": "typescript",
+        "sha256": "730cb71934a1f5cd0f08b9cd09eac247d877a009c71caeb943f27da45264e625"
+      },
+      "exposure": {
+        "execution": true,
+        "artifact": true
+      },
+      "cfpLocation": "capabilities/CapFoundry.csv.detectDelimiter",
+      "artifactLocation": "capabilities/CapFoundry.csv.detectDelimiter/artifact/index.ts",
+      "namespaceType": "public",
+      "indexedAt": "2026-09-12T11:14:26.082Z"
+    },
+    {
+      "schemaVersion": 1,
+      "name": "CapFoundry.date.businessDaysBetween",
+      "version": "1.0.0",
+      "description": "Count working days between two dates, excluding weekends and supplied holidays",
+      "aliases": [
+        "working days",
+        "weekdays between dates",
+        "exclude weekends and holidays",
+        "delivery time in working days",
+        "sla days",
+        "office days count"
+      ],
+      "exampleQueries": [
+        "how many working days are there between these two dates",
+        "count weekdays excluding public holidays for an sla",
+        "number of office days in a delivery window",
+        "business days from order date to due date",
+        "weekdays between two dates with a friday saturday weekend"
+      ],
+      "tags": [
+        "date",
+        "calendar",
+        "time",
+        "business",
+        "sla"
+      ],
+      "inputSummary": "Two ISO dates plus optional weekend days, holidays and inclusivity",
+      "outputSummary": "Business days with a breakdown of calendar, weekend and holiday days",
+      "runtime": "deno",
+      "effect": "PURE",
+      "artifact": {
+        "type": "typescript",
+        "sha256": "40b7d13e2db45ab0831d935ba02f28f69605dfaaecf28d6d64c3933d7c8d51fb"
+      },
+      "exposure": {
+        "execution": true,
+        "artifact": true
+      },
+      "cfpLocation": "capabilities/CapFoundry.date.businessDaysBetween",
+      "artifactLocation": "capabilities/CapFoundry.date.businessDaysBetween/artifact/index.ts",
+      "namespaceType": "public",
+      "indexedAt": "2026-09-12T11:14:26.082Z"
+    },
     {
       "schemaVersion": 1,
       "name": "CapFoundry.geo.distance",
@@ -48,7 +136,188 @@
       "cfpLocation": "capabilities/CapFoundry.geo.distance",
       "artifactLocation": "capabilities/CapFoundry.geo.distance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T10:41:23.122Z"
+      "indexedAt": "2026-09-12T11:14:26.082Z"
+    },
+    {
+      "schemaVersion": 1,
+      "name": "CapFoundry.json.schema.infer",
+      "version": "1.0.0",
+      "description": "Infer a deterministic JSON Schema from an example JSON value using explicit rules",
+      "aliases": [
+        "generate a schema from sample data",
+        "payload shape from an example",
+        "derive a contract from an api response",
+        "reverse engineer a data shape",
+        "build validation rules from an example payload",
+        "work out the structure of this json"
+      ],
+      "exampleQueries": [
+        "generate a json schema from this example api response",
+        "derive validation rules from a sample payload",
+        "what is the structure of this json data",
+        "turn these example records into a schema contract",
+        "infer types and required fields from sample json"
+      ],
+      "tags": [
+        "json",
+        "schema",
+        "validation",
+        "contract",
+        "inference",
+        "api"
+      ],
+      "inputSummary": "Any JSON value plus optional enum, format and depth options",
+      "outputSummary": "A draft 2020-12 JSON Schema, byte-stable for the same input",
+      "runtime": "deno",
+      "effect": "PURE",
+      "artifact": {
+        "type": "typescript",
+        "sha256": "a7838e265338742ca3d65a28f892609da698bbe2d4e48a2c9a860feb74d1ecaa"
+      },
+      "exposure": {
+        "execution": true,
+        "artifact": true
+      },
+      "limits": {
+        "timeoutMs": 10000
+      },
+      "cfpLocation": "capabilities/CapFoundry.json.schema.infer",
+      "artifactLocation": "capabilities/CapFoundry.json.schema.infer/artifact/index.ts",
+      "namespaceType": "public",
+      "indexedAt": "2026-09-12T11:14:26.082Z"
+    },
+    {
+      "schemaVersion": 1,
+      "name": "CapFoundry.text.slugify",
+      "version": "1.0.0",
+      "description": "Convert arbitrary text into a stable URL-safe and filename-safe slug",
+      "aliases": [
+        "url slug",
+        "permalink",
+        "kebab case",
+        "web safe string",
+        "clean up a title for a url",
+        "seo friendly filename"
+      ],
+      "exampleQueries": [
+        "turn a blog post title into a url friendly string",
+        "make a permalink from a heading with accents",
+        "convert a product name into a safe filename",
+        "generate a kebab case identifier from free text",
+        "strip diacritics and spaces to build a web address"
+      ],
+      "tags": [
+        "text",
+        "string",
+        "url",
+        "web",
+        "normalization"
+      ],
+      "inputSummary": "Free text plus optional locale, separator, maxLength and lowercase",
+      "outputSummary": "A stable slug and whether it was truncated",
+      "runtime": "deno",
+      "effect": "PURE",
+      "artifact": {
+        "type": "typescript",
+        "sha256": "fa94289835b44d609e6fd008c701b9fd289834c158249636d1691c024a9a1fb6"
+      },
+      "exposure": {
+        "execution": true,
+        "artifact": true
+      },
+      "cfpLocation": "capabilities/CapFoundry.text.slugify",
+      "artifactLocation": "capabilities/CapFoundry.text.slugify/artifact/index.ts",
+      "namespaceType": "public",
+      "indexedAt": "2026-09-12T11:14:26.082Z"
+    },
+    {
+      "schemaVersion": 1,
+      "name": "CapFoundry.ui.dataTable",
+      "version": "1.0.0",
+      "description": "Generate a framework-free, accessible sortable table as an HTML Custom Element",
+      "aliases": [
+        "sortable table component",
+        "html custom element table",
+        "web component grid",
+        "vanilla js table widget",
+        "accessible data table markup",
+        "build a table without a framework"
+      ],
+      "exampleQueries": [
+        "generate a sortable table web component for these columns",
+        "i need an accessible html table widget without react",
+        "create a custom element that renders rows with column sorting",
+        "vanilla javascript data table with keyboard accessible sorting",
+        "build a framework free table component from a column spec"
+      ],
+      "tags": [
+        "ui",
+        "html",
+        "component",
+        "web-component",
+        "table",
+        "accessibility"
+      ],
+      "inputSummary": "A column spec plus optional caption, empty text and element name",
+      "outputSummary": "Custom Element JavaScript source and a usage snippet, ready to paste",
+      "runtime": "deno",
+      "effect": "PURE",
+      "artifact": {
+        "type": "typescript",
+        "sha256": "35b84126cbbdc4d489dd5ad1c0a46939b0f368a32ae3b8add2ab092951e52080"
+      },
+      "exposure": {
+        "execution": true,
+        "artifact": true
+      },
+      "cfpLocation": "capabilities/CapFoundry.ui.dataTable",
+      "artifactLocation": "capabilities/CapFoundry.ui.dataTable/artifact/index.ts",
+      "namespaceType": "public",
+      "indexedAt": "2026-09-12T11:14:26.082Z"
+    },
+    {
+      "schemaVersion": 1,
+      "name": "CapFoundry.validation.iban",
+      "version": "1.0.0",
+      "description": "Validate an IBAN against ISO 13616 length, charset and mod-97 checksum rules",
+      "aliases": [
+        "bank account check",
+        "international bank account number",
+        "mod 97 checksum",
+        "payment details validation",
+        "verify a bank account string",
+        "sepa account format"
+      ],
+      "exampleQueries": [
+        "check whether this bank account number is valid",
+        "validate an international bank account number before saving it",
+        "is this sepa payment detail correctly formatted",
+        "verify the checksum on a customer bank account",
+        "normalize and check a bank account string from a form"
+      ],
+      "tags": [
+        "validation",
+        "finance",
+        "banking",
+        "payments",
+        "sepa"
+      ],
+      "inputSummary": "An IBAN string, with or without spaces",
+      "outputSummary": "Validity, normalized and printed forms, country code and a machine-readable reason",
+      "runtime": "deno",
+      "effect": "PURE",
+      "artifact": {
+        "type": "typescript",
+        "sha256": "9ecea552b4720283b48efaf6925277eabe83d04be10ba8903edf370fc60111b2"
+      },
+      "exposure": {
+        "execution": true,
+        "artifact": true
+      },
+      "cfpLocation": "capabilities/CapFoundry.validation.iban",
+      "artifactLocation": "capabilities/CapFoundry.validation.iban/artifact/index.ts",
+      "namespaceType": "public",
+      "indexedAt": "2026-09-12T11:14:26.082Z"
     }
   ]
 }
