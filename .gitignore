@@ -9,3 +9,10 @@ eval/reports/*.md
 # Local CFCM configuration (cfcm.example.json is the template)
 cfcm.json
 tests/fixtures/network-cfp/deno.lock
+
+# Explore build output. data.json is this machine's telemetry and index.html is
+# generated from it — committing either publishes one machine's usage. Run
+# `deno task explore` to regenerate; publishing to Pages should be a deliberate
+# workflow step, not a side effect of a commit.
+web/explore/data.json
+web/explore/index.html

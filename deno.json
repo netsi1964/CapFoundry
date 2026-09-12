@@ -14,7 +14,8 @@
     "candidate": "deno run --allow-read --allow-write --allow-env scripts/candidate.ts",
     "aggregate": "deno run --allow-read --allow-write --allow-env scripts/aggregate-telemetry.ts",
     "cfcm": "deno run --allow-read --allow-write --allow-net --allow-run --allow-env scripts/cli.ts",
-    "contract-check": "deno run --allow-read --allow-write --allow-net scripts/contract-check.ts"
+    "contract-check": "deno run --allow-read --allow-write --allow-net scripts/contract-check.ts",
+    "explore": "deno task aggregate && deno run --allow-read --allow-write scripts/build-explore.ts"
   },
   "fmt": {
     "lineWidth": 100,
@@ -23,7 +24,8 @@
       "docs/",
       "PRD.md",
       "README.md",
-      "LICENSE"
+      "LICENSE",
+      "web/explore/index.html"
     ]
   },
   "lint": {
