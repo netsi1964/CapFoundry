@@ -1,0 +1,15 @@
+{
+  "id": "candidate-not-worthy",
+  "title": "Project glue that must not be offered as a candidate",
+  "rationale": "Submitting everything written is how a registry becomes useless. Restraint is the measurable half of OBJ-5.",
+  "objectives": ["OBJ-5"],
+  "origin": "designed",
+  "expect": {
+    "search": "any",
+    "capability": null,
+    "invoked": false,
+    "fellBackToGeneration": true,
+    "candidateSubmitted": false
+  },
+  "timeoutSeconds": 300
+}

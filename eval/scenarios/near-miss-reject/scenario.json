@@ -1,0 +1,16 @@
+{
+  "id": "near-miss-reject",
+  "title": "A query that collides with an unrelated capability on one shared word",
+  "rationale": "A near-miss is worse than no answer, because the agent uses it. If this fails, the registry actively degrades the work.",
+  "objectives": ["OBJ-2"],
+  "origin": "recorded",
+  "recordedFrom": "An ordinary session, 2026-09-12. CFCM answered MATCH at 0.5679 for CapFoundry.geo.distance — a geographic capability for a string problem — because the word \"distance\" appeared in its name, aliases, description, summaries and example queries at once. The agent rejected it and wrote the code. Recorded as F5 in the PRD; the confidence formula was fixed, and this scenario is the regression guard.",
+  "expect": {
+    "search": "NO_MATCH",
+    "capability": null,
+    "invoked": false,
+    "fellBackToGeneration": true,
+    "candidateSubmitted": false
+  },
+  "timeoutSeconds": 300
+}

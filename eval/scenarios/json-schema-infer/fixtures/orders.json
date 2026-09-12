@@ -1,0 +1,5 @@
+[
+  { "id": 1, "customer": "Nordlys Analyse ApS", "total": 1499.5, "paid": true, "note": null },
+  { "id": 2, "customer": "Fjordbyg Entreprise A/S", "total": 20400, "paid": false },
+  { "id": 3, "customer": "Havnens Kaffebar", "total": 89.95, "paid": true, "note": "pickup" }
+]

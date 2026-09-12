@@ -1,0 +1,15 @@
+{
+  "id": "exact-match-small",
+  "title": "A small, unambiguous task that an existing capability covers exactly",
+  "rationale": "If CFCM cannot be found for the easiest possible case, nothing further about the idea holds.",
+  "objectives": ["OBJ-1"],
+  "origin": "designed",
+  "expect": {
+    "search": "MATCH",
+    "capability": "CapFoundry.text.slugify",
+    "invoked": true,
+    "fellBackToGeneration": false,
+    "candidateSubmitted": false
+  },
+  "timeoutSeconds": 300
+}

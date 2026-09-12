@@ -1,0 +1,15 @@
+{
+  "id": "local-capability",
+  "title": "A machine-local capability is reachable from the same search space",
+  "rationale": "Local.* is the lowest-ceremony way to add a capability. If it needs its own path, nobody will use it and nothing will ever be tried locally before being published.",
+  "objectives": ["OBJ-6"],
+  "origin": "designed",
+  "expect": {
+    "search": "MATCH",
+    "capability": "Local.dev.echo",
+    "invoked": true,
+    "fellBackToGeneration": false,
+    "candidateSubmitted": false
+  },
+  "timeoutSeconds": 300
+}

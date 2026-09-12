@@ -1,0 +1,16 @@
+{
+  "id": "custom-element-artifact",
+  "title": "The caller needs the implementation in their project, not a one-off answer",
+  "rationale": "If artifact return is never the right answer, half the exposure model is dead weight.",
+  "objectives": ["OBJ-7"],
+  "origin": "designed",
+  "expect": {
+    "search": "MATCH",
+    "capability": "CapFoundry.ui.dataTable",
+    "invoked": false,
+    "artifactReturned": true,
+    "fellBackToGeneration": false,
+    "candidateSubmitted": false
+  },
+  "timeoutSeconds": 300
+}

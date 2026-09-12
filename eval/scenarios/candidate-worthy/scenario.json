@@ -1,0 +1,16 @@
+{
+  "id": "candidate-worthy",
+  "title": "The agent writes something deterministic and generally useful, and offers it",
+  "rationale": "Without capture the registry only ever shrinks relative to demand. This is the loop closing.",
+  "objectives": ["OBJ-5"],
+  "origin": "recorded",
+  "recordedFrom": "CapFoundry.text.editDistance entered the registry this way on 2026-09-12: a session asked for edit distance, CFCM had nothing, the agent wrote it and submitted it as a candidate, and a person promoted it. The first capability to arrive through the loop rather than being designed in advance.",
+  "expect": {
+    "search": "NO_MATCH",
+    "capability": null,
+    "invoked": false,
+    "fellBackToGeneration": true,
+    "candidateSubmitted": true
+  },
+  "timeoutSeconds": 300
+}

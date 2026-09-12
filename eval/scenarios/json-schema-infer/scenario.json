@@ -1,0 +1,15 @@
+{
+  "id": "json-schema-infer",
+  "title": "Infer a JSON Schema from a sample document",
+  "rationale": "A capability result should be at least as correct as generated code on a task with real edge cases — an optional field and a nullable one.",
+  "objectives": ["OBJ-1", "OBJ-4"],
+  "origin": "designed",
+  "expect": {
+    "search": "MATCH",
+    "capability": "CapFoundry.json.schema.infer",
+    "invoked": true,
+    "fellBackToGeneration": false,
+    "candidateSubmitted": false
+  },
+  "timeoutSeconds": 300
+}

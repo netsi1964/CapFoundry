@@ -1,0 +1,15 @@
+{
+  "id": "private-capability",
+  "title": "A private-namespace capability is found in the same search as the public ones",
+  "rationale": "If private capabilities need a different call, organisations cannot put their own work where their agents already look.",
+  "objectives": ["OBJ-6"],
+  "origin": "designed",
+  "expect": {
+    "search": "MATCH",
+    "capability": "Netsi.demo.getCustomer",
+    "invoked": true,
+    "fellBackToGeneration": false,
+    "candidateSubmitted": false
+  },
+  "timeoutSeconds": 300
+}
