@@ -1,0 +1,9 @@
+{
+  "origin": "promoted-candidate",
+  "author": "Netsi",
+  "repository": "https://github.com/netsi1964/CapFoundry",
+  "createdAt": "2026-09-12",
+  "license": "Apache-2.0",
+  "derivedFrom": [],
+  "notes": "First capability to enter through the candidate loop rather than being designed up front. Demand arose in a real session where CFCM returned no match. Algorithm is standard Levenshtein with two-row dynamic programming; no third-party code."
+}

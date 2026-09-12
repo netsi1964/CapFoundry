@@ -28,6 +28,8 @@ import { Resolver } from "./resolver/resolver.ts";
 import { execute } from "./runtime/execute.ts";
 import { Telemetry } from "./telemetry/telemetry.ts";
 import { formatIssues, validate } from "./util/json_schema.ts";
+import { CandidateQueue } from "./candidates/candidates.ts";
+import type { CandidateInput, NearestExisting, SubmitResult } from "./candidates/candidates.ts";
 
 export interface SourceReport {
   id: string;
@@ -52,10 +54,12 @@ export class Cfcm {
   private reports: SourceReport[] = [];
   private readonly resolver: Resolver;
   readonly telemetry: Telemetry;
+  readonly candidates: CandidateQueue;
 
   private constructor(readonly config: CfcmConfig, private readonly sources: CapabilitySource[]) {
     this.resolver = new Resolver(new ArtifactCache());
     this.telemetry = new Telemetry(config.telemetry);
+    this.candidates = new CandidateQueue();
   }
 
   static async create(opts: CfcmOptions = {}): Promise<Cfcm> {
@@ -169,6 +173,55 @@ export class Cfcm {
   async describe(name: string): Promise<CapabilityDescriptor> {
     const record = this.record(name);
     return await this.sourceByName.get(name)!.describe(record);
+  }
+
+  /**
+   * Records a candidate locally (PRD-FEAT-013).
+   *
+   * Duplicate detection runs the candidate's own description and name through
+   * the same search the agent used. If something close already exists, the
+   * result carries a warning rather than a rejection: whether two capabilities
+   * are really the same is a judgement, and refusing outright would lose the
+   * submission along with the disagreement.
+   */
+  async submitCandidate(input: CandidateInput): Promise<SubmitResult> {
+    let nearest: NearestExisting | null = null;
+
+    if (this.engine) {
+      // Search on what the capability does, not on the name someone proposed:
+      // a novel name would otherwise hide a duplicate implementation.
+      const probe = this.engine.search({
+        query: `${input.description} ${(input.aliases ?? []).join(" ")}`,
+        limit: 1,
+      });
+      if (probe.status !== "NO_MATCH" && probe.candidates.length > 0) {
+        nearest = {
+          name: probe.candidates[0].record.name,
+          confidence: probe.confidence,
+          status: probe.status,
+        };
+      }
+    }
+
+    try {
+      const result = await this.candidates.submit(input, nearest);
+      await this.telemetry.record({
+        eventType: "candidate",
+        status: "OK",
+        capability: result.candidate.suggestedName,
+        namespaceType: null,
+        candidateSubmitted: true,
+      });
+      return result;
+    } catch (err) {
+      await this.telemetry.record({
+        eventType: "candidate",
+        status: "ERROR",
+        candidateSubmitted: false,
+        errorClass: err instanceof CfcmError ? err.code : (err as Error).name,
+      });
+      throw err;
+    }
   }
 
   async invoke(request: InvocationRequest): Promise<InvocationResult> {

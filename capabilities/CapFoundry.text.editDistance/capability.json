@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "name": "CapFoundry.text.editDistance",
+  "version": "1.0.0",
+  "description": "Levenshtein edit distance and similarity between two strings",
+  "aliases": [
+    "levenshtein",
+    "how different are two strings",
+    "fuzzy string comparison",
+    "typo tolerance between words",
+    "string similarity score",
+    "closest spelling match"
+  ],
+  "exampleQueries": [
+    "how many single character edits turn one word into another",
+    "measure how different two strings are",
+    "fuzzy match two pieces of text by character edits",
+    "score how closely a user typed name matches a record",
+    "find the nearest spelling of a misspelled word"
+  ],
+  "tags": [
+    "text",
+    "string",
+    "fuzzy",
+    "comparison",
+    "levenshtein",
+    "matching"
+  ],
+  "inputSummary": "Two strings to compare",
+  "outputSummary": "Edit distance, a normalised similarity score and both code point lengths",
+  "runtime": "deno",
+  "effect": "PURE",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "a",
+      "b"
+    ],
+    "properties": {
+      "a": {
+        "type": "string",
+        "maxLength": 10000
+      },
+      "b": {
+        "type": "string",
+        "maxLength": 10000
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "distance",
+      "similarity",
+      "lengths"
+    ],
+    "properties": {
+      "distance": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "similarity": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "lengths": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "a",
+          "b"
+        ],
+        "properties": {
+          "a": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "b": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  },
+  "artifact": {
+    "type": "typescript",
+    "entrypoint": "./artifact/index.ts",
+    "sha256": "4c9ec7febf20207e4b971eedd37e18d8aad0beabf373b167070ba788e46cb5da"
+  },
+  "exposure": {
+    "execution": true,
+    "artifact": true
+  },
+  "tests": "./tests/"
+}

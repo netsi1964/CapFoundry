@@ -1,6 +1,6 @@
 # CapFoundry MVP — Implementeringsplan (PRD)
 
-**Version 1.3** · **Sidst opdateret: 2026-09-12** · **Status: Fase 0–2 leveret, Fase 3 er næste**
+**Version 1.4** · **Sidst opdateret: 2026-09-12** · **Status: Fase 0–3 leveret — MVP §25's milepæl er nået. Fase 4 er næste**
 
 Dette dokument omsætter [MVP v0.2](docs/mvp/CapFoundry-MVP-v0.2.md) til en plan der kan kodes efter. Det tilføjer ingen ambition til MVP'en — det lukker de huller der forhindrede den i at blive bygget, og det respekterer §5 (hvad vi bevidst ikke bygger), §27 (fejlreglen) og §28 (whiteboard-reglen) som bindende begrænsninger.
 
@@ -351,7 +351,7 @@ Implementerer §15. `Local.dev.echo`.
 
 ---
 
-### PRD-FEAT-013 · Kandidatindlevering og review · P1 · M
+### PRD-FEAT-013 · Kandidatindlevering og review · P1 · M · ✅ leveret
 
 Implementerer §16 under AD-4: review er pull request-review.
 
@@ -359,7 +359,7 @@ Implementerer §16 under AD-4: review er pull request-review.
 `PRD-FEAT-013.2` Lokal kandidatkø i `~/.cfcm/candidates/` — intet går ud uden brugerens handling
 `PRD-FEAT-013.3` `cfcm candidate promote <id>` genererer en CFP-skabelon klar til PR
 `PRD-FEAT-013.4` Dubletdetektion mod indekset ved indlevering, så samme kandidat ikke indleveres to gange
-`PRD-FEAT-013.5` Valgfrit intake-endpoint for indlevering fra andre maskiner
+`PRD-FEAT-013.5` Valgfrit intake-endpoint for indlevering fra andre maskiner — **udskudt**. Det er markeret valgfrit i planen, og det kræver hosting. Indlevering skriver til disk; ingenting forlader maskinen
 
 **Acceptkriterier**
 - Ingen kandidat publiceres automatisk (§16, eksplicit).
@@ -369,7 +369,7 @@ Implementerer §16 under AD-4: review er pull request-review.
 
 ---
 
-### PRD-FEAT-014 · Capability Awareness Skill · P1 · M
+### PRD-FEAT-014 · Capability Awareness Skill · P1 · M · ✅ leveret
 
 Implementerer §18. Under AD-1 er dette **ren politik** — ingen kaldemekanik.
 
@@ -710,13 +710,15 @@ Dette er fasen hvor arkitekturen kan vise sig forkert. Bliver den det, har vi ku
 
 *Opfyldt. Ni capabilities i ét søgerum, 250 tests grønne. Målt på det rigtige indeks efter F5-rettelsen: **OBJ-1 = 0,941** (16/17 omskrivninger, mod et mål på 0,80) og **OBJ-2 = 0,000** (0/19 near-misses og out-of-domain, mod et loft på 0,05). Fire fund undervejs — F3 og F4 under byggeriet, F5 og F6 ved første rigtige brug. Se «Fund fra Fase 2» og «Fund fra første rigtige brug».*
 
-### Fase 3 · Loopet lukkes · ~3 dage · ⬅ **næste**
+### Fase 3 · Loopet lukkes · ~3 dage · ✅ **leveret**
 
 `PRD-FEAT-013`, `014`.
 
 **Exit:** **MVP §25's milepæl er opfyldt** — søg, resolve, cache, kør lokalt, returnér artefakt, fald rent tilbage, indlevér kandidat.
 
-### Fase 4 · Beviset · ~5–6 dage
+*Opfyldt, og loopet har allerede kørt for alvor. `CapFoundry.text.editDistance` er den første capability der er kommet ind **gennem** loopet frem for at være designet på forhånd: en rigtig session bad om edit distance, CFCM svarede `PARTIAL_MATCH`, agenten skrev koden og tilbød den som kandidat, og et menneske forfremmede den. Otte offentlige capabilities, 280 tests grønne.*
+
+### Fase 4 · Beviset · ~5–6 dage · ⬅ **næste**
 
 `PRD-FEAT-015`, `016`, `009.5`.
 
@@ -854,6 +856,41 @@ konfidens 1,0.
 En recall-påstand er kun meningsfuld mod de deskriptorer der faktisk udsendes. Fixturen er nu kopieret
 ordret fra de rigtige `capability.json`-filer, og recall-loftet er flyttet til
 `tests/objectives_test.ts`, hvor det måles mod det ægte indeks.
+
+---
+
+## Fund fra Fase 3
+
+### F7 · Agenten lovede en kanal der ikke fandtes
+
+Før `cfcm_submit_candidate` blev bygget, tilbød en agent af sig selv at gøre sin kode til en
+CapFoundry-capability. Instinktet i §16 var altså til stede uden Skill'en — men værktøjsoverfladen
+sagde intet om kandidater, så agenten fyldte hullet ud med et løfte den ikke kunne indfri.
+
+Det er værd at huske ved senere designvalg: **en agent lover det værktøjsbeskrivelserne antyder er
+muligt**, ikke kun det de udtrykkeligt tilbyder. Et hul i overfladen bliver ikke til tavshed, det
+bliver til en gætning.
+
+### F8 · Validatoren godtog ufærdigt arbejde
+
+`promote` skriver et CFP-skelet med synlige `TODO`-pladsholdere hvor et menneske stadig skal levere
+dømmekraft. De pladsholdere bestod hver eneste strukturelle regel — rigtigt antal aliases, lange nok
+strenge — så et ufærdigt skelet kunne være blevet publiceret som om nogen havde tænkt over det.
+
+Validatoren afviser nu `TODO` i ethvert søgbart felt, og afviser gentagne aliases. Sidstnævnte er
+signaturen på et skelet udfyldt mekanisk.
+
+### Loopet betalte for sig selv med det samme
+
+De forespørgsler der afslørede F5 — «compute the edit distance between two strings» og
+«levenshtein distance» — var near-misses i OBJ-2's sæt. Efter forfremmelsen er de **legitime match**
+mod `CapFoundry.text.editDistance`, og de er flyttet fra `MUST_NOT_MATCH` til `RECALL` i
+`tests/objectives_test.ts`.
+
+Et gentaget forkert match blev til en capability. Det er præcis det §20's «Missing / repeated
+`NO_MATCH`»-signal er sat i verden for at fange, og det skete her uden at Explore-siden fandtes
+endnu. «compute the hamming distance between two bit vectors» blev stående som near-miss: det er en
+anden algoritme på andre data, og at svare med Levenshtein ville være selvsikkert forkert.
 
 ---
 
@@ -1001,6 +1038,16 @@ Alle 28 afsnit i MVP v0.2 er enten dækket af en feature eller er en begrænsnin
 ---
 
 ## Changelog
+
+### v1.4 — 2026-09-12
+- Fase 3 leveret: `PRD-FEAT-013` kandidatindlevering og `PRD-FEAT-014` Capability Awareness Skill.
+  **MVP §25's milepæl er nået**
+- `CapFoundry.text.editDistance` tilføjet som ottende capability — den første der kom ind gennem
+  kandidat-loopet frem for at være designet på forhånd
+- F7: en agent lovede kandidatindlevering før værktøjet fandtes. F8: validatoren godtog `TODO`-
+  pladsholdere; den afviser dem nu, sammen med gentagne aliases
+- Edit-distance-forespørgslerne flyttet fra OBJ-2's near-miss-sæt til OBJ-1's recall-sæt
+- `PRD-FEAT-013.5` (intake-endpoint) udskudt som eksplicit valgfri
 
 ### v1.3 — 2026-09-12
 - **Rettelse af v1.2:** OBJ-2 blev rapporteret som 0,000; den faktiske rate var 0,105

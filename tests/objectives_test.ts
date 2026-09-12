@@ -22,6 +22,9 @@ const REPO_ROOT = new URL("..", import.meta.url).pathname;
 
 /** Rephrasings a user might type, none reusing the capability's name. */
 const RECALL: [string, string][] = [
+  ["compute the edit distance between two strings", "CapFoundry.text.editDistance"],
+  ["levenshtein distance", "CapFoundry.text.editDistance"],
+  ["how similar are these two strings", "CapFoundry.text.editDistance"],
   ["kilometres between two places on the globe", "CapFoundry.geo.distance"],
   ["great circle distance between two coordinates", "CapFoundry.geo.distance"],
   ["make a web address friendly version of this heading", "CapFoundry.text.slugify"],
@@ -46,16 +49,12 @@ const RECALL: [string, string][] = [
  * else; out-of-domain queries are simply not covered.
  */
 const MUST_NOT_MATCH = [
-  // The first three came from a real trial session and are the reason the
-  // single-candidate rule changed. The original set only had the "levenshtein"
-  // spelling, whose unknown token diluted coverage enough to hide the bug:
-  // drop that one word and geo.distance was returned as a confident MATCH for
-  // a string problem.
-  "compute the edit distance between two strings",
-  "levenshtein distance",
-  "beregn edit distance mellem to strenge",
-  "how similar are these two strings",
-  "compute the levenshtein edit distance between two strings",
+  // Edit-distance queries used to live here: they were the near-misses that
+  // exposed the single-candidate bug. They moved to RECALL once
+  // CapFoundry.text.editDistance came in through the candidate loop, which is
+  // the loop paying for itself — a repeated wrong match became a capability.
+  // Hamming distance stays: it is a different algorithm on different data, and
+  // answering it with Levenshtein would be confidently wrong.
   "compute the hamming distance between two bit vectors",
   "measure how long the flight distance is in air miles",
   "how far did the runner travel on the treadmill",

@@ -76,6 +76,33 @@ async function validateCfp(dir: string, problems: Problem[]): Promise<void> {
     }
   }
 
+  // A promoted candidate arrives with visible TODO placeholders where a person
+  // still has to supply judgement. They pass every structural rule — the right
+  // number of aliases, long enough strings — so without this check an
+  // unfinished skeleton would validate and could be published as though
+  // someone had thought about it.
+  const searchable: [string, string[]][] = [
+    ["aliases", descriptor.aliases],
+    ["exampleQueries", descriptor.exampleQueries],
+    ["description", [descriptor.description]],
+    ["inputSummary", [descriptor.inputSummary]],
+    ["outputSummary", [descriptor.outputSummary]],
+  ];
+  for (const [field, values] of searchable) {
+    for (const value of values) {
+      if (/\bTODO\b/i.test(value)) {
+        fail(`${field} still contains a TODO placeholder: "${value}"`);
+      }
+    }
+  }
+
+  // Repeated aliases add ranking weight without adding recall, and are the
+  // signature of a skeleton filled in mechanically.
+  const uniqueAliases = new Set(descriptor.aliases.map((a) => a.toLowerCase().trim()));
+  if (uniqueAliases.size !== descriptor.aliases.length) {
+    fail("aliases contains duplicates; each should offer a different way to find this capability");
+  }
+
   if (descriptor.effect !== "PURE") {
     fail(`effect is ${descriptor.effect}; the MVP executes PURE capabilities only`);
   }

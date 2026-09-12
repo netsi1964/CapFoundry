@@ -20,13 +20,16 @@ CapFoundry is in **early implementation**. Phases 0–2 of the [implementation P
 CFCM runs as a local MCP server that searches a compact index, resolves and verifies artifacts,
 executes them in zero-permission Deno subprocesses, and writes local telemetry.
 
-Nine capabilities now share **one search space** — seven public, one private, one machine-local —
+Ten capabilities now share **one search space** — eight public, one private, one machine-local —
 with different policies per namespace. Measured on that index: search finds the right capability
 for 16 of 17 rephrasings that never mention its name, and none of 19 near-miss or out-of-domain
 queries produce a confident match. Overhead is ~40 ms p95 against a 250 ms budget.
 
-Still ahead: candidate submission, the Capability Awareness Skill, the A/B evaluation harness that
-decides whether any of this pays for itself, and Explore.
+The candidate loop is closed: an agent that finds no match can offer what it wrote back, and
+`CapFoundry.text.editDistance` is the first capability to arrive that way rather than being designed
+up front. Nothing auto-publishes — a submission queues locally until a person promotes it.
+
+Still ahead: the A/B evaluation harness that decides whether any of this pays for itself, and Explore.
 
 ## Quick start
 
@@ -56,9 +59,22 @@ claude mcp add cfcm -- deno run --allow-read --allow-write --allow-net --allow-r
   /absolute/path/to/CapFoundry/cfcm/mcp/server.ts
 ```
 
-The agent then gets three tools — `cfcm_search`, `cfcm_invoke` and `cfcm_describe`. A confident
-search that is given input runs the capability in the same call, so the common case costs one
-round trip. (`cfcm_submit_candidate` arrives with Phase 3.)
+The agent then gets four tools — `cfcm_search`, `cfcm_invoke`, `cfcm_describe` and
+`cfcm_submit_candidate`. A confident search that is given input runs the capability in the same
+call, so the common case costs one round trip.
+
+Install the policy that tells an agent *when* to use them:
+
+```bash
+ln -s "$PWD/skills/capability-awareness" ~/.claude/skills/capability-awareness
+```
+
+Review what agents propose:
+
+```bash
+deno task candidate list                 # nothing here is published
+deno task candidate promote <id>         # writes a CFP skeleton for you to finish
+```
 
 ### Namespaces
 
@@ -91,7 +107,7 @@ The Vision document describes where CapFoundry may go. The MVP document describe
 
 ## Capabilities
 
-All seven are implemented, each a complete CFP with tests, provenance and licence.
+All eight are implemented, each a complete CFP with tests, provenance and licence.
 
 | Capability | What it does |
 |---|---|
@@ -102,6 +118,7 @@ All seven are implemented, each a complete CFP with tests, provenance and licenc
 | `CapFoundry.csv.detectDelimiter` | Infers the field separator and returns its evidence |
 | `CapFoundry.json.schema.infer` | Deterministic JSON Schema inference — the benchmark against direct generation |
 | `CapFoundry.ui.dataTable` | Generates an accessible, framework-free sortable table Custom Element |
+| `CapFoundry.text.editDistance` | Levenshtein distance and similarity — the first to arrive through the candidate loop |
 
 Two of them test different parts of the model rather than being useful in themselves.
 `json.schema.infer` is the larger deterministic benchmark (MVP §37): it exists to be compared

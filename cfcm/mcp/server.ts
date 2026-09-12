@@ -80,6 +80,52 @@ const TOOLS = [
       properties: { capability: { type: "string" } },
     },
   },
+
+  {
+    name: "cfcm_submit_candidate",
+    description:
+      "Propose that something you just wrote should become a reusable CapFoundry capability. " +
+      "Worth doing when the code is deterministic, general-purpose, and would help someone on a " +
+      "different project — the same test you applied before searching. NOT worth doing for " +
+      "business logic, project-specific glue, one-off scripts, or thin wrappers around a standard " +
+      "library call. Submitting everything you write is how a registry becomes useless, so submit " +
+      "selectively. Nothing is published: the candidate lands in a local queue for a person to " +
+      "review. Supply aliases and exampleQueries — phrases someone would actually search for, " +
+      "never restatements of the name — because without them the capability can only be found by " +
+      "someone who already knows it exists.",
+    inputSchema: {
+      type: "object",
+      required: ["suggestedName", "description", "artifactSource", "reason"],
+      properties: {
+        suggestedName: {
+          type: "string",
+          description:
+            "Namespaced, e.g. CapFoundry.text.editDistance. Local.* cannot be submitted.",
+        },
+        description: { type: "string", description: "One sentence on what it does." },
+        artifactSource: {
+          type: "string",
+          description: "The implementation, as TypeScript with a default-exported function.",
+        },
+        reason: { type: "string", description: "Why this is worth keeping rather than rewriting." },
+        inputSchema: { type: "object", description: "JSON Schema for the input." },
+        outputSchema: { type: "object", description: "JSON Schema for the output." },
+        aliases: {
+          type: "array",
+          items: { type: "string" },
+          description: "At least 3 phrases someone might search for. Do not restate the name.",
+        },
+        exampleQueries: {
+          type: "array",
+          items: { type: "string" },
+          description: "At least 3 natural-language questions this capability answers.",
+        },
+        inputSummary: { type: "string" },
+        outputSummary: { type: "string" },
+        source: { enum: ["generated", "existing-code", "third-party"] },
+      },
+    },
+  },
 ];
 
 function summarise(result: SearchResult, limit: number) {
@@ -158,6 +204,33 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
 
     case "cfcm_describe":
       return await cfcm.describe(String(args.capability));
+
+    case "cfcm_submit_candidate": {
+      const result = await cfcm.submitCandidate({
+        suggestedName: String(args.suggestedName),
+        description: String(args.description),
+        artifactSource: String(args.artifactSource),
+        reason: String(args.reason),
+        inputSchema: (args.inputSchema ?? {}) as Record<string, unknown>,
+        outputSchema: (args.outputSchema ?? {}) as Record<string, unknown>,
+        aliases: (args.aliases as string[]) ?? [],
+        exampleQueries: (args.exampleQueries as string[]) ?? [],
+        inputSummary: args.inputSummary ? String(args.inputSummary) : undefined,
+        outputSummary: args.outputSummary ? String(args.outputSummary) : undefined,
+        source: args.source as "generated" | "existing-code" | "third-party" | undefined,
+      });
+
+      return {
+        id: result.candidate.id,
+        status: "queued locally",
+        suggestedName: result.candidate.suggestedName,
+        ...(result.warning ? { warning: result.warning } : {}),
+        nextStep:
+          "Nothing has been published. Tell the user the candidate is queued locally, and that " +
+          "they can review it with `deno task candidate list` and promote it with " +
+          `\`deno task candidate promote ${result.candidate.id}\`.`,
+      };
+    }
 
     default:
       throw new CfcmError("UNKNOWN_TOOL", `no such tool: ${name}`);
