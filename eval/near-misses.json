@@ -1,0 +1,61 @@
+{
+  "//": "Queries that must never reach MATCH. Checked by scripts/check-precision.ts at seal time and by tests/objectives_test.ts in CI. Each carries why it must not match, because that is what a maintainer needs when tempted to delete one that has become inconvenient.",
+  "queries": [
+    {
+      "query": "compute the hamming distance between two bit vectors",
+      "why": "A different algorithm on different data. Answering with Levenshtein would be confidently wrong."
+    },
+    {
+      "query": "measure how long the flight distance is in air miles",
+      "why": "Great-circle distance between coordinates, not a flight route or an airline's mileage rules."
+    },
+    {
+      "query": "how far did the runner travel on the treadmill",
+      "why": "Shares the word distance with geo.distance and nothing else."
+    },
+    {
+      "query": "distance to the moon in light years",
+      "why": "Astronomical distance, not a great-circle arc on a sphere the size of Earth."
+    },
+    {
+      "query": "validate a credit card number with the luhn algorithm",
+      "why": "Luhn, not mod-97. validation.iban would be the wrong checksum entirely."
+    },
+    {
+      "query": "check that an email address is well formed",
+      "why": "No capability validates email. Offering the IBAN validator would be worse than nothing."
+    },
+    {
+      "query": "how many days until christmas",
+      "why": "Calendar days from today, not business days between two given dates."
+    },
+    {
+      "query": "split this string on commas",
+      "why": "csv.detectDelimiter infers which delimiter is in use; it does not parse."
+    },
+    {
+      "query": "generate a typescript interface from a class",
+      "why": "json.schema.infer reads data, not source code."
+    },
+    {
+      "query": "render a react data grid with virtual scrolling",
+      "why": "ui.dataTable is framework-free with no virtualisation. This is the query that caught the 1.1.0 regression."
+    },
+    {
+      "query": "look up a customer in salesforce over the api",
+      "why": "The private fixture reads a frozen local table and reaches no external system."
+    },
+    {
+      "query": "send an invoice to the customer by email",
+      "why": "Nothing here sends anything."
+    },
+    {
+      "query": "deploy the application to production",
+      "why": "Out of domain entirely."
+    },
+    {
+      "query": "resize an uploaded image to a thumbnail",
+      "why": "No image capability exists."
+    }
+  ]
+}

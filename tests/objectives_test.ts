@@ -48,28 +48,15 @@ const RECALL: [string, string][] = [
  * near misses share vocabulary with a real capability but mean something
  * else; out-of-domain queries are simply not covered.
  */
-const MUST_NOT_MATCH = [
-  // Edit-distance queries used to live here: they were the near-misses that
-  // exposed the single-candidate bug. They moved to RECALL once
-  // CapFoundry.text.editDistance came in through the candidate loop, which is
-  // the loop paying for itself — a repeated wrong match became a capability.
-  // Hamming distance stays: it is a different algorithm on different data, and
-  // answering it with Levenshtein would be confidently wrong.
-  "compute the hamming distance between two bit vectors",
-  "measure how long the flight distance is in air miles",
-  "how far did the runner travel on the treadmill",
-  "distance to the moon in light years",
-  "validate a credit card number with the luhn algorithm",
-  "check that an email address is well formed",
-  "how many days until christmas",
-  "split this string on commas",
-  "generate a typescript interface from a class",
-  "render a react data grid with virtual scrolling",
-  "look up a customer in salesforce over the api",
-  "send an invoice to the customer by email",
-  "deploy the application to production",
-  "resize an uploaded image to a thumbnail",
-];
+/**
+ * Loaded from eval/near-misses.json so this test and the seal-time precision
+ * check (scripts/check-precision.ts) cannot drift apart. Each query carries
+ * why it must not match, which is what a maintainer needs when tempted to
+ * delete one that has become inconvenient.
+ */
+const MUST_NOT_MATCH: string[] = JSON.parse(
+  Deno.readTextFileSync(new URL("../eval/near-misses.json", import.meta.url)),
+).queries.map((q: { query: string }) => q.query);
 
 async function withCfcm(fn: (cfcm: Cfcm) => Promise<void>) {
   const home = await Deno.makeTempDir({ prefix: "cfcm-obj-" });

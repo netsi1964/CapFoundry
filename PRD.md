@@ -947,6 +947,35 @@ ved at en forælder med `--allow-net` nåede dr.dk mens dens barn blev afvist.
 
 ---
 
+## Fund: at udvide en beskrivelse er en præcisionsændring
+
+F5 og regressionen i `ui.dataTable` 1.1.0 er **samme mekanisme i to forklædninger**, og en tredje
+kommer hvis den ikke navngives.
+
+I F5 ramte ordet `distance` fem felter af `geo.distance` og fik den returneret på et strengproblem.
+I 1.1.0 tilføjede jeg ordet «render» til en `exampleQuery`, og
+«render a react data grid with virtual scrolling» — en forespørgsel der ligger i near-miss-sættet
+netop fordi React og virtualisering er eksplicit uden for scope — nåede `MATCH` på 0,61.
+
+**Konfidensen stiger med hvor mange felter en forespørgsels tokens rammer, ikke med hvor godt
+capability'en passer.** Derfor er enhver korrekt sætning man tilføjer til en deskriptor også en ny
+flade en forkert forespørgsel kan lande på. Intet i værktøjet sagde det: `deno task prepare`
+forseglede og genindekserede uden et ord.
+
+Begge gange fangede CI det bagefter. `scripts/check-precision.ts` fanger det nu på det tidspunkt
+ændringen laves — den kører som sidste trin i `deno task prepare`, og den **fejler frem for at
+advare**, fordi en advarsel fra et script der også retter ting bliver scrollet forbi.
+
+Near-miss-sættet ligger i `eval/near-misses.json` med en begrundelse pr. forespørgsel. Begrundelsen
+er ikke pynt: den er hvad en vedligeholder har brug for den dag en forespørgsel er blevet ubelejlig
+og fristelsen er at slette den frem for at rette kollisionen.
+
+> **Konsekvens for `PRD-FEAT-019`** (Capability Packager): en Skill der genererer aliases stille
+> automatiserer præcis det trin der to gange har kostet præcision — og den ville gøre det for
+> capabilities ingen holder øje med. Marie har bygget den til at nægte. Det er rigtigt.
+
+---
+
 ## PRD-SEC-009 · Udfordringer og løsninger
 
 | ID | Udfordring | Løsning | Restrisiko |

@@ -9,14 +9,15 @@
     "check": "deno check cfcm/**/*.ts scripts/*.ts",
     "fmt": "deno fmt",
     "lint": "deno lint",
-    "ci": "deno fmt --check && deno lint && deno task check && deno task validate && deno run --allow-read --allow-write scripts/build-index.ts --check && deno task test",
-    "prepare": "deno fmt && deno task seal && deno task build-index",
+    "ci": "deno fmt --check && deno lint && deno task check && deno task validate && deno task check-precision && deno run --allow-read --allow-write scripts/build-index.ts --check && deno task test",
+    "prepare": "deno fmt && deno task seal && deno task build-index && deno task check-precision",
     "candidate": "deno run --allow-read --allow-write --allow-env scripts/candidate.ts",
     "aggregate": "deno run --allow-read --allow-write --allow-env scripts/aggregate-telemetry.ts",
     "cfcm": "deno run --allow-read --allow-write --allow-net --allow-run --allow-env scripts/cli.ts",
     "contract-check": "deno run --allow-read --allow-write --allow-net scripts/contract-check.ts",
     "explore": "deno task aggregate && deno run --allow-read --allow-write scripts/build-explore.ts",
-    "eval": "deno run -A eval/run.ts"
+    "eval": "deno run -A eval/run.ts",
+    "check-precision": "deno run --allow-read --allow-write --allow-env scripts/check-precision.ts"
   },
   "fmt": {
     "lineWidth": 100,
