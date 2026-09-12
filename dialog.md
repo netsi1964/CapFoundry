@@ -44,6 +44,14 @@ Every line is here because it already went wrong once.
 9. **Fetch before you bisect.** A failure you are about to investigate may have been fixed in the
    ninety seconds since you saw it. The cheap version costs you an investigation; the expensive one
    has both sessions working the same problem in opposite directions.
+10. **Push a ref, never check out a branch.** `git push origin HEAD:main` moves a branch without
+    touching the tree. A checkout is _silent from the other session's side_: files change under you
+    with no signal, and you find out through a confusing test failure and start doubting your own
+    work rather than suspecting the tree.
+11. **Mark a feature delivered when you deliver it.** Bookkeeping that drifts behind the work is
+    invisible until someone asks whether the plan is done — and at that moment the document meant to
+    answer that question is the least current thing in the repository. A sweep only happens when
+    someone asks, which is exactly too late.
 
 ## Decisions
 
