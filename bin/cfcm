@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# cfcm — call CapFoundry capabilities from a shell.
+#
+# Symlink this onto your PATH:
+#   ln -s "$PWD/bin/cfcm" /usr/local/bin/cfcm
+#
+# It resolves the repository from its own location rather than from the working
+# directory, so it behaves the same wherever you run it — which is the whole
+# point of having it on PATH.
+set -euo pipefail
+
+source_path="${BASH_SOURCE[0]}"
+while [ -L "$source_path" ]; do
+  target="$(readlink "$source_path")"
+  case "$target" in
+    /*) source_path="$target" ;;
+    *)  source_path="$(cd -P "$(dirname "$source_path")" && pwd)/$target" ;;
+  esac
+done
+repo="$(cd -P "$(dirname "$source_path")/.." && pwd)"
+
+# CFCM_CONFIG is only defaulted, never overridden: pointing cfcm at a different
+# registry or namespace set is a normal thing to want.
+if [ -z "${CFCM_CONFIG:-}" ] && [ -f "$repo/cfcm.json" ]; then
+  export CFCM_CONFIG="$repo/cfcm.json"
+fi
+
+exec deno run \
+  --allow-read --allow-write --allow-net --allow-run --allow-env \
+  --quiet \
+  "$repo/scripts/cli.ts" "$@"

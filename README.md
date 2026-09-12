@@ -86,6 +86,41 @@ deno task candidate promote <id>         # writes a CFP skeleton for you to fini
 
 All three are searched as one space. Only the policies differ.
 
+### From a shell
+
+```bash
+ln -s "$PWD/bin/cfcm" ~/.deno/bin/cfcm     # or anywhere on your PATH
+```
+
+```bash
+cfcm list
+cfcm search "distance between two coordinates"
+cfcm invoke CapFoundry.text.slugify '{"text":"Rødgrød med fløde","locale":"da"}'
+echo '{"text":"Hej Verden"}' | cfcm invoke CapFoundry.text.slugify
+```
+
+`invoke` writes only the result to stdout and diagnostics to stderr, so
+capabilities compose in a pipeline the way they would in code. That is worth
+more than the convenience: if two capabilities cannot be piped together their
+contracts do not actually fit, and a shell finds that out in seconds.
+
+Distance between two cities, composing `geo.geocode` with `geo.distance`:
+
+```bash
+punkt() {
+  cfcm invoke CapFoundry.geo.geocode "$(jq -nc --arg q "$1" '{query:$q}')" \
+    | jq -c 'if .resolved then {lat:.match.lat, lon:.match.lon}
+             else error("\(.query): \(.status)") end'
+}
+
+jq -nc --argjson a "$(punkt "Aarhus")" --argjson b "$(punkt "Berlin")" \
+  '{from:$a, to:$b, unit:"km"}' | cfcm invoke CapFoundry.geo.distance
+```
+
+`geo.geocode` needs network access, which is off until you grant it the one
+host it declares — see below. Ask it for `"Stockholm"` and it refuses with
+`ambiguous` and five candidates across three countries rather than picking one.
+
 ### What CFCM writes to your machine
 
 Everything stays local unless you turn something on. `cfcm.example.json` shows

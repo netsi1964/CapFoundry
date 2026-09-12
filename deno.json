@@ -13,6 +13,7 @@
     "prepare": "deno fmt && deno task seal && deno task build-index",
     "candidate": "deno run --allow-read --allow-write --allow-env scripts/candidate.ts",
     "aggregate": "deno run --allow-read --allow-write --allow-env scripts/aggregate-telemetry.ts",
+    "cfcm": "deno run --allow-read --allow-write --allow-net --allow-run --allow-env scripts/cli.ts",
     "contract-check": "deno run --allow-read --allow-write --allow-net scripts/contract-check.ts"
   },
   "fmt": {
