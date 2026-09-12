@@ -47,7 +47,11 @@ Every line is here because it already went wrong once.
 10. **Push a ref, never check out a branch.** `git push origin HEAD:main` moves a branch without
     touching the tree. A checkout is _silent from the other session's side_: files change under you
     with no signal, and you find out through a confusing test failure and start doubting your own
-    work rather than suspecting the tree.
+    work rather than suspecting the tree. **And a local branch name can be stale even straight after
+    a fetch.** Verifying against `origin/main` tells you nothing about what `main` will give you —
+    they are different refs, and a rewrite leaves the local one pointing at history that no longer
+    exists. If you check out at all, check out the remote ref or reset to it in the same breath.
+    Never trust the bare name.
 11. **Mark a feature delivered when you deliver it.** Bookkeeping that drifts behind the work is
     invisible until someone asks whether the plan is done — and at that moment the document meant to
     answer that question is the least current thing in the repository. A sweep only happens when
