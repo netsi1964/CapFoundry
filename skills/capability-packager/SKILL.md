@@ -97,6 +97,13 @@ capability must **not** claim, with a reason each, for `eval/near-misses.json`. 
 not answer a routing question. A sorting table should not answer a React virtualisation question.
 Adding them costs a minute and is the only way the guard covers your capability at all.
 
+**What the guard cannot see.** `check-precision` fires when a capability _loses_ its own example
+query to another. It stays quiet while one merely grows into another's territory. Measured on this
+registry: `geo.geocode` wins its own example query at a margin of 0.729; after another capability
+took that query as an alias, geocode still won, but the margin fell to 0.225. A factor of three, and
+neither check reads it. So a passing guard means "nothing was taken outright", not "this description
+is well-scoped" — and the difference is exactly the case that has already broken OBJ-2 once.
+
 ## What this skill does not do
 
 No automatic conversion, and no unattended runs. If the process has not been done by hand for the
