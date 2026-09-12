@@ -1,6 +1,16 @@
 # CapFoundry MVP — Implementeringsplan (PRD)
 
-**Version 1.5** · **Sidst opdateret: 2026-09-12** · **Status: Fase 0–3 leveret — MVP §25's milepæl er nået. Fase 4 er næste**
+**Version 1.6** · **Sidst opdateret: 2026-09-12**
+
+> **Status: alle 17 features er bygget. Eksperimentet er ubesvaret.**
+>
+> Fase 0–3 er leveret og MVP §25's milepæl er nået. `PRD-FEAT-015` — A/B-harnesset — er bygget og
+> testet, men **aldrig kørt med en rigtig agent**: de to rapporter i `eval/reports/` er begge fra
+> mock-driveren, og de siger selv i første afsnit at de beviser harnesset frem for CapFoundry.
+> Fase 5 er urørt; `docs/mvp/RESULTS-v0.2.md` findes ikke.
+>
+> Det efterlader den ene ting hele planen blev skrevet for at producere — et **målt** svar på om
+> det her betaler sig — stadig uskrevet. Alt andet er stillads omkring det spørgsmål.
 
 Dette dokument omsætter [MVP v0.2](docs/mvp/CapFoundry-MVP-v0.2.md) til en plan der kan kodes efter. Det tilføjer ingen ambition til MVP'en — det lukker de huller der forhindrede den i at blive bygget, og det respekterer §5 (hvad vi bevidst ikke bygger), §27 (fejlreglen) og §28 (whiteboard-reglen) som bindende begrænsninger.
 
@@ -89,7 +99,7 @@ Prioritet: **P0** = første milepæl (§25) kan ikke nås uden. **P1** = kræves
 
 ---
 
-### PRD-FEAT-001 · Capability-deskriptor og CFP-format · P0 · S
+### PRD-FEAT-001 · Capability-deskriptor og CFP-format · P0 · S · ✅ leveret
 
 Fastfryser `capability.json` (§11) og CFP-mappestrukturen (§17) for MVP'en. Formatet er **MVP-frosset, ikke v1-frosset** — det må ændre sig, men kun via en bevidst bump af `schemaVersion`.
 
@@ -106,7 +116,7 @@ Fastfryser `capability.json` (§11) og CFP-mappestrukturen (§17) for MVP'en. Fo
 
 ---
 
-### PRD-FEAT-002 · Statisk registry og indeksbygning · P0 · M
+### PRD-FEAT-002 · Statisk registry og indeksbygning · P0 · M · ✅ leveret
 
 Registryet er filer i Git (AD-4). `registry/index.json` er et **bygget, committet artefakt** — aldrig håndredigeret.
 
@@ -123,7 +133,7 @@ Registryet er filer i Git (AD-4). `registry/index.json` er et **bygget, committe
 
 ---
 
-### PRD-FEAT-003 · CFCM-kerne: konfiguration og namespace-kilder · P0 · M
+### PRD-FEAT-003 · CFCM-kerne: konfiguration og namespace-kilder · P0 · M · ✅ leveret
 
 Implementerer §6 og §7. Ét kapabilitetsrum sammensat af flere kilder.
 
@@ -142,7 +152,7 @@ Implementerer §6 og §7. Ét kapabilitetsrum sammensat af flere kilder.
 
 ---
 
-### PRD-FEAT-004 · Leksikalsk søgning · P0 · L
+### PRD-FEAT-004 · Leksikalsk søgning · P0 · L · ✅ leveret
 
 Implementerer §12 under AD-2. Dette er MVP'ens vigtigste algoritme, så den er specificeret eksplicit frem for overladt til implementeringen.
 
@@ -195,7 +205,7 @@ Alle fem tal (`0,7`, `0,3`, `0,55`, `0,35`, feltvægte) er **tunbare knapper i `
 
 ---
 
-### PRD-FEAT-005 · Artefakt-resolver, cache og verifikation · P0 · M
+### PRD-FEAT-005 · Artefakt-resolver, cache og verifikation · P0 · M · ✅ leveret
 
 Implementerer §8's cachediagram.
 
@@ -214,7 +224,7 @@ Implementerer §8's cachediagram.
 
 ---
 
-### PRD-FEAT-006 · Sandboxet lokal eksekvering · P0 · L
+### PRD-FEAT-006 · Sandboxet lokal eksekvering · P0 · L · ✅ leveret
 
 Implementerer §13 under AD-3. **Sikkerhedskritisk feature.**
 
@@ -252,7 +262,7 @@ Implementerer §9 og §10's exposure-blok.
 
 ---
 
-### PRD-FEAT-008 · MCP-serveroverflade · P0 · M
+### PRD-FEAT-008 · MCP-serveroverflade · P0 · M · ✅ leveret
 
 Implementerer AD-1. Dette er agentens eneste kontaktflade (§18: agenten skal ikke ræsonnere om cache eller routing).
 
@@ -279,7 +289,7 @@ Implementerer AD-1. Dette er agentens eneste kontaktflade (§18: agenten skal ik
 
 ---
 
-### PRD-FEAT-009 · Telemetri · P1 · M
+### PRD-FEAT-009 · Telemetri · P1 · M · ✅ leveret
 
 Implementerer §21 under AD-5.
 
@@ -390,7 +400,7 @@ Skill'en skal lære agenten præcis seks ting, i denne rækkefølge:
 
 ---
 
-### PRD-FEAT-015 · A/B-evalueringsharness · P1 · L
+### PRD-FEAT-015 · A/B-evalueringsharness · P1 · L · ⚠️ **bygget, aldrig kørt med en rigtig agent**
 
 Implementerer §22–§23 under AD-6. **Dette er den feature MVP'en findes for.**
 
@@ -449,7 +459,7 @@ Implementerer §20. Statisk genereret side, ingen LLM-analyse.
 
 ---
 
-### PRD-FEAT-017 · Capability Packager Skill — designspike · P2 · M
+### PRD-FEAT-017 · Capability Packager Skill — designspike · P2 · M · ✅ leveret
 
 Implementerer §19. **Eksplicit ikke automatisering.** Succes er ifølge §19: én manuel gennemkørsel på ét lille MIT-licenseret repo, dokumenteret.
 
@@ -1215,6 +1225,12 @@ Alle 28 afsnit i MVP v0.2 er enten dækket af en feature eller er en begrænsnin
 ---
 
 ## Changelog
+
+### v1.6 — 2026-09-12
+- Statusrevision mod koden frem for mod markeringerne: ni features stod umarkerede selv om de var
+  leveret, hvilket er min egen bogføringsdrift
+- `PRD-FEAT-015` markeret **bygget, aldrig kørt** — den vigtigste sondring i dokumentet lige nu
+- Hovedstatus omskrevet: alle 17 features bygget, eksperimentet ubesvaret
 
 ### v1.5 — 2026-09-12
 - `effect: NETWORK` implementeret som en trevejs-fællesmængde mellem deskriptor og lokal politik.
