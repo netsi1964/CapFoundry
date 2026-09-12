@@ -1,0 +1,9 @@
+{
+  "origin": "authored",
+  "author": "Netsi",
+  "repository": "https://github.com/netsi1964/CapFoundry",
+  "createdAt": "2026-09-12",
+  "license": "Apache-2.0",
+  "derivedFrom": [],
+  "notes": "No third-party code. The capability calls Nominatim, whose responses are ODbL 1.0 data \u00a9 OpenStreetMap contributors; that obligation is carried in the output's attribution field rather than in documentation, because it flows to whoever calls the capability. Recorded responses used as test fixtures are third-party data and are accounted for separately in tests/fixtures/provenance.json. Nominatim's usage policy caps callers at 1 request per second and requires an identifying User-Agent; both are reflected in the artifact."
+}

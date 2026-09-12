@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-12T12:28:52.407Z",
+  "generatedAt": "2026-09-12T12:50:58.651Z",
   "capabilities": [
     {
       "schemaVersion": 1,
@@ -44,7 +44,7 @@
       "cfpLocation": "capabilities/CapFoundry.csv.detectDelimiter",
       "artifactLocation": "capabilities/CapFoundry.csv.detectDelimiter/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:28:52.407Z"
+      "indexedAt": "2026-09-12T12:50:58.651Z"
     },
     {
       "schemaVersion": 1,
@@ -88,7 +88,7 @@
       "cfpLocation": "capabilities/CapFoundry.date.businessDaysBetween",
       "artifactLocation": "capabilities/CapFoundry.date.businessDaysBetween/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:28:52.407Z"
+      "indexedAt": "2026-09-12T12:50:58.651Z"
     },
     {
       "schemaVersion": 1,
@@ -136,7 +136,64 @@
       "cfpLocation": "capabilities/CapFoundry.geo.distance",
       "artifactLocation": "capabilities/CapFoundry.geo.distance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:28:52.407Z"
+      "indexedAt": "2026-09-12T12:50:58.651Z"
+    },
+    {
+      "schemaVersion": 1,
+      "name": "CapFoundry.geo.geocode",
+      "version": "1.0.0",
+      "description": "Resolve an address or place name to coordinates, refusing when the name is ambiguous",
+      "aliases": [
+        "address to coordinates",
+        "look up latitude and longitude for a place",
+        "find where a street address is",
+        "turn a city name into a position",
+        "postal address lookup",
+        "place name to lat lon",
+        "forward geocoding"
+      ],
+      "exampleQueries": [
+        "what are the coordinates of this street address",
+        "convert a city name into latitude and longitude",
+        "find the position of a postal address in Denmark",
+        "resolve a place name to a point on the map",
+        "geocode an address so I can measure from it",
+        "which country is this town in"
+      ],
+      "tags": [
+        "geo",
+        "geocoding",
+        "address",
+        "coordinates",
+        "nominatim",
+        "openstreetmap",
+        "location"
+      ],
+      "inputSummary": "A free-text address or place name, with an optional country code, language and result limit",
+      "outputSummary": "A resolved place with coordinates, or an ambiguous or not-found verdict with the candidates",
+      "runtime": "deno",
+      "effect": "NETWORK",
+      "artifact": {
+        "type": "typescript",
+        "sha256": "607936b4ff48b51deb985a1a6fd80cbf7202471d71215f0ba66ba5c332c86aae"
+      },
+      "exposure": {
+        "execution": true,
+        "artifact": true
+      },
+      "permissions": {
+        "network": [
+          "nominatim.openstreetmap.org"
+        ]
+      },
+      "limits": {
+        "timeoutMs": 15000,
+        "maxOutputBytes": 65536
+      },
+      "cfpLocation": "capabilities/CapFoundry.geo.geocode",
+      "artifactLocation": "capabilities/CapFoundry.geo.geocode/artifact/index.ts",
+      "namespaceType": "public",
+      "indexedAt": "2026-09-12T12:50:58.651Z"
     },
     {
       "schemaVersion": 1,
@@ -184,7 +241,7 @@
       "cfpLocation": "capabilities/CapFoundry.json.schema.infer",
       "artifactLocation": "capabilities/CapFoundry.json.schema.infer/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:28:52.407Z"
+      "indexedAt": "2026-09-12T12:50:58.651Z"
     },
     {
       "schemaVersion": 1,
@@ -237,7 +294,7 @@
       "cfpLocation": "capabilities/CapFoundry.sun.times",
       "artifactLocation": "capabilities/CapFoundry.sun.times/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:28:52.407Z"
+      "indexedAt": "2026-09-12T12:50:58.651Z"
     },
     {
       "schemaVersion": 1,
@@ -282,7 +339,7 @@
       "cfpLocation": "capabilities/CapFoundry.text.editDistance",
       "artifactLocation": "capabilities/CapFoundry.text.editDistance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:28:52.407Z"
+      "indexedAt": "2026-09-12T12:50:58.651Z"
     },
     {
       "schemaVersion": 1,
@@ -326,7 +383,7 @@
       "cfpLocation": "capabilities/CapFoundry.text.slugify",
       "artifactLocation": "capabilities/CapFoundry.text.slugify/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:28:52.407Z"
+      "indexedAt": "2026-09-12T12:50:58.651Z"
     },
     {
       "schemaVersion": 1,
@@ -371,7 +428,7 @@
       "cfpLocation": "capabilities/CapFoundry.ui.dataTable",
       "artifactLocation": "capabilities/CapFoundry.ui.dataTable/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:28:52.407Z"
+      "indexedAt": "2026-09-12T12:50:58.651Z"
     },
     {
       "schemaVersion": 1,
@@ -415,7 +472,7 @@
       "cfpLocation": "capabilities/CapFoundry.validation.iban",
       "artifactLocation": "capabilities/CapFoundry.validation.iban/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:28:52.407Z"
+      "indexedAt": "2026-09-12T12:50:58.651Z"
     }
   ]
 }

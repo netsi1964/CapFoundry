@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "name": "CapFoundry.geo.geocode",
+  "version": "1.0.0",
+  "description": "Resolve an address or place name to coordinates, refusing when the name is ambiguous",
+  "aliases": [
+    "address to coordinates",
+    "look up latitude and longitude for a place",
+    "find where a street address is",
+    "turn a city name into a position",
+    "postal address lookup",
+    "place name to lat lon",
+    "forward geocoding"
+  ],
+  "exampleQueries": [
+    "what are the coordinates of this street address",
+    "convert a city name into latitude and longitude",
+    "find the position of a postal address in Denmark",
+    "resolve a place name to a point on the map",
+    "geocode an address so I can measure from it",
+    "which country is this town in"
+  ],
+  "tags": [
+    "geo",
+    "geocoding",
+    "address",
+    "coordinates",
+    "nominatim",
+    "openstreetmap",
+    "location"
+  ],
+  "inputSummary": "A free-text address or place name, with an optional country code, language and result limit",
+  "outputSummary": "A resolved place with coordinates, or an ambiguous or not-found verdict with the candidates",
+  "runtime": "deno",
+  "effect": "NETWORK",
+  "permissions": {
+    "network": [
+      "nominatim.openstreetmap.org"
+    ]
+  },
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "query"
+    ],
+    "properties": {
+      "query": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      },
+      "countryCode": {
+        "type": "string",
+        "pattern": "^[A-Za-z]{2}$",
+        "description": "ISO 3166-1 alpha-2. The primary way to disambiguate a name that exists in several countries"
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10
+      },
+      "language": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "resolved",
+      "status",
+      "query",
+      "match",
+      "candidates",
+      "attribution"
+    ],
+    "properties": {
+      "resolved": {
+        "type": "boolean"
+      },
+      "status": {
+        "enum": [
+          "ok",
+          "ambiguous",
+          "not_found"
+        ]
+      },
+      "query": {
+        "type": "string"
+      },
+      "match": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/place"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "candidates": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/place"
+        }
+      },
+      "attribution": {
+        "type": "string"
+      }
+    },
+    "$defs": {
+      "place": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "displayName",
+          "lat",
+          "lon",
+          "countryCode",
+          "placeId",
+          "placeType"
+        ],
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "countryCode": {
+            "type": "string"
+          },
+          "placeId": {
+            "type": "string"
+          },
+          "placeType": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "artifact": {
+    "type": "typescript",
+    "entrypoint": "./artifact/index.ts",
+    "sha256": "607936b4ff48b51deb985a1a6fd80cbf7202471d71215f0ba66ba5c332c86aae"
+  },
+  "exposure": {
+    "execution": true,
+    "artifact": true
+  },
+  "limits": {
+    "timeoutMs": 15000,
+    "maxOutputBytes": 65536
+  },
+  "tests": "./tests/"
+}

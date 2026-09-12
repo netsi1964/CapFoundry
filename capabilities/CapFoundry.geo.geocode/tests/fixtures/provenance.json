@@ -1,0 +1,40 @@
+{
+  "recordings": [
+    {
+      "file": "ambiguous-viborg.json",
+      "source": "https://nominatim.openstreetmap.org/search?q=Viborg&format=jsonv2&addressdetails=1&limit=5",
+      "retrievedAt": "2026-09-12",
+      "license": "ODbL 1.0 — Data © OpenStreetMap contributors",
+      "notes": "Three countries for one name: Denmark, United States, Russia. The reason the contract refuses rather than guesses."
+    },
+    {
+      "file": "ok-address-dk.json",
+      "source": "https://nominatim.openstreetmap.org/search?q=Prinsens Alle+5%2C+8800+Viborg&format=jsonv2&addressdetails=1&limit=5",
+      "retrievedAt": "2026-09-12",
+      "license": "ODbL 1.0 — Data © OpenStreetMap contributors",
+      "notes": "A single unambiguous hit."
+    },
+    {
+      "file": "ok-country-filtered.json",
+      "source": "https://nominatim.openstreetmap.org/search?q=Viborg&format=jsonv2&addressdetails=1&limit=5&countrycodes=dk",
+      "retrievedAt": "2026-09-12",
+      "license": "ODbL 1.0 — Data © OpenStreetMap contributors",
+      "notes": "The same ambiguous query with countryCode DK, showing the disambiguation path the contract offers."
+    },
+    {
+      "file": "not-found.json",
+      "source": "https://nominatim.openstreetmap.org/search?q=Qzzxvbn+Nonexistent+Street+9999&format=jsonv2&addressdetails=1&limit=5",
+      "retrievedAt": "2026-09-12",
+      "license": "ODbL 1.0 — Data © OpenStreetMap contributors",
+      "notes": "Empty array. A miss is an answer, not an error."
+    },
+    {
+      "file": "nonascii-address.json",
+      "source": "https://nominatim.openstreetmap.org/search?q=R%C3%A5dhuspladsen+1%2C+1550+K%C3%B8benhavn&format=jsonv2&addressdetails=1&limit=5",
+      "retrievedAt": "2026-09-12",
+      "license": "ODbL 1.0 — Data © OpenStreetMap contributors",
+      "notes": "Danish characters survived encoding. Recorded because this is the failure that looks like it works until it does not."
+    }
+  ],
+  "policy": "Recorded responses are third-party data and carry the licence of the service that produced them. Refresh with `deno task contract-check --update`, which also re-verifies the shape against the live API."
+}
