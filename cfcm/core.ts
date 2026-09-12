@@ -153,6 +153,7 @@ export class Cfcm {
       version: result.candidates[0]?.record.version ?? null,
       namespaceType: result.candidates[0]?.record.namespaceType ?? null,
       queryTokenCount: tokenize(query).length,
+      queryText: query,
       confidence: result.confidence,
       thresholds: { ...result.thresholds },
       searchMs: result.searchMs,

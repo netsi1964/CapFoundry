@@ -21,8 +21,26 @@ export interface TelemetryEvent {
   capability: string | null;
   version: string | null;
   namespaceType: NamespaceType | null;
-  /** Token count only. The query text itself never leaves the caller. */
   queryTokenCount: number | null;
+  /**
+   * The search query, recorded locally and stripped before upload.
+   *
+   * MVP section 20 asks Explore to show repeated NO_MATCH grouped, which is
+   * the single most valuable thing telemetry can produce: demand for a
+   * capability that does not exist. Grouping needs the text — a token count
+   * cannot tell you *what* is missing, and a hash can group repeats but not
+   * be read.
+   *
+   * A query is not capability input. "calculate distance between coordinates"
+   * is a feature request; the coordinates are the payload, and those are still
+   * never recorded. But a query can carry context all the same — "look up
+   * customer C-1002 in our CRM" — so it stays on the machine that asked it.
+   * The local log is deliberately richer than anything that leaves.
+   *
+   * Set telemetry.logQueryText to false to drop it, at the cost of the Missing
+   * section.
+   */
+  queryText: string | null;
   status: SearchStatus | "OK" | "ERROR";
   confidence: number | null;
   thresholds: Record<string, number> | null;
@@ -47,6 +65,7 @@ const EMPTY: Omit<TelemetryEvent, "ts" | "cfcmVersion" | "eventType" | "status">
   version: null,
   namespaceType: null,
   queryTokenCount: null,
+  queryText: null,
   confidence: null,
   thresholds: null,
   searchMs: null,
@@ -79,18 +98,25 @@ export class Telemetry {
       cfcmVersion: CFCM_VERSION,
     };
 
+    if (!this.config.logQueryText) event.queryText = null;
+
     if (this.config.local) {
       await ensureDir(this.dir);
       await Deno.writeTextFile(this.file(now), `${JSON.stringify(event)}\n`, { append: true });
     }
 
     if (this.config.upload && this.config.endpoint) {
+      // The asymmetry is the whole design: what is kept locally is richer than
+      // what leaves. Stripping here rather than at the call site means a
+      // future field cannot reach the network by someone forgetting.
+      const { queryText: _queryText, ...uploadable } = event;
+
       // Fire and forget: telemetry must never be able to fail an invocation or
       // add latency to it.
       fetch(this.config.endpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(event),
+        body: JSON.stringify(uploadable),
       }).catch(() => {});
     }
 

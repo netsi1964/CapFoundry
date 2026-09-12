@@ -132,6 +132,8 @@ export interface TelemetryConfig {
   local: boolean;
   upload: boolean;
   endpoint: string | null;
+  /** Record the search query in the local log. Never uploaded either way. */
+  logQueryText: boolean;
 }
 
 export interface NamespaceConfig {

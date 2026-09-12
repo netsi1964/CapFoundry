@@ -180,6 +180,14 @@ Deno.test("telemetry records the run and leaks no payload (PRD-FEAT-009.4)", asy
       "capability input leaked into telemetry",
     );
     assert(!combined.includes("522."), "capability output leaked into telemetry");
-    assert(!combined.includes("latitude"), "the query text leaked into telemetry");
+
+    // The query IS recorded locally — Explore's Missing section is demand for
+    // a capability that does not exist, and it cannot be built from a token
+    // count. The guarantee is that it never leaves the machine, which
+    // telemetry_upload_test.ts asserts against the upload path.
+    assert(
+      combined.includes("latitude"),
+      "the query should be recorded locally so unmet demand can be grouped",
+    );
   });
 });
