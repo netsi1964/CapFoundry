@@ -980,6 +980,46 @@ Near-miss-sættet ligger i `eval/near-misses.json` med en begrundelse pr. foresp
 er ikke pynt: den er hvad en vedligeholder har brug for den dag en forespørgsel er blevet ubelejlig
 og fristelsen er at slette den frem for at rette kollisionen.
 
+### Enhver vagt her er en lektie nogen allerede har betalt for
+
+Det er værd at sige højt, fordi en liste over vagter uden det oversælger dem.
+
+| Vagt | Hændelsen der skabte den |
+|---|---|
+| Near-miss-sættet | F5 — `distance` ramte fem felter og returnerede geografi på et strengproblem |
+| `check-precision` | `4cccc8b` — «render» i en eksempelforespørgsel brød OBJ-2 |
+| Krydstjek af eksempelforespørgsler | En for bred beskrivelse under test af vagten ovenfor |
+| `provenance.json` i `tests/fixtures/` | To private adresser blev optaget i geocode-fixturer |
+| SEC-10 og SEC-11 | Remote og lokale imports omgik sandboxen |
+| `tests/prd_claims_test.ts` | Denne plan markerede næsten `PRD-FEAT-015` leveret på en mock-rapport |
+
+**Ikke én af dem fandtes før den hændelse der lærte os den.** Påstanden værd at fremsætte er derfor
+ikke «vi har vagter», men at hver overraskelse bliver omsat til én. Den ærlige grænse er at den
+næste klasse per definition er udækket.
+
+### En rettelse: 015 *var* maskinelt fangbar
+
+Jeg skrev i `8661ff9` at ingen vagt ville have fanget at `PRD-FEAT-015` var markeret leveret på
+grundlag af en mock-rapport. **Det var forkert.** Marie påpegede at rapporterne bærer
+``Driver `mock` `` i deres header — mekanisk, allerede i artefaktet, og en fem-liniers tjek væk.
+
+Den præcise påstand er smallere og sandere: **tjekket er trivielt når man ved at `driver` er feltet
+der afgør spørgsmålet; det dyre er at kigge.** `tests/prd_claims_test.ts` gør nu markeringen
+uforfalskelig i hånden — den kan ikke sættes før en rigtig kørsel findes at begrunde den med.
+
+### Princippet der reddede os, og som ikke var design
+
+Mock-rapporterne siger i deres egen første linje at de beviser harnesset frem for CapFoundry. Jeg
+skrev den sætning fordi tal fra en mock så farlige ud — ikke fordi jeg forudså nogen der reviderede
+planen mod dem. Den holdt alligevel over for en læser der aldrig åbnede planen.
+
+> **Lad et artefakt oplyse sine egne grænser — ikke fordi du kan forudsige hvem der læser det, men
+> fordi du ikke kan.**
+
+Et forbehold der kun lever i PRD'en overlever præcis indtil nogen åbner en rapport uden at læse
+PRD'en. Tavlens «provisional»-markeringer er samme træk, og begge overlevede en læser der kom fra
+en retning vi ikke havde forestillet os.
+
 ### Hvad vagten fanger, og hvad den ikke gør
 
 `scripts/check-precision.ts` kører to tjek, og de dækker hver sin halvdel:
