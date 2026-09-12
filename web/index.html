@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CapFoundry</title>
+    <meta name="description"
+      content="A capability registry your AI agent searches before it writes code.">
+    <style>
+    :root {
+      --bg: #f0efed;
+      --ink: #15140f;
+      --dim: #6b6862;
+      --accent: #d7300f;
+      --line: #d6d3cd;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #15140f;
+        --ink: #f0efed;
+        --dim: #9b978e;
+        --accent: #ff5a33;
+        --line: #33302a;
+      }
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0 24px;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.6 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding-block: 64px;
+    }
+    .eyebrow {
+      font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 20px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(40px,9vw,68px);
+      line-height: .98;
+      letter-spacing: -.035em;
+    }
+    .tag {
+      margin: 0 0 8px;
+      font-size: clamp(18px,3.4vw,22px);
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .sub {
+      margin: 0 0 40px;
+      font-size: 17px;
+      color: var(--dim);
+      max-width: 46ch;
+    }
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-top: 1px solid var(--line);
+    }
+    li {
+      border-bottom: 1px solid var(--line);
+    }
+    a.row {
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+      padding: 16px 0;
+      color: inherit;
+      text-decoration: none;
+    }
+    a.row:hover .what {
+      color: var(--accent);
+    }
+    .what {
+      font-weight: 600;
+      min-width: 132px;
+    }
+    .why {
+      color: var(--dim);
+      font-size: 15px;
+    }
+    footer {
+      margin-top: 36px;
+      font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--dim);
+    }
+    @media (max-width:520px) {
+      a.row {
+        flex-direction: column;
+        gap: 4px;
+      }
+      .what {
+        min-width: 0;
+      }
+    }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">Capability registry</p>
+      <h1>CapFoundry</h1>
+      <p class="tag">Don't generate what you already know.</p>
+      <p class="sub">
+    Before an AI agent solves a task, it asks whether the problem has already been solved — and runs
+    a sealed, tested implementation instead of writing a new one.
+  </p>
+
+      <ul>
+        <li><a class="row" href="slides/">
+      <span class="what">Slides</span>
+      <span class="why">What it does, how you use it, and why it exists — in seventeen.</span>
+    </a></li>
+        <li><a class="row" href="https://github.com/netsi1964/CapFoundry">
+      <span class="what">Repository</span>
+      <span class="why">Source, ten capabilities, and the documents behind the design.</span>
+    </a></li>
+        <li><a class="row" href="https://github.com/netsi1964/CapFoundry/blob/main/docs/falsification.md">
+      <span class="what">Scoreboard</span>
+      <span class="why">The seven conditions that would mean this idea does not work.</span>
+    </a></li>
+      </ul>
+
+      <footer>Apache-2.0 · an experiment, and allowed to fail</footer>
+    </main>
+  </body>
+</html>

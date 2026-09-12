@@ -1,0 +1,36 @@
+name: Pages
+
+# The site is the deck plus a landing page — static files committed under web/.
+# Explore is deliberately not published here: it is generated from one machine's
+# telemetry, so publishing it should be a decision someone makes, not a side
+# effect of a push. See docs/falsification.md and PRD-FEAT-016.3.
+
+on:
+  push:
+    branches: ["main"]
+    paths: ["web/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - id: deployment
+        uses: actions/deploy-pages@v4

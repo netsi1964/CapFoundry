@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<meta name="description" content="CapFoundry — a capability registry your AI agent searches before it writes code.">
+<meta property="og:title" content="CapFoundry — a capability registry for AI agents">
+<meta property="og:description" content="Don't generate what you already know.">
+<meta property="og:image" content="https://netsi1964.github.io/CapFoundry/slides/preview.webp">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-2c6003eb-d1ca-4655-8bd8-1553bc352f56/styles.css" />
+<script src="_ds/modernist-2c6003eb-d1ca-4655-8bd8-1553bc352f56/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" />
+<title>CapFoundry — a capability registry for AI agents</title>
+<style>
+deck-stage {
+  --type-display: 124px;
+  --type-title: 64px;
+  --type-subtitle: 40px;
+  --type-body: 34px;
+  --type-small: 28px;
+  --type-kicker: 24px;
+  --type-code: 28px;
+  --pad-x: 120px;
+  --pad-top: 96px;
+  --pad-bottom: 120px;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --page-foot-note: "CapFoundry · Apache-2.0";
+  --baseline: 48px;
+  counter-reset: page;
+}
+
+.slide {
+  display: flex; flex-direction: column;
+  background: var(--color-bg); color: var(--color-text);
+  font-family: var(--font-body);
+  text-wrap: pretty;
+  padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+  counter-increment: page;
+  print-color-adjust: exact; -webkit-print-color-adjust: exact;
+}
+
+.kicker {
+  position: absolute; top: calc(1.5 * var(--baseline) - 1cap);
+  left: var(--pad-x); right: var(--pad-x); text-box: trim-both cap alphabetic;
+  font-size: var(--type-kicker); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--color-accent);
+  font-feature-settings: "tnum" 1;
+}
+.kicker::after {
+  content: ""; position: absolute; left: 0; right: 0;
+  top: calc(2.5 * var(--baseline) - 1px - (1.5 * var(--baseline) - 1cap));
+  height: 2px; background: var(--color-divider);
+}
+deck-stage[data-kickers="off"] .kicker { display: none; }
+
+.slide-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--type-title); line-height: calc(1.5 * var(--baseline));
+  letter-spacing: -0.015em; margin: 0; margin-left: -0.058em;
+  text-box: trim-both cap alphabetic;
+}
+.pin-bottom { position: absolute; left: var(--pad-x); right: var(--pad-x); bottom: var(--pad-bottom); }
+.meta { display: flex; align-items: baseline; gap: 18px; font-size: var(--type-kicker); color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+.meta span { text-box: trim-both cap alphabetic; }
+
+.page-foot {
+  position: absolute; left: var(--pad-x); bottom: var(--pad-bottom);
+  font-size: var(--type-kicker);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  text-box: trim-both cap alphabetic;
+}
+.page-foot::before { content: counter(page) " · "; font-feature-settings: "tnum" 1; }
+.page-foot::after { content: var(--page-foot-note); }
+deck-stage[data-no-page-furniture] .page-foot { display: none !important; }
+
+/* — cover — */
+.cover { justify-content: center; }
+.cover .rise { display: flex; flex-direction: column; gap: 48px; }
+.display {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--type-display); line-height: calc(2.5 * var(--baseline));
+  letter-spacing: -0.02em; margin: 0; margin-left: -0.058em;
+}
+.cover-line { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: var(--type-subtitle); line-height: var(--baseline); margin: 0; color: var(--color-accent-700); }
+.cover-sub { font-size: var(--type-subtitle); line-height: var(--baseline); max-width: 40ch; margin: 0; }
+
+/* — the one poster statement — */
+.poster { justify-content: center; background: var(--color-accent); color: var(--color-bg); }
+.poster .statement {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 76px; line-height: calc(1.75 * var(--baseline));
+  letter-spacing: -0.02em; margin: 0; margin-left: -0.058em; max-width: 26ch;
+}
+
+/* — content slides — */
+.content { padding-top: calc(5 * var(--baseline)); }
+.content > .slide-title { margin-top: -1cap; }
+.content > .lede { margin-top: calc(2.5 * var(--baseline) - 1cap); }
+.content > .bullets { margin-top: calc(2.5 * var(--baseline) - 1cap); }
+.content > .table { margin-top: calc(2 * var(--baseline)); }
+.content > figure { margin-top: var(--baseline); }
+.content > .code { margin-top: calc(2 * var(--baseline)); }
+.content > .note { margin-top: calc(2 * var(--baseline) - 1cap); }
+.content > .chart-caption { margin-top: calc(2 * var(--baseline) - 1cap); }
+
+.lede { font-size: var(--type-subtitle); line-height: var(--baseline); max-width: 34ch; margin: 0; text-box: trim-both cap alphabetic; }
+.lede-wide { max-width: 46ch; }
+.note { font-size: var(--type-small); line-height: var(--baseline); max-width: 62ch; margin: 0; text-box: trim-both cap alphabetic; }
+.note strong { font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+.chart-caption { font-size: 25px; line-height: var(--baseline); max-width: 88ch; margin: 0; text-box: trim-both cap alphabetic; }
+
+.bullets { display: flex; flex-direction: column; max-width: 1220px; margin: 0; padding: 0; list-style: none; font-size: var(--type-body); }
+.bullets li { position: relative; line-height: var(--baseline); text-box: trim-both cap alphabetic; }
+.bullets li + li { margin-top: calc(1.5 * var(--baseline) - 1cap); }
+.bullets li::before { content: ""; position: absolute; left: -36px; top: calc(0.5cap - 5px); width: 10px; height: 10px; background: var(--color-accent); }
+.bullets code { font-family: var(--font-mono); font-size: 30px; }
+
+/* — columns — */
+.cols { display: grid; column-gap: var(--baseline); margin-top: calc(2 * var(--baseline) - 1px); }
+.cols-2 { grid-template-columns: 1fr 1fr; }
+.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.cols > div { border-top: 2px solid var(--color-divider); }
+.cols h3 {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--type-body); line-height: var(--baseline); margin: 0;
+  margin-top: calc(var(--baseline) - 1cap - 1px); text-box: trim-both cap alphabetic;
+}
+.cols h3.mono { font-family: var(--font-mono); font-weight: 600; font-size: 32px; letter-spacing: -0.01em; }
+.cols p { font-size: var(--type-small); line-height: var(--baseline); margin: 0;
+  margin-top: calc(var(--baseline) - 1cap); text-box: trim-both cap alphabetic; }
+
+/* — code — */
+.code {
+  font-family: var(--font-mono); font-weight: 400;
+  font-size: var(--type-code); line-height: var(--baseline);
+  background: var(--color-surface); color: var(--color-text);
+  border-top: 2px solid var(--color-text);
+  padding: 36px 40px 36px; margin: 0;
+  white-space: pre; overflow: visible; tab-size: 4;
+}
+.code .p { color: var(--color-accent-700); font-weight: 600; }
+.code .hi { color: var(--color-accent-700); font-weight: 600; }
+.code .mut { color: var(--color-neutral-700); }
+.code .em { font-weight: 600; }
+deck-stage[data-code="ink"] .code { background: var(--color-neutral-900); color: var(--color-neutral-200); border-top-color: var(--color-accent); }
+deck-stage[data-code="ink"] .code .p,
+deck-stage[data-code="ink"] .code .hi { color: var(--color-accent-400); }
+deck-stage[data-code="ink"] .code .mut { color: var(--color-neutral-400); }
+
+/* — table — */
+.slide .table { max-width: 1680px; font-size: 26px; font-feature-settings: "tnum" 1; }
+.slide .table th, .slide .table td { text-box: trim-both cap alphabetic; }
+.slide .table th { font-size: var(--type-kicker); padding: calc(0.75 * var(--baseline) - 0.5cap) 24px calc(0.75 * var(--baseline) - 0.5cap - 1px); }
+.slide .table td { padding: calc(0.5 * var(--baseline) - 0.5cap - 0.5px) 24px; }
+.slide .table tbody tr:hover { background: none; }
+.slide .table th:first-child, .slide .table td:first-child { padding-left: 0; }
+.slide .table th:last-child, .slide .table td:last-child { padding-right: 0; }
+.slide .table td.name { font-family: var(--font-mono); font-size: 26px; white-space: nowrap; }
+.slide .table td.eff { font-family: var(--font-mono); font-size: 24px; letter-spacing: 0.06em; color: var(--color-neutral-700); white-space: nowrap; }
+.slide .table td.eff.net { color: var(--color-accent-700); font-weight: 600; }
+
+/* — diagram — */
+.chart { display: block; width: 100%; height: auto; overflow: visible; }
+.dg-box { fill: none; stroke: var(--color-text); stroke-width: 2; }
+.dg-line { stroke: var(--color-text); stroke-width: 2; fill: none; }
+.dg-head { fill: var(--color-text); }
+.dg-label { fill: var(--color-text); font-family: var(--font-heading); font-weight: 800; font-size: 30px; }
+.dg-sub { fill: var(--color-neutral-700); font-family: var(--font-body); font-size: 24px; }
+.dg-note { fill: var(--color-accent-700); font-family: var(--font-body); font-size: 24px; letter-spacing: 0.08em; }
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-deck-active] .rise { animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+}
+</style>
+</helmet>
+<x-import component-from-global-scope="deck-stage" from="./deck-stage.js" width="1920" height="1080" hint-size="100%,100%" data-no-page-furniture="{{ noFurniture }}" data-code="{{ codeMode }}" data-kickers="{{ kickerMode }}">
+
+  <section class="slide cover" data-screen-label="01" data-label="Title" data-speaker-notes="CapFoundry is a capability registry an agent searches before it writes code. Ten capabilities today, running locally on Deno.">
+    <div class="kicker"><span>Capability registry</span></div>
+    <div class="rise">
+      <h1 class="display">CapFoundry</h1>
+      <p class="cover-line">Don’t generate what you already know.</p>
+      <p class="cover-sub text-muted">A capability registry your AI agent searches before it writes code.</p>
+    </div>
+    <div class="pin-bottom meta"><span>github.com/netsi1964/CapFoundry</span><span>·</span><span>Apache-2.0</span></div>
+  </section>
+
+  <section class="slide content" data-screen-label="02" data-label="Why it exists" data-speaker-notes="Each version is correct, slightly different, and has to be read by someone.">
+    <div class="kicker"><span>Why</span></div>
+    <h2 class="slide-title">Why it exists</h2>
+    <p class="lede lede-wide">Models reinvent the wheel. The same functions, written fresh in every session, with no memory that any of it was ever solved.</p>
+    <div class="cols cols-3 rise">
+      <div>
+        <h3 class="mono">haversine</h3>
+        <p>The distance formula, re-derived from scratch in a helper file nobody will open again.</p>
+      </div>
+      <div>
+        <h3 class="mono">delimiter sniff</h3>
+        <p>Comma or semicolon or tab, guessed again — this time with slightly different heuristics.</p>
+      </div>
+      <div>
+        <h3 class="mono">slugify</h3>
+        <p>Diacritics stripped one more way, so two parts of the same product disagree on a URL.</p>
+      </div>
+    </div>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide poster" data-screen-label="03" data-label="The real problem" data-speaker-notes="This is the line the whole deck rests on. Pause here.">
+    <div class="rise">
+      <p class="statement">The problem isn’t that AI writes bad code — it’s that it writes good code cheaply enough that nothing ever accumulates.</p>
+    </div>
+  </section>
+
+  <section class="slide content" data-screen-label="04" data-label="The idea" data-speaker-notes="CFCM is the local capability manager. Centralize knowledge, decentralize execution.">
+    <div class="kicker"><span>Why</span></div>
+    <h2 class="slide-title">The idea</h2>
+    <p class="lede lede-wide">Before an agent solves a task, it asks its local manager — CFCM — one question: do we already have this?</p>
+    <div class="cols cols-2 rise">
+      <div>
+        <h3>If yes</h3>
+        <p>It runs a sealed, tested implementation. Same input, same output, every session, on every machine that has the registry.</p>
+      </div>
+      <div>
+        <h3>If no</h3>
+        <p>It writes the code as usual — and can offer what it wrote back to the registry as a candidate.</p>
+      </div>
+    </div>
+    <div class="pin-bottom"><p class="lede" style="color: var(--color-accent-700)">Centralize knowledge, decentralize execution.</p></div>
+  </section>
+
+  <section class="slide content" data-screen-label="05" data-label="The flow" data-speaker-notes="Everything here happens on the developer's own machine. There is no central execution service to trust or pay for.">
+    <div class="kicker"><span>How it works</span></div>
+    <h2 class="slide-title">The flow</h2>
+    <figure class="rise">
+      <svg class="chart" viewBox="0 0 1680 400" role="img" aria-label="Flow diagram: an agent question goes to search, then resolve, then execute, then result; a no-match branch goes to writing the code normally and offering it as a candidate">
+        <rect class="dg-box" x="1" y="1" width="382" height="118"/>
+        <text class="dg-label" x="29" y="52">Search</text>
+        <text class="dg-sub" x="29" y="92">the question, in words</text>
+        <line class="dg-line" x1="392" y1="60" x2="416" y2="60"/>
+        <polygon class="dg-head" points="424,60 408,52 408,68"/>
+        <rect class="dg-box" x="433" y="1" width="382" height="118"/>
+        <text class="dg-label" x="461" y="52">Resolve</text>
+        <text class="dg-sub" x="461" y="92">artifact, sha256 verified</text>
+        <line class="dg-line" x1="824" y1="60" x2="848" y2="60"/>
+        <polygon class="dg-head" points="856,60 840,52 840,68"/>
+        <rect class="dg-box" x="865" y="1" width="382" height="118"/>
+        <text class="dg-label" x="893" y="52">Execute</text>
+        <text class="dg-sub" x="893" y="92">sandboxed subprocess</text>
+        <line class="dg-line" x1="1256" y1="60" x2="1280" y2="60"/>
+        <polygon class="dg-head" points="1288,60 1272,52 1272,68"/>
+        <rect class="dg-box" x="1297" y="1" width="382" height="118"/>
+        <text class="dg-label" x="1325" y="52">Result</text>
+        <text class="dg-sub" x="1325" y="92">JSON on stdout</text>
+        <line class="dg-line" x1="192" y1="119" x2="192" y2="240"/>
+        <polygon class="dg-head" points="192,248 184,232 200,232"/>
+        <text class="dg-note" x="216" y="196">NO MATCH</text>
+        <rect class="dg-box" x="1" y="259" width="382" height="118"/>
+        <text class="dg-label" x="29" y="310">Write it normally</text>
+        <text class="dg-sub" x="29" y="350">the agent solves the task</text>
+        <line class="dg-line" x1="392" y1="318" x2="416" y2="318"/>
+        <polygon class="dg-head" points="424,318 408,310 408,326"/>
+        <rect class="dg-box" x="433" y="259" width="382" height="118"/>
+        <text class="dg-label" x="461" y="310">Offer as candidate</text>
+        <text class="dg-sub" x="461" y="350">a person reviews it</text>
+      </svg>
+    </figure>
+    <p class="chart-caption text-muted">Everything runs on the developer’s own machine. No central execution service.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="06" data-label="What search returns" data-speaker-notes="Read the matched-on line out loud. It is the difference between a search and a guess.">
+    <div class="kicker"><span>Using it</span></div>
+    <h2 class="slide-title">What search returns</h2>
+    <pre class="code rise"><span class="p">$</span> cfcm search "coordinates for an address"
+
+<span class="hi">MATCH</span>  confidence 0.867  <span class="mut">(5.5 ms)</span>
+  <span class="em">CapFoundry.geo.geocode</span>  1.0.0  <span class="mut">[public]</span>
+    <span class="mut">Resolve an address or place name to coordinates</span>
+    matched on: aliases · description · exampleQueries · summaries · tags</pre>
+    <p class="note text-muted">It tells you <strong>why</strong> it matched, not just how confident it is.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="07" data-label="Calling a capability" data-speaker-notes="Arguments come from the capability's own inputSchema, so you rarely write JSON by hand.">
+    <div class="kicker"><span>Using it</span></div>
+    <h2 class="slide-title">Calling a capability</h2>
+    <pre class="code rise"><span class="p">$</span> cfcm invoke CapFoundry.geo.geocode Aarhus
+{ "resolved": <span class="hi">true</span>, "status": "ok",
+  "match": { "displayName": "Aarhus, Aarhus Kommune, 8000, Danmark",
+             "lat": 56.1496278, "lon": 10.2134046, "countryCode": "DK" },
+  "attribution": <span class="mut">"Data © OpenStreetMap contributors, ODbL 1.0."</span> }</pre>
+    <p class="note text-muted">A positional fills the next required field, <strong>--name value</strong> a named one, <strong>--a.b value</strong> a nested one.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="08" data-label="Composition" data-speaker-notes="Two capabilities, neither of which knew the other existed, composed by a caller who read two contracts.">
+    <div class="kicker"><span>Using it</span></div>
+    <h2 class="slide-title">Composition</h2>
+    <pre class="code rise"><span class="p">$</span> cfcm invoke CapFoundry.geo.geocode Aarhus     <span class="hi">→ lat / lon</span>
+        ↓
+<span class="p">$</span> cfcm invoke CapFoundry.geo.distance           <span class="hi">→ 289.4 km to Hamburg</span></pre>
+    <p class="note text-muted">Results go to stdout and diagnostics to stderr, so capabilities pipe together. Two capabilities, neither of which knew the other existed, composed by a caller who read two contracts.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="09" data-label="The ten capabilities" data-speaker-notes="Nine pure, one network. That ratio is deliberate.">
+    <div class="kicker"><span>The registry</span></div>
+    <h2 class="slide-title">The ten capabilities</h2>
+    <table class="table rise">
+      <thead>
+        <tr><th>Capability</th><th>Effect</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="name">csv.detectDelimiter</td><td class="eff">PURE</td><td>Infer which character separates CSV fields, with its evidence</td></tr>
+        <tr><td class="name">date.businessDaysBetween</td><td class="eff">PURE</td><td>Working days between two dates</td></tr>
+        <tr><td class="name">geo.distance</td><td class="eff">PURE</td><td>Great-circle distance between two coordinates</td></tr>
+        <tr><td class="name">geo.geocode</td><td class="eff net">NETWORK</td><td>Address or place name to coordinates</td></tr>
+        <tr><td class="name">json.schema.infer</td><td class="eff">PURE</td><td>JSON Schema from an example document</td></tr>
+        <tr><td class="name">sun.times</td><td class="eff">PURE</td><td>Sunrise, sunset, twilight, golden hour</td></tr>
+        <tr><td class="name">text.editDistance</td><td class="eff">PURE</td><td>Levenshtein distance and similarity</td></tr>
+        <tr><td class="name">text.slugify</td><td class="eff">PURE</td><td>Text to a URL-safe slug</td></tr>
+        <tr><td class="name">ui.dataTable</td><td class="eff">PURE</td><td>A framework-free sortable table as a custom element</td></tr>
+        <tr><td class="name">validation.iban</td><td class="eff">PURE</td><td>IBAN validation to ISO 13616</td></tr>
+      </tbody>
+    </table>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="10" data-label="Two ways to get an answer" data-speaker-notes="Each capability decides which of the two it allows.">
+    <div class="kicker"><span>The registry</span></div>
+    <h2 class="slide-title">Two ways to get an answer</h2>
+    <div class="cols cols-2 rise">
+      <div>
+        <h3 class="mono">return: "result"</h3>
+        <p>Runs it and hands you the answer. You never see the implementation, and you do not have to maintain it.</p>
+      </div>
+      <div>
+        <h3 class="mono">return: "artifact"</h3>
+        <p>Hands you the source, to put in your own project and ship. The registry becomes a library you copy from.</p>
+      </div>
+    </div>
+    <p class="note text-muted" style="margin-top: calc(3 * var(--baseline) - 1cap)">One registry serves both “answer my question” and “give me the code”, and each capability decides which it allows.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="11" data-label="Contracts, not documentation" data-speaker-notes="A capability is a package you can verify, not a snippet you have to trust.">
+    <div class="kicker"><span>The registry</span></div>
+    <h2 class="slide-title">Contracts, not documentation</h2>
+    <pre class="code rise"><span class="mut">// capability.json</span>
+{ "name": "<span class="em">CapFoundry.geo.distance</span>", "version": "1.0.0",
+  "effect": "<span class="hi">PURE</span>", "exposure": "public", "permissions": {},
+  "inputSchema":  { <span class="mut">"…": "two coordinate pairs"</span> },
+  "outputSchema": { <span class="mut">"…": "distance in metres and kilometres"</span> },
+  "sha256": <span class="mut">"… sealed …"</span>, "tests": <span class="mut">"…"</span>,
+  "license": "Apache-2.0", "provenance": <span class="mut">"…"</span> }</pre>
+    <p class="note text-muted">A capability is a package you can verify, not a snippet you have to trust.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="12" data-label="Effects the runtime enforces" data-speaker-notes="Enforced, not promised. The artifact gets no permission flags at all.">
+    <div class="kicker"><span>Guarantees</span></div>
+    <h2 class="slide-title">Effects the runtime enforces</h2>
+    <pre class="code rise"><span class="hi">PURE</span>  <span class="mut">no network · no filesystem · no clock · no randomness</span>
+      deno run <span class="em">--no-remote --no-npm</span>  <span class="mut">(no permission flags at all)</span></pre>
+    <ul class="bullets rise" style="margin-top: calc(2.5 * var(--baseline) - 1cap)">
+      <li>The artifact runs in its own subprocess, so the guarantee is the runtime’s, not the author’s.</li>
+      <li>Nothing can be loaded from outside the artifact — no remote import, no package registry.</li>
+      <li>A capability cannot quietly reach the network because it is never given the chance.</li>
+    </ul>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="13" data-label="Network access is granted" data-speaker-notes="The declaration is a request. Your cfcm.json policy is the grant, and it is off by default.">
+    <div class="kicker"><span>Guarantees</span></div>
+    <h2 class="slide-title">Network access is granted, never taken</h2>
+    <pre class="code rise"><span class="mut">// CapFoundry.geo.geocode declares what it needs</span>
+"effect": "<span class="hi">NETWORK</span>",
+"permissions": { "network": [<span class="em">"nominatim.openstreetmap.org"</span>] }</pre>
+    <p class="note text-muted">That is a request. CFCM intersects it with your own policy in <strong>cfcm.json</strong>, off by default — so it reaches exactly one host, only if you allow it, and no other.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="14" data-label="Refusing rather than guessing" data-speaker-notes="Silently picking the first candidate would compute correctly against the wrong place and return something entirely credible.">
+    <div class="kicker"><span>Guarantees</span></div>
+    <h2 class="slide-title">It refuses rather than guesses</h2>
+    <pre class="code rise"><span class="p">$</span> cfcm invoke CapFoundry.geo.geocode Viborg
+{ "status": "<span class="hi">ambiguous</span>",
+  "candidates": [ "Viborg, Denmark", "Viborg, South Dakota, US", "Viborg, Russia" ] }
+
+<span class="p">$</span> cfcm invoke CapFoundry.geo.geocode Viborg <span class="em">--countryCode DK</span>
+{ "status": "ok", "match": <span class="mut">"Viborg, Denmark"</span> }</pre>
+    <p class="note text-muted">A registry that is embarrassed to say “I’m not sure” is worse than one that says nothing.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="15" data-label="Three namespaces, one search" data-speaker-notes="A private capability can execute while refusing to hand back its source.">
+    <div class="kicker"><span>Yours</span></div>
+    <h2 class="slide-title">Your capabilities, your machine</h2>
+    <div class="cols cols-3 rise">
+      <div>
+        <h3 class="mono">CapFoundry.*</h3>
+        <p>Public. The ten capabilities everyone gets, sealed and versioned.</p>
+      </div>
+      <div>
+        <h3 class="mono">Netsi.*</h3>
+        <p>Private, registered in your own cfcm.json — so no central service knows your organisation exists.</p>
+      </div>
+      <div>
+        <h3 class="mono">Local.*</h3>
+        <p>Machine-only, for trying something out before you publish it anywhere.</p>
+      </div>
+    </div>
+    <p class="note text-muted" style="margin-top: calc(3 * var(--baseline) - 1cap)">One search covers all three. A private capability can execute while refusing to hand back its source.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="16" data-label="How the registry grows" data-speaker-notes="text.editDistance joined the registry exactly this way: someone asked, there was no match, the agent wrote it and offered it.">
+    <div class="kicker"><span>Yours</span></div>
+    <h2 class="slide-title">The registry grows from use</h2>
+    <div class="cols cols-2 rise">
+      <div>
+        <h3>Candidates, not commits</h3>
+        <p>When an agent writes something deterministic and generally useful that the registry lacked, it can offer it. Nothing is published automatically — a person reviews and promotes it.</p>
+      </div>
+      <div>
+        <h3>Explore</h3>
+        <p>A local page shows what is used most, and what is repeatedly asked for and missing. That second list is what to build next.</p>
+      </div>
+    </div>
+    <p class="note text-muted" style="margin-top: calc(3 * var(--baseline) - 1cap)"><strong>CapFoundry.text.editDistance</strong> joined the registry exactly this way: someone asked, there was no match, the agent wrote it and offered it.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-screen-label="17" data-label="Try it" data-speaker-notes="Apache-2.0, runs on Deno, works as an MCP server for coding agents and as a CLI for people.">
+    <div class="kicker"><span>Start</span></div>
+    <h2 class="slide-title">Try it</h2>
+    <pre class="code rise"><span class="p">$</span> git clone https://github.com/netsi1964/CapFoundry
+<span class="p">$</span> deno task cfcm search "distance between two coordinates"
+<span class="p">$</span> deno task cfcm invoke CapFoundry.text.slugify "Rødgrød med fløde"</pre>
+    <ul class="bullets rise" style="margin-top: calc(2.5 * var(--baseline) - 1cap)">
+      <li>Apache-2.0, running on Deno.</li>
+      <li>An MCP server for coding agents, and a CLI for people.</li>
+      <li>Ten capabilities, 397 tests.</li>
+    </ul>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;pageFurniture&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Deck furniture&quot;},&quot;sectionKickers&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Deck furniture&quot;},&quot;codeOnInk&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Code blocks&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const furniture = this.props.pageFurniture ?? true;
+    const ink = this.props.codeOnInk ?? false;
+    const kickers = this.props.sectionKickers ?? true;
+    return {
+      noFurniture: furniture ? null : "",
+      codeMode: ink ? "ink" : "surface",
+      kickerMode: kickers ? "on" : "off",
+    };
+  }
+}
+</script>
+</body>
+</html>

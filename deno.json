@@ -27,13 +27,15 @@
       "PRD.md",
       "README.md",
       "LICENSE",
-      "web/explore/index.html"
+      "web/explore/index.html",
+      "web/slides/"
     ]
   },
   "lint": {
     "exclude": [
       "capabilities/**/artifact/**",
-      "tests/fixtures/network-cfp/bad/"
+      "tests/fixtures/network-cfp/bad/",
+      "web/slides/"
     ]
   },
   "exclude": [
