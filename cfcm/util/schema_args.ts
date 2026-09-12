@@ -102,28 +102,73 @@ function schemaAt(root: JsonSchema, path: string[]): JsonSchema {
   return node;
 }
 
+/**
+ * Whether a field can be expressed on a command line at all.
+ *
+ * An array of objects cannot: there is no ordering of bare words that means
+ * `[{key, label}, {key, label}]` without inventing a syntax. Saying so in the
+ * help is the point — the first version printed `<columns>` for exactly that
+ * case, which told the reader to try something that could not work and let
+ * schema validation deliver the bad news afterwards.
+ */
+function argShape(name: string, property: JsonSchema, root: JsonSchema): string | null {
+  const resolved = resolveRef(property, root);
+  const type = Array.isArray(resolved?.type) ? resolved.type[0] : resolved?.type;
+
+  if (wrapperField(property, root)) return `<${name}>`;
+
+  if (type === "array") {
+    const items = resolveRef(resolved.items ?? {}, root);
+    const itemType = Array.isArray(items?.type) ? items.type[0] : items?.type;
+    if (itemType === "object" || itemType === "array") return null;
+    return `--${name} <a,b,…>`;
+  }
+
+  if (type === "object") {
+    const fields = Object.keys(resolved.properties ?? {});
+    return fields.length > 0 ? fields.map((k) => `--${name}.${k}`).join(" ") : null;
+  }
+
+  return `<${name}>`;
+}
+
 /** Human-readable usage derived from the schema, for `--help`. */
 export function describeArgs(schema: JsonSchema): string {
   const required = (schema?.required ?? []) as string[];
   const properties = (schema?.properties ?? {}) as Record<string, JsonSchema>;
   const lines: string[] = [];
+  const jsonOnly: string[] = [];
 
   for (const name of required) {
-    const wrapper = wrapperField(properties[name], schema);
-    const resolved = resolveRef(properties[name] ?? {}, schema);
-    const shape = wrapper
-      ? `<${name}>`
-      : resolved.type === "object"
-      ? Object.keys(resolved.properties ?? {}).map((k) => `--${name}.${k}`).join(" ")
-      : `<${name}>`;
+    const shape = argShape(name, properties[name] ?? {}, schema);
+    if (shape === null) {
+      jsonOnly.push(name);
+      lines.push(`  ${`(${name})`.padEnd(32)} required — JSON only`);
+      continue;
+    }
     lines.push(`  ${shape.padEnd(32)} required`);
   }
 
   for (const [name, property] of Object.entries(properties)) {
     if (required.includes(name)) continue;
     const resolved = resolveRef(property, schema);
+    const shape = argShape(name, property, schema);
+    if (shape === null) {
+      jsonOnly.push(name);
+      lines.push(`  ${`(${name})`.padEnd(32)} optional — JSON only`);
+      continue;
+    }
     const hint = resolved.enum ? resolved.enum.join("|") : (resolved.type ?? "value");
-    lines.push(`  --${name} <${hint}>`.padEnd(34) + " optional");
+    const rendered = shape.startsWith("<") ? `--${name} <${hint}>` : shape;
+    lines.push(`  ${rendered.padEnd(32)} optional`);
+  }
+
+  if (jsonOnly.length > 0) {
+    lines.push("");
+    lines.push(
+      `  ${jsonOnly.join(" and ")} cannot be written as flags — pass the whole input as JSON:`,
+    );
+    lines.push(`    cfcm invoke <capability> '{ "${jsonOnly[0]}": [ … ] }'`);
   }
 
   return lines.join("\n");
@@ -171,6 +216,19 @@ export function buildInput(schema: JsonSchema, args: ParsedArgs): unknown {
 
     const resolved = resolveRef(property, schema);
     const type = Array.isArray(resolved?.type) ? resolved.type[0] : resolved?.type;
+    if (type === "array") {
+      const items = resolveRef(resolved.items ?? {}, schema);
+      const itemType = Array.isArray(items?.type) ? items.type[0] : items?.type;
+      if (itemType === "object" || itemType === "array") {
+        throw new CfcmError(
+          "ARG_INVALID",
+          `"${name}" is a list of objects, which has no command-line form. Pass the whole ` +
+            `input as JSON: cfcm invoke <capability> '{ "${name}": [ … ] }'`,
+        );
+      }
+      input[name] = coerce(raw, resolved, name);
+      return;
+    }
     if (type === "object") {
       const fields = Object.keys(resolved.properties ?? {}).map((k) => `--${name}.${k}`);
       throw new CfcmError(

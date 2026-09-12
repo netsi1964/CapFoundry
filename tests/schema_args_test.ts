@@ -175,6 +175,52 @@ Deno.test("no arguments at all yields undefined, so stdin can take over", () => 
   assertEquals(buildInput(SLUGIFY, args()), undefined);
 });
 
+const TABLE = {
+  type: "object",
+  required: ["columns"],
+  properties: {
+    columns: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["key", "label"],
+        properties: { key: { type: "string" }, label: { type: "string" } },
+      },
+    },
+    caption: { type: "string" },
+  },
+};
+
+Deno.test("a list of objects is refused with the JSON form shown", () => {
+  // There is no ordering of bare words that means [{key,label},{key,label}]
+  // without inventing a syntax, so the help says so rather than letting schema
+  // validation deliver the news after the user has already guessed.
+  const err = assertThrows(() => buildInput(TABLE, args(["name,amount"])), CfcmError);
+  assertStringIncludes(err.message, "list of objects");
+  assertStringIncludes(err.message, '"columns": [');
+});
+
+Deno.test("help marks a list of objects as JSON only rather than as a positional", () => {
+  const help = describeArgs(TABLE);
+  assertStringIncludes(help, "(columns)");
+  assertStringIncludes(help, "JSON only");
+  assertStringIncludes(help, "pass the whole input as JSON");
+  // The bug this replaces: <columns> read as "give me a value here".
+  assert(!help.includes("<columns>"), "help still implies columns can be positional");
+});
+
+Deno.test("a list of scalars keeps its comma form in the help", () => {
+  const schema = {
+    type: "object",
+    required: ["from"],
+    properties: {
+      from: { type: "string" },
+      weekend: { type: "array", items: { type: "integer" } },
+    },
+  };
+  assertStringIncludes(describeArgs(schema), "--weekend <a,b,…>");
+});
+
 Deno.test("help text names positionals, dotted flags and optional fields", () => {
   const help = describeArgs(PLACES);
   assertStringIncludes(help, "<from>");
