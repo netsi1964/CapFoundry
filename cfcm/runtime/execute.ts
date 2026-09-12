@@ -25,6 +25,7 @@ import { CfcmError } from "../types.ts";
 import type { Effect } from "../types.ts";
 import { ensureDir, paths } from "../util/paths.ts";
 import { sha256Text } from "../util/hash.ts";
+import { assertNoModuleLoading } from "./module_guard.ts";
 
 export interface ExecuteOptions {
   artifactPath: string;
@@ -131,6 +132,10 @@ export async function execute(opts: ExecuteOptions): Promise<ExecuteResult> {
       { capability: opts.capability },
     );
   }
+
+  // Checked on the bytes about to run, not only at authoring time, so a
+  // tampered or newly fetched artifact is caught too (SEC-11).
+  assertNoModuleLoading(await Deno.readTextFile(opts.artifactPath), opts.capability);
 
   const runner = await ensureRunner(opts.artifactPath);
   const spawnStarted = performance.now();

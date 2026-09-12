@@ -11,6 +11,7 @@ import { join, relative } from "@std/path";
 import { CfcmError } from "../cfcm/types.ts";
 import { entrypointPath, listCfpDirs, readDescriptor } from "../cfcm/sources/cfp.ts";
 import { sha256File } from "../cfcm/util/hash.ts";
+import { findModuleLoading } from "../cfcm/runtime/module_guard.ts";
 import { pathExists } from "../cfcm/util/paths.ts";
 import { tokenize } from "../cfcm/search/tokenize.ts";
 
@@ -44,6 +45,14 @@ async function validateCfp(dir: string, problems: Problem[]): Promise<void> {
   if (!await pathExists(entry)) {
     fail(`artifact.entrypoint points at ${descriptor.artifact.entrypoint}, which does not exist`);
   } else {
+    for (const finding of findModuleLoading(await Deno.readTextFile(entry))) {
+      fail(
+        `${descriptor.artifact.entrypoint} line ${finding.line} uses ${finding.construct}. ` +
+          "Deno does not gate module loading behind permissions, so an import is a way out of a " +
+          "sandbox that grants nothing else. Capability artifacts must be self-contained.",
+      );
+    }
+
     const actual = await sha256File(entry);
     if (actual !== descriptor.artifact.sha256) {
       fail(
