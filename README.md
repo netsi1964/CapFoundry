@@ -45,6 +45,90 @@ deno task prepare   # after editing a capability: fmt, re-seal artifact hashes, 
 invalidates its `sha256`, which invalidates the index. CI checks both ends independently, so a
 forgotten `seal` fails the build rather than shipping an unverified artifact.
 
+## The `cfcm` CLI
+
+An agent reaches CFCM over MCP. From a shell, use `cfcm` — same `Cfcm` object, same index, same
+sandbox, and results on stdout so they pipe.
+
+```bash
+deno task cfcm search "coordinates for an address"
+deno task cfcm invoke CapFoundry.geo.geocode Aarhus
+deno task cfcm describe CapFoundry.sun.times
+deno task cfcm list
+```
+
+The examples below say `cfcm` rather than `deno task cfcm`. Put it on your PATH once:
+
+```bash
+ln -s "$PWD/bin/cfcm" /usr/local/bin/cfcm
+```
+
+**You rarely write JSON.** Arguments are read from the capability's own `inputSchema`, so a
+single-field capability takes a bare value and nested fields take dotted flags:
+
+```bash
+cfcm invoke CapFoundry.text.slugify "Rødgrød med fløde" --locale da
+cfcm invoke CapFoundry.geo.distance --from.lat 55.6 --from.lon 12.5 --to.lat 56.1 --to.lon 10.2
+cfcm invoke CapFoundry.geo.geocode Viborg --countryCode DK
+```
+
+`cfcm invoke <capability> --help` prints what that capability takes, derived from its schema rather
+than from a hand-written usage string.
+
+A call returns the result on stdout and its diagnostics on stderr, so the two never mix:
+
+```console
+$ cfcm invoke CapFoundry.geo.geocode Aarhus --pretty
+{
+  "resolved": true,
+  "status": "ok",
+  "query": "Aarhus",
+  "match": {
+    "displayName": "Aarhus, Aarhus Kommune, Region Midtjylland, 8000, Danmark",
+    "lat": 56.1496278,
+    "lon": 10.2134046,
+    "countryCode": "DK",
+    "placeId": "164915861",
+    "placeType": "city"
+  },
+  "candidates": [ ... ],
+  "attribution": "Data © OpenStreetMap contributors, ODbL 1.0. Geocoding by Nominatim."
+}
+CapFoundry.geo.geocode  121.438 ms
+```
+
+Which means it composes. Geocode two places and measure between them, in one line:
+
+```bash
+cfcm invoke CapFoundry.geo.distance \
+  --from.lat "$(cfcm invoke CapFoundry.geo.geocode Aarhus | jq -r .match.lat)" \
+  --from.lon "$(cfcm invoke CapFoundry.geo.geocode Aarhus | jq -r .match.lon)" \
+  --to.lat 53.5501 --to.lon 10.0013
+# {"distance":289.373064,"unit":"km","method":"haversine"}
+```
+
+That is the argument for a registry in one line of shell: two capabilities neither of which knew
+about the other, composed by a caller who read two contracts.
+
+JSON still works for anything the schema mapping cannot express, and stdin is read when no argument
+is given:
+
+```bash
+echo '{"text":"Hej"}' | cfcm invoke CapFoundry.text.slugify
+```
+
+**Exit codes**, so it behaves in a script:
+
+| Code | Meaning |
+|---|---|
+| `0` | Success |
+| `1` | Error — bad input, a failing capability, a refused permission |
+| `2` | No confident match. Not a failure: it is the registry saying it has nothing |
+| `3` | Usage |
+
+Exit `2` is the one worth wiring up. `cfcm search` returning nothing is a normal answer, and a
+script that treats it as an error will fight the design.
+
 Point CFCM at this repository as its registry and register it with a coding agent:
 
 ```bash
