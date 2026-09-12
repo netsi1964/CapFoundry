@@ -71,14 +71,21 @@ You rarely write JSON: arguments come from the capability's own `inputSchema`. A
 next required field, `--name value` a named one, `--a.b value` a nested one.
 
 ### 7. They compose
-Results go to stdout and diagnostics to stderr, so capabilities pipe together:
+Results go to stdout and diagnostics to stderr, so capabilities combine in a shell. Their contracts
+differ, so a caller reshapes between them — that is the work, and it is three lines:
 ```
-cfcm invoke CapFoundry.geo.geocode Aarhus   →  lat/lon
-        ↓
-cfcm invoke CapFoundry.geo.distance         →  289.4 km to Hamburg
+A=$(cfcm invoke CapFoundry.geo.geocode Aarhus  --countryCode DK)
+B=$(cfcm invoke CapFoundry.geo.geocode Hamburg --countryCode DE)
+
+cfcm invoke CapFoundry.geo.distance \
+  --from.lat "$(jq -r .match.lat <<<"$A")" --from.lon "$(jq -r .match.lon <<<"$A")" \
+  --to.lat   "$(jq -r .match.lat <<<"$B")" --to.lon   "$(jq -r .match.lon <<<"$B")"
+
+{"distance":289.365005,"unit":"km","method":"haversine"}
 ```
-Two capabilities, neither of which knew the other existed, composed by a caller who read two
-contracts.
+Two capabilities, neither of which knew the other existed, joined by someone who read two contracts.
+**Do not draw this as a single pipe.** They do not plug together; a person decides how one feeds the
+other, and that is the honest claim — a registry of contracts, not a set of parts pre-cut to fit.
 
 ### 8. The ten capabilities
 A clean table — name, effect, one line each:
@@ -147,7 +154,7 @@ deno task cfcm search "distance between two coordinates"
 deno task cfcm invoke CapFoundry.text.slugify "Rødgrød med fløde"
 ```
 Apache-2.0. Runs on Deno. Works as an MCP server for coding agents and as a CLI for people.
-Ten capabilities, 397 tests.
+Ten capabilities, 399 tests.
 
 ---
 
