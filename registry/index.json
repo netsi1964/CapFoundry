@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-12T10:41:23.122Z",
+  "capabilities": [
+    {
+      "schemaVersion": 1,
+      "name": "CapFoundry.geo.distance",
+      "version": "1.0.0",
+      "description": "Calculate the great-circle distance between two geographic coordinates",
+      "aliases": [
+        "haversine",
+        "great circle distance",
+        "distance between coordinates",
+        "how far apart are two points",
+        "kilometres between two places",
+        "lat lon distance"
+      ],
+      "exampleQueries": [
+        "calculate distance between two latitude longitude coordinates",
+        "how many kilometres between these two GPS points",
+        "great circle distance between two places on earth",
+        "how far apart are two coordinates in miles",
+        "compute haversine distance between two positions"
+      ],
+      "tags": [
+        "geo",
+        "geography",
+        "math",
+        "coordinates",
+        "haversine",
+        "gps"
+      ],
+      "inputSummary": "Two WGS-84 points as lat/lon degrees, plus an optional unit",
+      "outputSummary": "Great-circle distance as a number in the requested unit",
+      "runtime": "deno",
+      "effect": "PURE",
+      "artifact": {
+        "type": "typescript",
+        "sha256": "9c3ef3aa9b89bfe75ea1ade09c66cf95b21dd0e5747389ae925f64511723ce97"
+      },
+      "exposure": {
+        "execution": true,
+        "artifact": true
+      },
+      "limits": {
+        "timeoutMs": 5000
+      },
+      "cfpLocation": "capabilities/CapFoundry.geo.distance",
+      "artifactLocation": "capabilities/CapFoundry.geo.distance/artifact/index.ts",
+      "namespaceType": "public",
+      "indexedAt": "2026-09-12T10:41:23.122Z"
+    }
+  ]
+}

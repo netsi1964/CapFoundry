@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capfoundry.dev/schemas/capability.schema.json",
+  "title": "CapFoundry capability descriptor",
+  "description": "capability.json inside a CFP. See PRD-FEAT-001 and PRD-SEC-005.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "name",
+    "version",
+    "description",
+    "aliases",
+    "exampleQueries",
+    "inputSummary",
+    "outputSummary",
+    "runtime",
+    "effect",
+    "inputSchema",
+    "outputSchema",
+    "artifact",
+    "exposure",
+    "tests"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "name": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*(\\.[a-zA-Z][a-zA-Z0-9]*)+$",
+      "description": "Namespaced identity, e.g. CapFoundry.geo.distance"
+    },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "description": { "type": "string", "minLength": 10, "maxLength": 300 },
+    "aliases": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string", "minLength": 2 },
+      "description": "Alternative names a caller might use. Must not restate the capability name."
+    },
+    "exampleQueries": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string", "minLength": 8 },
+      "description": "Natural-language queries that should resolve to this capability."
+    },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "inputSummary": { "type": "string", "minLength": 5, "maxLength": 200 },
+    "outputSummary": { "type": "string", "minLength": 5, "maxLength": 200 },
+    "runtime": { "const": "deno" },
+    "effect": { "enum": ["PURE", "READ", "WRITE", "NETWORK"] },
+    "inputSchema": { "type": "object" },
+    "outputSchema": { "type": "object" },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "entrypoint", "sha256"],
+      "properties": {
+        "type": { "const": "typescript" },
+        "entrypoint": { "type": "string", "pattern": "^\\./" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "exposure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["execution", "artifact"],
+      "properties": {
+        "execution": { "type": "boolean" },
+        "artifact": { "type": "boolean" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "timeoutMs": { "type": "integer", "minimum": 1, "maximum": 600000 },
+        "maxOutputBytes": { "type": "integer", "minimum": 1024 }
+      }
+    },
+    "tests": { "type": "string", "pattern": "^\\./" }
+  }
+}

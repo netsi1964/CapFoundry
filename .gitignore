@@ -1,0 +1,7 @@
+node_modules/
+.cfcm/
+.cfcm-test-home/
+eval/reports/*.md
+!eval/reports/.gitkeep
+*.log
+.DS_Store

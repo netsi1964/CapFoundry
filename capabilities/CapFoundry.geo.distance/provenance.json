@@ -1,0 +1,9 @@
+{
+  "origin": "authored",
+  "author": "Netsi",
+  "repository": "https://github.com/netsi1964/CapFoundry",
+  "createdAt": "2026-09-12",
+  "license": "Apache-2.0",
+  "derivedFrom": [],
+  "notes": "Haversine on a spherical Earth (IUGG mean radius 6371008.8 m). No third-party code."
+}

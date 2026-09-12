@@ -1,0 +1,22 @@
+{
+  "capfoundry": {
+    "registry": "https://netsi1964.github.io/CapFoundry/registry",
+    "enabled": true
+  },
+  "search": {
+    "matchThreshold": 0.55,
+    "partialThreshold": 0.35,
+    "coverageWeight": 0.7,
+    "marginWeight": 0.3
+  },
+  "execution": {
+    "defaultTimeoutMs": 5000,
+    "maxOutputBytes": 4194304
+  },
+  "telemetry": {
+    "local": true,
+    "upload": false,
+    "endpoint": null
+  },
+  "namespaces": []
+}
