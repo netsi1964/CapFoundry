@@ -15,7 +15,8 @@
     "aggregate": "deno run --allow-read --allow-write --allow-env scripts/aggregate-telemetry.ts",
     "cfcm": "deno run --allow-read --allow-write --allow-net --allow-run --allow-env scripts/cli.ts",
     "contract-check": "deno run --allow-read --allow-write --allow-net scripts/contract-check.ts",
-    "explore": "deno task aggregate && deno run --allow-read --allow-write scripts/build-explore.ts"
+    "explore": "deno task aggregate && deno run --allow-read --allow-write scripts/build-explore.ts",
+    "eval": "deno run -A eval/run.ts"
   },
   "fmt": {
     "lineWidth": 100,
@@ -40,7 +41,8 @@
   ],
   "imports": {
     "@std/path": "jsr:@std/path@^1.0.8",
-    "@std/assert": "jsr:@std/assert@^1.0.8"
+    "@std/assert": "jsr:@std/assert@^1.0.8",
+    "@std/fs": "jsr:@std/fs@^1.0.0"
   },
   "test": {
     "exclude": [

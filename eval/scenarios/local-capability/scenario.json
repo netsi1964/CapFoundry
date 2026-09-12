@@ -2,7 +2,9 @@
   "id": "local-capability",
   "title": "A machine-local capability is reachable from the same search space",
   "rationale": "Local.* is the lowest-ceremony way to add a capability. If it needs its own path, nobody will use it and nothing will ever be tried locally before being published.",
-  "objectives": ["OBJ-6"],
+  "objectives": [
+    "OBJ-6"
+  ],
   "origin": "designed",
   "expect": {
     "search": "MATCH",
@@ -11,5 +13,7 @@
     "fellBackToGeneration": false,
     "candidateSubmitted": false
   },
-  "timeoutSeconds": 300
+  "timeoutSeconds": 300,
+  "control": "cannot-succeed",
+  "controlReason": "Local.dev.echo exists only on this machine and is in no registry. Condition B has nothing to reach, which is what the reserved namespace means."
 }

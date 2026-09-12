@@ -21,8 +21,23 @@
 import type { SearchStatus } from "../cfcm/types.ts";
 import type { TelemetryEvent } from "../cfcm/telemetry/telemetry.ts";
 
-/** Which of the MVP's exit criteria this scenario feeds. */
-export type Objective = "OBJ-1" | "OBJ-2" | "OBJ-3" | "OBJ-4" | "OBJ-5" | "OBJ-6" | "OBJ-7";
+/**
+ * Which of the MVP's exit criteria this scenario feeds.
+ *
+ * SKILL-QUALITY is not an OBJ. It is here so that a scenario measuring whether
+ * the agent showed restraint — search-should-be-skipped — is tagged with what
+ * it measures rather than with an empty list, which reads as "measures
+ * nothing" and invites deletion by whoever tidies up next.
+ */
+export type Objective =
+  | "OBJ-1"
+  | "OBJ-2"
+  | "OBJ-3"
+  | "OBJ-4"
+  | "OBJ-5"
+  | "OBJ-6"
+  | "OBJ-7"
+  | "SKILL-QUALITY";
 
 /**
  * Where the scenario came from.
@@ -51,6 +66,22 @@ export interface ExpectedBehaviour {
   artifactReturned?: boolean;
 }
 
+/**
+ * Whether the control condition can succeed at all.
+ *
+ * Most scenarios compare two ways of doing the same reachable thing. Two do
+ * not: a private capability's data exists only inside the private namespace,
+ * and a Local.* capability exists only on this machine, so an agent without
+ * CFCM cannot answer them by any means. That is precisely what OBJ-6 claims,
+ * but it means condition B *fails* rather than doing worse — and a report that
+ * prints "B failed" next to eight scenarios where B merely lost invites the
+ * reader to count it as a performance result.
+ *
+ * Marked here so the report can separate the two, and so nobody has to
+ * remember which is which.
+ */
+export type ControlViability = "comparable" | "cannot-succeed";
+
 export interface Scenario {
   id: string;
   title: string;
@@ -61,6 +92,13 @@ export interface Scenario {
   /** Required when origin is "recorded": where the trace came from. */
   recordedFrom?: string;
   expect: ExpectedBehaviour;
+  /**
+   * Defaults to "comparable". When "cannot-succeed", `controlReason` must say
+   * why, and the report counts the scenario as evidence for its objective
+   * rather than as a win on correctness.
+   */
+  control?: ControlViability;
+  controlReason?: string;
   /** Seconds before the run is abandoned. Keep generous; a timeout is not a result. */
   timeoutSeconds?: number;
 }

@@ -2,7 +2,9 @@
   "id": "search-should-be-skipped",
   "title": "Project-specific business logic, where searching is the wrong instinct",
   "rationale": "A registry that gets consulted for everything costs latency and context on every task. Knowing when not to ask is as much of the skill as knowing when to.",
-  "objectives": [],
+  "objectives": [
+    "SKILL-QUALITY"
+  ],
   "origin": "designed",
   "expect": {
     "search": "none",

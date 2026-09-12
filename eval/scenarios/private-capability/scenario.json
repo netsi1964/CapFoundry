@@ -2,7 +2,9 @@
   "id": "private-capability",
   "title": "A private-namespace capability is found in the same search as the public ones",
   "rationale": "If private capabilities need a different call, organisations cannot put their own work where their agents already look.",
-  "objectives": ["OBJ-6"],
+  "objectives": [
+    "OBJ-6"
+  ],
   "origin": "designed",
   "expect": {
     "search": "MATCH",
@@ -11,5 +13,7 @@
     "fellBackToGeneration": false,
     "candidateSubmitted": false
   },
-  "timeoutSeconds": 300
+  "timeoutSeconds": 300,
+  "control": "cannot-succeed",
+  "controlReason": "The customer record exists only inside the Netsi namespace on this machine. An agent without CFCM has no source for it, so condition B cannot succeed by any means \u2014 which is the claim OBJ-6 makes, not a performance result."
 }
