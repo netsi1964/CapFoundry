@@ -72,11 +72,11 @@ falsification commitment that only publishes good numbers is not a commitment.
 
 ### OBJ-2 has now broken twice, and both times from the same cause
 
-The first was F5 above. The second was on 2026-09-12, hours after this file was published:
+The first was F5 above. The second was on 2026-09-12, one hour and forty-nine minutes after this file was published:
 widening `ui.dataTable`'s description and summaries for a legitimate feature release pushed
 an unrelated query — "render a react data grid with virtual scrolling" — to 0.6139 and the
-wrong-match rate to 0.071, over the ceiling. Caught by CI, fixed within minutes by narrowing an
-example query, and the numbers above are after that fix.
+wrong-match rate to 0.071, over the ceiling. Caught by CI and fixed fifty-three seconds later by
+narrowing an example query. The numbers above are after that fix, and were never published wrong.
 
 It is recorded because the pattern is the finding, not the incident. **Broadening a capability's
 description is a search-precision change, not a documentation change**, and lexical confidence
