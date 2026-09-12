@@ -67,9 +67,9 @@ The artifact is two pure functions and a default export with no logic left in it
 | `default`               | no   | `fetch`, four lines                                             |
 
 Splitting only at `parse` would leave request construction untestable — and that is where
-URL-encoding bugs live. `Rådhuspladsen` must encode to `R%C3%A5dhuspladsen`; a hand-built query string gets
-that wrong in a way that looks like it works. The test suite runs with **no network permission at
-all**, against recorded responses in `tests/fixtures/`.
+URL-encoding bugs live. `Rådhuspladsen` must encode to `R%C3%A5dhuspladsen`; a hand-built query
+string gets that wrong in a way that looks like it works. The test suite runs with **no network
+permission at all**, against recorded responses in `tests/fixtures/`.
 
 ## Limits you should know before using it
 

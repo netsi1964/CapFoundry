@@ -1,35 +1,36 @@
 [
   {
-    "place_id": 165442243,
+    "place_id": 148600825,
     "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
     "osm_type": "node",
-    "osm_id": 342010932,
-    "lat": "56.2805930",
-    "lon": "10.3198980",
+    "osm_id": 736017389,
+    "lat": "55.6756280",
+    "lon": "12.5695780",
     "category": "place",
     "type": "house",
     "place_rank": 30,
-    "importance": 0.00005669718471041455,
+    "importance": 0.0000819920653085682,
     "addresstype": "place",
     "name": "",
-    "display_name": "1, Rådhuspladsen, Vestervold, København, Aarhus Kommune, Region Midtjylland, 8541, Danmark",
+    "display_name": "1, Rådhuspladsen, Vestervold, Kødbyen, København, Københavns Kommune, Region Hovedstaden, 1550, Danmark",
     "address": {
       "house_number": "1",
       "road": "Rådhuspladsen",
-      "hamlet": "Vestervold",
-      "city": "Aarhus",
-      "municipality": "Aarhus Kommune",
-      "state": "Region Midtjylland",
-      "ISO3166-2-lvl4": "DK-82",
-      "postcode": "8541",
+      "quarter": "Vestervold",
+      "suburb": "Kødbyen",
+      "city": "København",
+      "municipality": "Københavns Kommune",
+      "state": "Region Hovedstaden",
+      "ISO3166-2-lvl4": "DK-84",
+      "postcode": "1550",
       "country": "Danmark",
       "country_code": "dk"
     },
     "boundingbox": [
-      "56.2805430",
-      "56.2806430",
-      "10.3198480",
-      "10.3199480"
+      "55.6755780",
+      "55.6756780",
+      "12.5695280",
+      "12.5696280"
     ]
   }
 ]

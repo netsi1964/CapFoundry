@@ -153,7 +153,7 @@
   "artifact": {
     "type": "typescript",
     "entrypoint": "./artifact/index.ts",
-    "sha256": "607936b4ff48b51deb985a1a6fd80cbf7202471d71215f0ba66ba5c332c86aae"
+    "sha256": "d5bc306c760d226f795b9f3d5b9352a4b39eede32238cdba38de2289ac037ee6"
   },
   "exposure": {
     "execution": true,

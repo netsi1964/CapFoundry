@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-12T12:50:58.651Z",
+  "generatedAt": "2026-09-12T13:24:26.363Z",
   "capabilities": [
     {
       "schemaVersion": 1,
@@ -44,7 +44,7 @@
       "cfpLocation": "capabilities/CapFoundry.csv.detectDelimiter",
       "artifactLocation": "capabilities/CapFoundry.csv.detectDelimiter/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:50:58.651Z"
+      "indexedAt": "2026-09-12T13:24:26.363Z"
     },
     {
       "schemaVersion": 1,
@@ -88,7 +88,7 @@
       "cfpLocation": "capabilities/CapFoundry.date.businessDaysBetween",
       "artifactLocation": "capabilities/CapFoundry.date.businessDaysBetween/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:50:58.651Z"
+      "indexedAt": "2026-09-12T13:24:26.363Z"
     },
     {
       "schemaVersion": 1,
@@ -136,7 +136,7 @@
       "cfpLocation": "capabilities/CapFoundry.geo.distance",
       "artifactLocation": "capabilities/CapFoundry.geo.distance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:50:58.651Z"
+      "indexedAt": "2026-09-12T13:24:26.363Z"
     },
     {
       "schemaVersion": 1,
@@ -175,7 +175,7 @@
       "effect": "NETWORK",
       "artifact": {
         "type": "typescript",
-        "sha256": "607936b4ff48b51deb985a1a6fd80cbf7202471d71215f0ba66ba5c332c86aae"
+        "sha256": "d5bc306c760d226f795b9f3d5b9352a4b39eede32238cdba38de2289ac037ee6"
       },
       "exposure": {
         "execution": true,
@@ -193,7 +193,7 @@
       "cfpLocation": "capabilities/CapFoundry.geo.geocode",
       "artifactLocation": "capabilities/CapFoundry.geo.geocode/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:50:58.651Z"
+      "indexedAt": "2026-09-12T13:24:26.363Z"
     },
     {
       "schemaVersion": 1,
@@ -241,7 +241,7 @@
       "cfpLocation": "capabilities/CapFoundry.json.schema.infer",
       "artifactLocation": "capabilities/CapFoundry.json.schema.infer/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:50:58.651Z"
+      "indexedAt": "2026-09-12T13:24:26.363Z"
     },
     {
       "schemaVersion": 1,
@@ -294,7 +294,7 @@
       "cfpLocation": "capabilities/CapFoundry.sun.times",
       "artifactLocation": "capabilities/CapFoundry.sun.times/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:50:58.651Z"
+      "indexedAt": "2026-09-12T13:24:26.363Z"
     },
     {
       "schemaVersion": 1,
@@ -339,7 +339,7 @@
       "cfpLocation": "capabilities/CapFoundry.text.editDistance",
       "artifactLocation": "capabilities/CapFoundry.text.editDistance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:50:58.651Z"
+      "indexedAt": "2026-09-12T13:24:26.363Z"
     },
     {
       "schemaVersion": 1,
@@ -383,7 +383,7 @@
       "cfpLocation": "capabilities/CapFoundry.text.slugify",
       "artifactLocation": "capabilities/CapFoundry.text.slugify/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:50:58.651Z"
+      "indexedAt": "2026-09-12T13:24:26.363Z"
     },
     {
       "schemaVersion": 1,
@@ -428,7 +428,7 @@
       "cfpLocation": "capabilities/CapFoundry.ui.dataTable",
       "artifactLocation": "capabilities/CapFoundry.ui.dataTable/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:50:58.651Z"
+      "indexedAt": "2026-09-12T13:24:26.363Z"
     },
     {
       "schemaVersion": 1,
@@ -472,7 +472,7 @@
       "cfpLocation": "capabilities/CapFoundry.validation.iban",
       "artifactLocation": "capabilities/CapFoundry.validation.iban/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T12:50:58.651Z"
+      "indexedAt": "2026-09-12T13:24:26.363Z"
     }
   ]
 }

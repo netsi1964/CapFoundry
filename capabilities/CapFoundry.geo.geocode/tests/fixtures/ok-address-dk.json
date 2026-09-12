@@ -1,11 +1,11 @@
 [
   {
-    "place_id": 163440672,
+    "place_id": 164857062,
     "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
     "osm_type": "node",
-    "osm_id": 342733698,
-    "lat": "56.4601990",
-    "lon": "9.4054030",
+    "osm_id": 976363230,
+    "lat": "56.4585950",
+    "lon": "9.3986310",
     "category": "place",
     "type": "house",
     "place_rank": 30,
@@ -26,10 +26,10 @@
       "country_code": "dk"
     },
     "boundingbox": [
-      "56.4601490",
-      "56.4602490",
-      "9.4053530",
-      "9.4054530"
+      "56.4585450",
+      "56.4586450",
+      "9.3985810",
+      "9.3986810"
     ]
   }
 ]

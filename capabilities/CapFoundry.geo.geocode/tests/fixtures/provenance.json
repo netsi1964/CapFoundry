@@ -4,37 +4,37 @@
       "file": "ambiguous-viborg.json",
       "source": "https://nominatim.openstreetmap.org/search?q=Viborg&format=jsonv2&addressdetails=1&limit=5",
       "retrievedAt": "2026-09-12",
-      "license": "ODbL 1.0 — Data © OpenStreetMap contributors",
+      "license": "ODbL 1.0 \u2014 Data \u00a9 OpenStreetMap contributors",
       "notes": "Three countries for one name: Denmark, United States, Russia. The reason the contract refuses rather than guesses."
     },
     {
       "file": "ok-address-dk.json",
-      "source": "https://nominatim.openstreetmap.org/search?q=Prinsens Alle+5%2C+8800+Viborg&format=jsonv2&addressdetails=1&limit=5",
+      "source": "https://nominatim.openstreetmap.org/search?q=Prinsens+Alle+5%2C+8800+Viborg&format=jsonv2&addressdetails=1&limit=5",
       "retrievedAt": "2026-09-12",
-      "license": "ODbL 1.0 — Data © OpenStreetMap contributors",
-      "notes": "A single unambiguous hit."
+      "license": "ODbL 1.0 \u2014 Data \u00a9 OpenStreetMap contributors",
+      "notes": "A single unambiguous hit. Viborg town hall \u2014 a public building, deliberately: a recorded fixture in a public repository is public forever, so it must not carry a private address."
     },
     {
       "file": "ok-country-filtered.json",
       "source": "https://nominatim.openstreetmap.org/search?q=Viborg&format=jsonv2&addressdetails=1&limit=5&countrycodes=dk",
       "retrievedAt": "2026-09-12",
-      "license": "ODbL 1.0 — Data © OpenStreetMap contributors",
+      "license": "ODbL 1.0 \u2014 Data \u00a9 OpenStreetMap contributors",
       "notes": "The same ambiguous query with countryCode DK, showing the disambiguation path the contract offers."
     },
     {
       "file": "not-found.json",
       "source": "https://nominatim.openstreetmap.org/search?q=Qzzxvbn+Nonexistent+Street+9999&format=jsonv2&addressdetails=1&limit=5",
       "retrievedAt": "2026-09-12",
-      "license": "ODbL 1.0 — Data © OpenStreetMap contributors",
+      "license": "ODbL 1.0 \u2014 Data \u00a9 OpenStreetMap contributors",
       "notes": "Empty array. A miss is an answer, not an error."
     },
     {
       "file": "nonascii-address.json",
       "source": "https://nominatim.openstreetmap.org/search?q=R%C3%A5dhuspladsen+1%2C+1550+K%C3%B8benhavn&format=jsonv2&addressdetails=1&limit=5",
       "retrievedAt": "2026-09-12",
-      "license": "ODbL 1.0 — Data © OpenStreetMap contributors",
-      "notes": "Danish characters survived encoding. Recorded because this is the failure that looks like it works until it does not."
+      "license": "ODbL 1.0 \u2014 Data \u00a9 OpenStreetMap contributors",
+      "notes": "Danish \u00e5 and \u00f8 survived encoding. Recorded because this is the failure that looks like it works until it does not. Copenhagen city hall square, a public place."
     }
   ],
-  "policy": "Recorded responses are third-party data and carry the licence of the service that produced them. Refresh with `deno task contract-check --update`, which also re-verifies the shape against the live API."
+  "policy": "Recorded responses are third-party data and carry the licence of the service that produced them. Refresh with `deno task contract-check --update`, which also re-verifies the shape against the live API. Recordings must use public places, never private addresses."
 }
