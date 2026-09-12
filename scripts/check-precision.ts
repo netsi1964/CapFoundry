@@ -27,10 +27,20 @@
  * than implying a clearance.
  *
  * The cross-check needs nobody to write anything. Every capability ships
- * example queries that should resolve to *it*; if one of them resolves to a
- * different capability, two descriptors have grown into each other. That is
- * free evidence, already in the registry, and it catches collisions between
- * capabilities rather than collisions with imagined questions.
+ * example queries that should resolve to *it*; if one resolves to a different
+ * capability, the owner has lost its own question. Free evidence, already in
+ * the registry.
+ *
+ * It catches **theft, not proximity**. A capability can absorb a great deal of
+ * another's vocabulary and pass, as long as the original still wins. Copying
+ * geo.geocode's example query verbatim into sun.times's aliases passes this
+ * check, while collapsing geocode's margin on its own query from 0.729 to
+ * 0.225 — the signal exists and neither check reads it.
+ *
+ * Reading it would need a threshold on rank distance, and a threshold that is
+ * right at eleven capabilities will be wrong at fifty. So the uncovered middle
+ * — a capability that is merely too broad — is documented in PRD-SEC-009
+ * rather than guarded against badly.
  */
 
 import { join } from "@std/path";

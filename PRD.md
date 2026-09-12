@@ -977,7 +977,29 @@ og fristelsen er at slette den frem for at rette kollisionen.
 | Tjek | Fanger | Blind over for |
 |---|---|---|
 | **Optaget near-miss-sæt** (`eval/near-misses.json`) | En capability der kolliderer med et spørgsmål nogen allerede har skrevet ned | En beskrivelse der er for bred for et spørgsmål ingen har tilføjet |
-| **Krydstjek af eksempelforespørgsler** | To deskriptorer der er vokset ind i hinanden — ingen skal skrive noget, dataene ligger allerede i registryet | Kollisioner med forespørgsler uden for registryet |
+| **Krydstjek af eksempelforespørgsler** | En capability der **overtager** en andens forespørgsel — altså hvor ejeren *taber* | En capability der vokser ind i en andens område mens ejeren stadig vinder |
+
+**Krydstjekket fanger tyveri, ikke nærhed.** Det er en skarpere grænse end den tabel oprindeligt
+antydede, og Marie fandt den ved at kopiere `geo.geocode`'s eksempelforespørgsel ordret ind i
+`sun.times`' aliases. Vagten bestod — korrekt, for geocode vandt stadig sin egen forespørgsel. Men
+`sun.times` gør nu krav på et adressespørgsmål, og intet sagde fra.
+
+Målt på netop det tilfælde:
+
+| | `geo.geocode` på sin egen forespørgsel |
+|---|---|
+| Rent indeks | vinder med **margin 0,729** |
+| Efter forureningen | vinder stadig, men **margin 0,225** |
+
+Signalet findes altså og er stærkt — det faldt med en faktor tre — men ingen af de to tjek læser
+det. Det **udækkede midterfelt er en capability der blot er for bred**, og det er præcis hvad
+`4cccc8b` var.
+
+At lukke det kræver en afstand mellem rangeringer og en tærskel på den. En tærskel vil være forkert
+ved elleve capabilities og forkert på en anden måde ved halvtreds, så den er ikke bygget. Margin-tallet
+er noteret her frem for i en commit-besked, fordi det er dét en senere implementering skal bruge:
+signalet er målbart, og den svære del er ikke at beregne det, men at vide hvornår et fald betyder
+noget.
 
 Den første grænse er reel og skal siges højt: `ui.dataTable` 1.1.0 ville være sluppet igennem, hvis
 React-forespørgslen ikke tilfældigvis havde ligget i sættet siden Fase 2. Derfor siger vagtens
