@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-12T14:29:40.478Z",
+  "generatedAt": "2026-09-12T14:31:14.756Z",
   "capabilities": [
     {
       "schemaVersion": 1,
@@ -44,7 +44,7 @@
       "cfpLocation": "capabilities/CapFoundry.csv.detectDelimiter",
       "artifactLocation": "capabilities/CapFoundry.csv.detectDelimiter/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:29:40.478Z"
+      "indexedAt": "2026-09-12T14:31:14.756Z"
     },
     {
       "schemaVersion": 1,
@@ -88,7 +88,7 @@
       "cfpLocation": "capabilities/CapFoundry.date.businessDaysBetween",
       "artifactLocation": "capabilities/CapFoundry.date.businessDaysBetween/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:29:40.478Z"
+      "indexedAt": "2026-09-12T14:31:14.756Z"
     },
     {
       "schemaVersion": 1,
@@ -136,7 +136,7 @@
       "cfpLocation": "capabilities/CapFoundry.geo.distance",
       "artifactLocation": "capabilities/CapFoundry.geo.distance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:29:40.478Z"
+      "indexedAt": "2026-09-12T14:31:14.756Z"
     },
     {
       "schemaVersion": 1,
@@ -193,7 +193,7 @@
       "cfpLocation": "capabilities/CapFoundry.geo.geocode",
       "artifactLocation": "capabilities/CapFoundry.geo.geocode/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:29:40.478Z"
+      "indexedAt": "2026-09-12T14:31:14.756Z"
     },
     {
       "schemaVersion": 1,
@@ -241,7 +241,7 @@
       "cfpLocation": "capabilities/CapFoundry.json.schema.infer",
       "artifactLocation": "capabilities/CapFoundry.json.schema.infer/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:29:40.478Z"
+      "indexedAt": "2026-09-12T14:31:14.756Z"
     },
     {
       "schemaVersion": 1,
@@ -294,7 +294,7 @@
       "cfpLocation": "capabilities/CapFoundry.sun.times",
       "artifactLocation": "capabilities/CapFoundry.sun.times/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:29:40.478Z"
+      "indexedAt": "2026-09-12T14:31:14.756Z"
     },
     {
       "schemaVersion": 1,
@@ -339,7 +339,7 @@
       "cfpLocation": "capabilities/CapFoundry.text.editDistance",
       "artifactLocation": "capabilities/CapFoundry.text.editDistance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:29:40.478Z"
+      "indexedAt": "2026-09-12T14:31:14.756Z"
     },
     {
       "schemaVersion": 1,
@@ -383,7 +383,7 @@
       "cfpLocation": "capabilities/CapFoundry.text.slugify",
       "artifactLocation": "capabilities/CapFoundry.text.slugify/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:29:40.478Z"
+      "indexedAt": "2026-09-12T14:31:14.756Z"
     },
     {
       "schemaVersion": 1,
@@ -404,7 +404,7 @@
         "create a custom element that renders rows with column sorting",
         "vanilla javascript data table with keyboard accessible sorting",
         "build a framework free table component from a column spec",
-        "render a sortable table i can open in a browser from these rows"
+        "give me a table i can open in a browser with these rows already in it"
       ],
       "tags": [
         "ui",
@@ -429,7 +429,7 @@
       "cfpLocation": "capabilities/CapFoundry.ui.dataTable",
       "artifactLocation": "capabilities/CapFoundry.ui.dataTable/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:29:40.478Z"
+      "indexedAt": "2026-09-12T14:31:14.756Z"
     },
     {
       "schemaVersion": 1,
@@ -473,7 +473,7 @@
       "cfpLocation": "capabilities/CapFoundry.validation.iban",
       "artifactLocation": "capabilities/CapFoundry.validation.iban/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:29:40.478Z"
+      "indexedAt": "2026-09-12T14:31:14.756Z"
     }
   ]
 }
