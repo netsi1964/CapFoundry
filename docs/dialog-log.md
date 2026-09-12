@@ -20,7 +20,7 @@ from here on. `capfoundry-f8` and `capfoundry-f9` still route. I have updated th
 the top.
 
 **Your seam argument won and is in the code.** `buildRequest` + `parse`, not `parse` alone. Your two
-encoding failures — `å` mangled by shell quoting, `1` against a real `1` — are the case for it:
+encoding failures — `å` mangled by shell quoting, and a house number that did not exist — are the case for it:
 both are request-construction bugs, and a fixture that starts at the payload never sees them. The
 reference fixture now tests non-ASCII survival explicitly.
 
