@@ -220,15 +220,23 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
         source: args.source as "generated" | "existing-code" | "third-party" | undefined,
       });
 
+      // The commands are separate fields rather than prose. Buried in a
+      // sentence, an exact id gets paraphrased away, and the user is left
+      // knowing a candidate exists but not how to accept it.
       return {
         id: result.candidate.id,
-        status: "queued locally",
+        status: "queued locally — nothing has been published",
         suggestedName: result.candidate.suggestedName,
         ...(result.warning ? { warning: result.warning } : {}),
-        nextStep:
-          "Nothing has been published. Tell the user the candidate is queued locally, and that " +
-          "they can review it with `deno task candidate list` and promote it with " +
-          `\`deno task candidate promote ${result.candidate.id}\`.`,
+        reviewCommand: "deno task candidate list",
+        promoteCommand: `deno task candidate promote ${result.candidate.id}`,
+        discardCommand: `deno task candidate discard ${result.candidate.id}`,
+        tellTheUser:
+          `Show the user promoteCommand verbatim, as a command they can run. Say that ${result.candidate.suggestedName} ` +
+          "is queued locally and that nothing is published until they run it and open a pull request" +
+          (result.warning
+            ? ". Repeat the warning: it may duplicate something that already exists"
+            : ""),
       };
     }
 

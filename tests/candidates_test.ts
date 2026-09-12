@@ -272,6 +272,20 @@ Deno.test("an incomplete candidate promotes to a skeleton the validator rejects"
   }
 });
 
+Deno.test("the submission response hands back a runnable promote command", async () => {
+  // Buried in prose, an exact id gets paraphrased away and the user is left
+  // knowing a candidate exists but not how to accept it.
+  await withCfcm(async (cfcm) => {
+    const result = await cfcm.submitCandidate(candidateInput());
+    const id = result.candidate.id;
+
+    // The MCP layer builds these from the id; assert the id is usable as one.
+    assertEquals(`deno task candidate promote ${id}`.includes(id), true);
+    assert(/^\d{4}-\d{2}-\d{2}-[0-9a-f]{8}$/.test(id), `id "${id}" is not shell-safe`);
+    assert(!/[\s;&|$`'"]/.test(id), `id "${id}" contains characters that would break a command`);
+  });
+});
+
 Deno.test("the skill stays policy, not mechanics (PRD-FEAT-014)", async () => {
   const skill = await Deno.readTextFile(
     join(REPO_ROOT, "skills/capability-awareness/SKILL.md"),
