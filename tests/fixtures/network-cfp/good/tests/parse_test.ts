@@ -19,7 +19,7 @@ Deno.test("encodes a symbol that would otherwise change the resource", () => {
 });
 
 Deno.test("preserves non-ASCII characters through encoding", () => {
-  // The class of bug where "Rådhuspladsen" arrives as "Grenvej".
+  // The class of bug where "Rådhuspladsen" arrives as "Rdhuspladsen".
   const { url } = buildRequest({ symbol: "grenåvej" });
   assert(url.includes("GREN%C3%85VEJ"), `lost the å: ${url}`);
 });
