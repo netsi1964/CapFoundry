@@ -287,7 +287,7 @@ Implementerer §21 under AD-5.
 `PRD-FEAT-009.2` Alle §21-felter, plus `spawnMs` og de anvendte søgetærskler
 `PRD-FEAT-009.3` Opt-in upload, styret af `telemetry.upload` i `cfcm.json`, default `false`
 `PRD-FEAT-009.4` Redaktionsgaranti: input og output logges aldrig, heller ikke ved fejl
-`PRD-FEAT-009.5` `scripts/aggregate-telemetry.ts` producerer Explore-tallene
+`PRD-FEAT-009.5` `scripts/aggregate-telemetry.ts` producerer Explore-tallene — ✅ leveret, 11 tests
 
 **Acceptkriterier**
 - En grep efter et kendt input-payload i hele telemetri-mappen giver nul træf efter en fuld evalueringskørsel.
@@ -425,13 +425,21 @@ Implementerer §22–§23 under AD-6. **Dette er den feature MVP'en findes for.*
 
 ---
 
-### PRD-FEAT-016 · Explore / Trending · P2 · S
+### PRD-FEAT-016 · Explore / Trending · P2 · S · ✅ leveret
 
 Implementerer §20. Statisk genereret side, ingen LLM-analyse.
 
 `PRD-FEAT-016.1` Statisk HTML genereret fra aggregeret telemetri
 `PRD-FEAT-016.2` Alle seks §20-sektioner: Most Used, Most Searched, Missing/gentagne `NO_MATCH`, New Candidates, Fastest Growing, Recently Added
-`PRD-FEAT-016.3` Publiceret via GitHub Pages fra samme repo
+`PRD-FEAT-016.3` Publiceret via GitHub Pages **som et workflow-trin der kører `aggregate`**, ikke som committet output — se rettelsen nedenfor
+
+> **Rettelse til `016.3`.** Oprindeligt stod der at siden skulle publiceres fra repoet, hvilket
+> implicerede at `data.json` og `index.html` blev committet. Det er forkert, og Marie fangede det:
+> `data.json` er **én maskines telemetri**, og `index.html` er genereret af den. At committe
+> nogen af dem ville publicere den maskines forbrug — inklusive `missing`, altså de forespørgsler
+> brugeren har stillet. Det ville omgøre hele privatlivsbeslutningen om `logQueryText` gennem en
+> sidedør. Outputtet er gitignoreret; Pages skal være et workflow-trin der kører `aggregate` mod
+> de data der er tiltænkt offentliggørelse.
 
 **Acceptkriterier**
 - Siden bygger uden telemetri og viser da tomme sektioner frem for at fejle.
@@ -719,7 +727,7 @@ Dette er fasen hvor arkitekturen kan vise sig forkert. Bliver den det, har vi ku
 
 *Opfyldt, og loopet har allerede kørt for alvor. `CapFoundry.text.editDistance` er den første capability der er kommet ind **gennem** loopet frem for at være designet på forhånd: en rigtig session bad om edit distance, CFCM svarede `PARTIAL_MATCH`, agenten skrev koden og tilbød den som kandidat, og et menneske forfremmede den. Otte offentlige capabilities, 280 tests grønne.*
 
-### Fase 4 · Beviset · ~5–6 dage · ⬅ **næste**
+### Fase 4 · Beviset · ~5–6 dage · ⬅ **i gang** — `009.5` og `016` leveret, `015` er kritisk sti
 
 `PRD-FEAT-015`, `016`, `009.5`.
 

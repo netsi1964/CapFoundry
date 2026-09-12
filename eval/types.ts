@@ -67,7 +67,17 @@ export interface Scenario {
 
 /** What an assertion gets to look at. */
 export interface AssertionContext {
-  /** Directory the agent worked in. Read whatever it wrote. */
+  /**
+   * Directory the agent worked in.
+   *
+   * The harness creates it fresh per run and copies the scenario's `fixtures/`
+   * into it first, so a scenario that needs a CSV or a sample document refers
+   * to it by plain relative path and the agent finds it where a user would
+   * have put it. Nothing else is placed there, and it is not reused between
+   * the two conditions — a file left behind by condition A would be an input
+   * to condition B, which is the sort of contamination that produces a result
+   * nobody can explain.
+   */
   workspace: string;
   /** Everything the agent said and did, as plain text. */
   transcript: string;

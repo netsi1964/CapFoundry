@@ -23,6 +23,15 @@ eval/scenarios/near-miss-reject/
 └── assert.ts         deterministic correctness check
 ```
 
+## Fixtures and the workspace
+
+The harness creates a fresh workspace per run and copies `fixtures/` into it before the agent
+starts. Refer to files by plain relative path in `prompt.md`, the way a user would.
+
+The workspace is never reused between the two conditions. A file left behind by condition A would be
+an input to condition B, and that is the kind of contamination that produces a number nobody can
+explain afterwards.
+
 ## The two questions, kept apart
 
 **Was the task solved?** `assert.ts`. Scenario-specific, so it is code.

@@ -178,10 +178,14 @@ try {
       else if (returnMode === "result-and-artifact") out(result, pretty || asJson);
       else out(result.result, pretty || asJson);
 
-      console.error(
-        `${capability}  ${result.timings.executionMs} ms` +
-          `${result.timings.artifactCacheHit ? "  (cached)" : ""}`,
-      );
+      // "(cached)" alone read as "no work was done", which on a NETWORK
+      // capability is the opposite of true: the artifact was cached and the
+      // live call still happened, inside the same number.
+      const notes = [
+        result.timings.artifactCacheHit ? "artifact cached" : "artifact fetched",
+        descriptor.effect === "NETWORK" ? "includes a live network call" : null,
+      ].filter(Boolean);
+      console.error(`${capability}  ${result.timings.executionMs} ms  [${notes.join(" · ")}]`);
       break;
     }
 
