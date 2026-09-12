@@ -19,20 +19,26 @@
 import { Cfcm } from "../cfcm/core.ts";
 import { CfcmError } from "../cfcm/types.ts";
 import type { ReturnMode } from "../cfcm/types.ts";
+import { buildInput, describeArgs } from "../cfcm/util/schema_args.ts";
 
 const USAGE = `cfcm — ask CapFoundry from a shell
 
   cfcm search <query> [--limit N] [--json]
-  cfcm invoke <capability> [json] [--return result|artifact|result-and-artifact|metadata] [--pretty]
+  cfcm invoke <capability> [args...] [--field value] [--return mode] [--pretty]
   cfcm describe <capability>
   cfcm list [--json]
 
-Input for invoke comes from the argument, or from stdin when omitted or given as "-".
-invoke writes only the result to stdout, so it pipes.
+Arguments are read from the capability's own inputSchema, so you rarely write JSON.
+Run: cfcm invoke <capability> --help   to see what a capability takes.
 
-  cfcm invoke CapFoundry.text.slugify '{"text":"Rødgrød med fløde","locale":"da"}'
+  cfcm invoke CapFoundry.text.slugify "Rødgrød med fløde" --locale da
+  cfcm invoke CapFoundry.geo.geocode Aarhus
+  cfcm invoke CapFoundry.geo.distance --from.lat 55.6 --from.lon 12.5 --to.lat 56.1 --to.lon 10.2
+
+JSON still works for anything the mapping cannot express, and stdin is read when
+no argument is given. invoke writes only the result to stdout, so it pipes.
+
   echo '{"text":"Hej"}' | cfcm invoke CapFoundry.text.slugify
-  cfcm search "distance between two coordinates"
 
 Exit codes: 0 success · 1 error · 2 no confident match · 3 usage`;
 
@@ -124,14 +130,44 @@ try {
       }
       const returnMode = (option(args, "--return") ?? "result") as ReturnMode;
 
-      const positional = args.find((a) => !a.startsWith("--"));
-      const raw = !positional || positional === "-" ? await readStdin() : positional;
+      const descriptor = await cfcm.describe(capability);
+
+      if (flag(args, "--help")) {
+        console.log(`${descriptor.name}  ${descriptor.version}\n  ${descriptor.description}\n`);
+        console.log(describeArgs(descriptor.inputSchema));
+        console.log(`\n  in:  ${descriptor.inputSummary}\n  out: ${descriptor.outputSummary}`);
+        Deno.exit(0);
+      }
+
+      // Flags first, so what remains is positional.
+      const flags = new Map<string, string[]>();
+      const positionals: string[] = [];
+      for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+        if (!arg.startsWith("--")) {
+          positionals.push(arg);
+          continue;
+        }
+        const [name, inline] = arg.slice(2).split(/=(.*)/s);
+        const next = args[i + 1];
+        const value = inline ?? (next && !next.startsWith("--") ? (i++, next) : "");
+        flags.set(name, [...(flags.get(name) ?? []), value]);
+      }
+
       let input: unknown;
-      try {
+      if (positionals.length === 0 && flags.size === 0) {
+        const raw = await readStdin();
+        try {
+          input = raw.trim() === "" ? undefined : JSON.parse(raw);
+        } catch (err) {
+          console.error(`stdin is not valid JSON: ${(err as Error).message}`);
+          Deno.exit(3);
+        }
+      } else if (positionals[0] === "-") {
+        const raw = await readStdin();
         input = raw.trim() === "" ? undefined : JSON.parse(raw);
-      } catch (err) {
-        console.error(`input is not valid JSON: ${(err as Error).message}`);
-        Deno.exit(3);
+      } else {
+        input = buildInput(descriptor.inputSchema, { positionals, flags });
       }
 
       const result = await cfcm.invoke({ capability, input, options: { return: returnMode } });

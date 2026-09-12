@@ -95,8 +95,23 @@ ln -s "$PWD/bin/cfcm" ~/.deno/bin/cfcm     # or anywhere on your PATH
 ```bash
 cfcm list
 cfcm search "distance between two coordinates"
-cfcm invoke CapFoundry.text.slugify '{"text":"Rødgrød med fløde","locale":"da"}'
-echo '{"text":"Hej Verden"}' | cfcm invoke CapFoundry.text.slugify
+cfcm invoke CapFoundry.text.slugify "Rødgrød med fløde" --locale da
+cfcm invoke CapFoundry.geo.geocode Aarhus
+cfcm invoke CapFoundry.date.businessDaysBetween --help
+```
+
+Arguments come from the capability's own `inputSchema`, so you rarely write
+JSON. A positional fills the next required field, `--name value` fills a named
+one, `--a.b value` a nested one, and a positional filling an object that needs
+a single string gets wrapped into it — which is why `geocode Aarhus` works and
+still means `{"query":"Aarhus"}`.
+
+Anything ambiguous is refused with the arguments named. Asking for
+`geo.distance 55.6` will not guess whether you meant a latitude:
+
+```
+ARG_INVALID: "from" is not a single value.
+Give it as --from.lat --from.lon, or pass the whole input as JSON.
 ```
 
 `invoke` writes only the result to stdout and diagnostics to stderr, so
