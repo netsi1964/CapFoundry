@@ -1,5 +1,7 @@
 # CapFoundry
 
+![CapFoundry — expose pure functions to AI agents, with a shell interface for calling them](docs/img/cap-foundry.png)
+
 > **Don't generate what you already know.**
 
 CapFoundry is an experimental, demand-driven software capability platform for humans and AI agents.
