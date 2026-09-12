@@ -22,7 +22,7 @@ export const DEFAULT_CONFIG: CfcmConfig = {
     maxOutputBytes: 4 * 1024 * 1024,
     network: { enabled: false, allow: [] },
   },
-  telemetry: { local: true, upload: false, endpoint: null, logQueryText: true },
+  telemetry: { local: true, upload: false, endpoint: null, logQueryText: false },
   namespaces: [],
 };
 
@@ -209,7 +209,7 @@ export function parseConfig(raw: unknown, baseDir: string): CfcmConfig {
       local: tel.local === undefined ? true : tel.local === true,
       upload: tel.upload === true,
       endpoint: typeof tel.endpoint === "string" ? tel.endpoint : null,
-      logQueryText: tel.logQueryText === undefined ? true : tel.logQueryText === true,
+      logQueryText: tel.logQueryText === true,
     },
     namespaces: parseNamespaces(r.namespaces, baseDir),
   };

@@ -37,8 +37,15 @@ export interface TelemetryEvent {
    * customer C-1002 in our CRM" — so it stays on the machine that asked it.
    * The local log is deliberately richer than anything that leaves.
    *
-   * Set telemetry.logQueryText to false to drop it, at the cost of the Missing
-   * section.
+   * **Off by default**, and deliberately so. The harm is asymmetric: recording
+   * when we should not is silent and permanent — this log appends forever and
+   * has no retention policy — while not recording costs one page section,
+   * which is visible and recoverable. A default that can only be discovered by
+   * reading config.ts is not a default anyone chose.
+   *
+   * Turn it on with telemetry.logQueryText when you want to see what people
+   * are asking for that does not exist. The aggregator says so at the moment
+   * it would have been useful, rather than leaving you to find the setting.
    */
   queryText: string | null;
   status: SearchStatus | "OK" | "ERROR";

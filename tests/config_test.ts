@@ -12,6 +12,39 @@ Deno.test("an empty config yields working defaults", () => {
   assertEquals(config.namespaces, []);
 });
 
+Deno.test("recording the search query is opt-in", () => {
+  // The harm is asymmetric: recording when the user would rather not is silent
+  // and permanent, while not recording costs one page section. If this
+  // assertion is ever changed to true, the change should be argued for in the
+  // commit rather than arrived at.
+  assertEquals(parseConfig({}, ".").telemetry.logQueryText, false);
+  assertEquals(DEFAULT_CONFIG.telemetry.logQueryText, false);
+
+  // Only an explicit true enables it; a truthy value is not consent.
+  assertEquals(
+    parseConfig({ telemetry: { logQueryText: "yes" } }, ".").telemetry.logQueryText,
+    false,
+  );
+  assertEquals(parseConfig({ telemetry: { logQueryText: 1 } }, ".").telemetry.logQueryText, false);
+  assertEquals(
+    parseConfig({ telemetry: { logQueryText: true } }, ".").telemetry.logQueryText,
+    true,
+  );
+});
+
+Deno.test("the example config states every privacy-affecting default", async () => {
+  // A default discoverable only by reading config.ts is not a default anyone
+  // chose. The example is where someone cloning this looks first.
+  const example = JSON.parse(
+    await Deno.readTextFile(new URL("../cfcm.example.json", import.meta.url)),
+  );
+  for (const key of ["local", "upload", "endpoint", "logQueryText"]) {
+    assertEquals(key in example.telemetry, true, `cfcm.example.json omits telemetry.${key}`);
+  }
+  assertEquals(example.telemetry.upload, false);
+  assertEquals(example.telemetry.logQueryText, false);
+});
+
 Deno.test("Local is a reserved namespace and says why", () => {
   const err = assertThrows(
     () =>

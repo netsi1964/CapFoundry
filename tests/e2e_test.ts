@@ -181,13 +181,17 @@ Deno.test("telemetry records the run and leaks no payload (PRD-FEAT-009.4)", asy
     );
     assert(!combined.includes("522."), "capability output leaked into telemetry");
 
-    // The query IS recorded locally — Explore's Missing section is demand for
-    // a capability that does not exist, and it cannot be built from a token
-    // count. The guarantee is that it never leaves the machine, which
-    // telemetry_upload_test.ts asserts against the upload path.
+    // The query is not recorded either, because logQueryText is off by default
+    // and this config does not turn it on. Opting in is covered in
+    // tests/telemetry_upload_test.ts, along with the guarantee that the query
+    // is stripped at the upload boundary even when it is recorded locally.
     assert(
-      combined.includes("latitude"),
-      "the query should be recorded locally so unmet demand can be grouped",
+      !combined.includes("latitude"),
+      "the query was recorded without logQueryText being enabled",
+    );
+    assert(
+      typeof events[0].queryTokenCount === "number" && events[0].queryTokenCount > 0,
+      "the token count is still recorded: it carries no content",
     );
   });
 });

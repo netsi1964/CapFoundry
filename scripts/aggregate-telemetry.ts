@@ -30,6 +30,12 @@ export interface ExploreData {
   mostUsed: { name: string; invocations: number; namespaceType: string }[];
   mostSearched: { name: string; appearances: number; matchRate: number }[];
   missing: { query: string; occurrences: number; lastSeen: string; bestConfidence: number }[];
+  /**
+   * Set when searches went unanswered but their text was not recorded, so a
+   * page can say "there was unmet demand and we cannot tell you what it was"
+   * rather than showing an empty section that looks like no demand.
+   */
+  missingUnavailable: { unattributedNoMatches: number; enableWith: string } | null;
   newCandidates: { name: string; submittedAt: string }[];
   fastestGrowing: { name: string; recent: number; earlier: number; change: number }[];
   recentlyAdded: { name: string; version: string; indexedAt: string }[];
@@ -136,6 +142,11 @@ export function aggregate(
     (e) => e.capability,
   );
 
+  // Searches that found nothing and whose text was not recorded. Reporting
+  // the count is the difference between "no unmet demand" and "unmet demand we
+  // chose not to write down".
+  const unattributed = noMatches.filter((e) => !e.queryText).length;
+
   const from = events[0]?.ts ?? null;
   const to = events[events.length - 1]?.ts ?? null;
 
@@ -171,6 +182,12 @@ export function aggregate(
     missing: [...missingGroups.values()]
       .sort((a, b) => b.occurrences - a.occurrences || a.query.localeCompare(b.query))
       .slice(0, TOP_N),
+    missingUnavailable: unattributed > 0
+      ? {
+        unattributedNoMatches: unattributed,
+        enableWith: 'set "telemetry": { "logQueryText": true } in cfcm.json',
+      }
+      : null,
     newCandidates: candidates
       .map((c) => ({ name: c.suggestedName, submittedAt: c.createdAt }))
       .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))
@@ -211,4 +228,13 @@ if (import.meta.main) {
     `✓ ${outputPath} — ${data.totals.searches} searches, ${data.totals.invocations} invocations, ` +
       `${data.missing.length} unmet demand group(s)`,
   );
+
+  if (data.missingUnavailable) {
+    console.log(
+      `  ${data.missingUnavailable.unattributedNoMatches} search(es) found nothing, but their ` +
+        `text was not recorded, so Explore cannot say what was wanted.\n` +
+        `  To see it: ${data.missingUnavailable.enableWith}. Queries stay on this machine and ` +
+        `are stripped before any upload.`,
+    );
+  }
 }

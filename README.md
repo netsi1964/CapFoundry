@@ -86,6 +86,32 @@ deno task candidate promote <id>         # writes a CFP skeleton for you to fini
 
 All three are searched as one space. Only the policies differ.
 
+### What CFCM writes to your machine
+
+Everything stays local unless you turn something on. `cfcm.example.json` shows
+every default.
+
+| | Default | What it does |
+|---|---|---|
+| `telemetry.local` | **on** | Appends one JSON line per search and invocation to `~/.cfcm/telemetry/`. Never contains capability input or output. |
+| `telemetry.upload` | **off** | Nothing is sent anywhere. |
+| `telemetry.logQueryText` | **off** | When on, records the *search query* locally — never the capability's input, and stripped at the upload boundary if you later enable upload. |
+
+`logQueryText` is off because the harm is asymmetric. Recording when you would
+rather not is silent and permanent — the log appends with no retention policy —
+while not recording costs one section of the Explore page, which is visible and
+recoverable.
+
+Turn it on when you want to see what people are asking for that does not exist
+yet. That is the most useful thing telemetry here produces, and it is the only
+part of Explore that says what to build rather than what already happened.
+`deno task aggregate` tells you the setting exists at the moment it would have
+paid off, rather than leaving you to find it.
+
+Nothing here is uploaded by default, and the query is stripped at the upload
+boundary rather than at each call site, so a field added later cannot reach the
+network by someone forgetting.
+
 ### A note on the sandbox
 
 Capability artifacts execute in their own Deno subprocess with **no `--allow-*` flag at all**, plus

@@ -20,7 +20,8 @@
   "telemetry": {
     "local": true,
     "upload": false,
-    "endpoint": null
+    "endpoint": null,
+    "logQueryText": false
   },
   "namespaces": [
     {
