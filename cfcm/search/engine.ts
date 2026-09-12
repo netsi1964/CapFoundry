@@ -115,9 +115,20 @@ export class SearchEngine {
 
     const idfCoverage = totalIdf > 0 ? Math.min(1, matchedIdf / totalIdf) : 0;
 
-    const margin = scored.length < 2
-      ? 1
-      : Math.max(0, Math.min(1, (top.score - scored[1].score) / top.score));
+    // With no runner-up there is no separation to measure, so confidence rests
+    // on coverage alone.
+    //
+    // Scoring an absent competitor as a perfect margin was a real wrong-match
+    // source: on a nine-capability index most queries reach exactly one
+    // candidate, so every one of them collected the full margin weight for
+    // free. "compute the edit distance between two strings" covered 39% of its
+    // query and still cleared the MATCH threshold on the back of that 0.3,
+    // returning geo.distance for a string problem. Being the only capability
+    // that shares a word is not evidence of being the right one — it is
+    // evidence that the index is small.
+    if (scored.length < 2) return idfCoverage;
+
+    const margin = Math.max(0, Math.min(1, (top.score - scored[1].score) / top.score));
 
     const { coverageWeight, marginWeight } = this.thresholds;
     return coverageWeight * idfCoverage + marginWeight * margin;

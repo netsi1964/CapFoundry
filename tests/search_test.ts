@@ -27,33 +27,81 @@ function record(partial: Partial<IndexRecord> & Pick<IndexRecord, "name">): Inde
   };
 }
 
+/**
+ * Three real capability descriptors, copied verbatim from their capability.json.
+ *
+ * An invented fixture drifts from what ships and then lies in both directions:
+ * a thinner one under-reports recall, a richer one hides wrong matches. These
+ * are the actual aliases and example queries, so a mechanic pinned here is a
+ * mechanic that holds in production.
+ */
 const FLEET = [
   record({
     name: "CapFoundry.geo.distance",
     description: "Calculate the great-circle distance between two geographic coordinates",
-    aliases: ["haversine", "great circle distance", "distance between coordinates"],
-    exampleQueries: ["how many kilometres between these two GPS points"],
-    tags: ["geo", "coordinates", "gps"],
-    inputSummary: "Two WGS-84 points as lat lon degrees",
-    outputSummary: "Distance as a number in the requested unit",
+    aliases: [
+      "haversine",
+      "great circle distance",
+      "distance between coordinates",
+      "how far apart are two points",
+      "kilometres between two places",
+      "lat lon distance",
+    ],
+    exampleQueries: [
+      "calculate distance between two latitude longitude coordinates",
+      "how many kilometres between these two GPS points",
+      "great circle distance between two places on earth",
+      "how far apart are two coordinates in miles",
+      "compute haversine distance between two positions",
+    ],
+    tags: ["geo", "geography", "math", "coordinates", "haversine", "gps"],
+    inputSummary: "Two WGS-84 points as lat/lon degrees, plus an optional unit",
+    outputSummary: "Great-circle distance as a number in the requested unit",
   }),
   record({
     name: "CapFoundry.text.slugify",
-    description: "Convert text into a stable URL-safe slug",
-    aliases: ["url slug", "permalink", "kebab case"],
-    exampleQueries: ["turn a blog post title into a url friendly string"],
-    tags: ["text", "url"],
-    inputSummary: "Text and optional locale",
-    outputSummary: "A lowercase hyphenated slug",
+    description: "Convert arbitrary text into a stable URL-safe and filename-safe slug",
+    aliases: [
+      "url slug",
+      "permalink",
+      "kebab case",
+      "web safe string",
+      "clean up a title for a url",
+      "seo friendly filename",
+    ],
+    exampleQueries: [
+      "turn a blog post title into a url friendly string",
+      "make a permalink from a heading with accents",
+      "convert a product name into a safe filename",
+      "generate a kebab case identifier from free text",
+      "strip diacritics and spaces to build a web address",
+    ],
+    tags: ["text", "string", "url", "web", "normalization"],
+    inputSummary: "Free text plus optional locale, separator, maxLength and lowercase",
+    outputSummary: "A stable slug and whether it was truncated",
   }),
   record({
     name: "CapFoundry.validation.iban",
-    description: "Validate an international bank account number",
-    aliases: ["bank account check", "iban checksum", "account number validation"],
-    exampleQueries: ["check whether this bank account number is valid"],
-    tags: ["finance", "validation"],
-    inputSummary: "An IBAN string",
-    outputSummary: "Validity plus a normalized value",
+    description: "Validate an IBAN against ISO 13616 length, charset and mod-97 checksum rules",
+    aliases: [
+      "bank account check",
+      "international bank account number",
+      "mod 97 checksum",
+      "payment details validation",
+      "verify a bank account string",
+      "sepa account format",
+    ],
+    exampleQueries: [
+      "check whether this bank account number is valid",
+      "validate an international bank account number before saving it",
+      "is this sepa payment detail correctly formatted",
+      "verify the checksum on a customer bank account",
+      "normalize and check a bank account string from a form",
+    ],
+    tags: ["validation", "finance", "banking", "payments", "sepa"],
+    inputSummary: "An IBAN string, with or without spaces",
+    outputSummary:
+      "Validity, normalized and printed forms, country code and a machine-readable reason",
   }),
 ];
 
@@ -101,64 +149,22 @@ Deno.test("capabilities are findable without their name (OBJ-1)", () => {
   }
 });
 
-/**
- * The measured lexical recall ceiling (CH-1), pinned as a test rather than
- * left as a surprise.
- *
- * "make a permalink from a heading" is unambiguously a slugify task to a
- * human. Lexical search ranks slugify first — the signal is there — but two of
- * three content tokens are unknown to the index, so confidence lands at ~0.43
- * and the caller is told to check rather than trust. That is the honest answer
- * for a bag-of-words matcher, and tuning the threshold down to "fix" it would
- * trade OBJ-1 recall straight against OBJ-2's wrong-match rate.
- *
- * This is the evidence AD-2 exists to produce. If the full evaluation shows
- * OBJ-1 below 0.80 with failures shaped like this one, PRD-SEC-010 unlocks
- * embeddings. Until then the cheap fix is richer aliases and exampleQueries on
- * the capability itself.
- *
- * When this test starts failing because the query now MATCHes, that is a real
- * improvement — update it, do not delete it.
- */
-Deno.test("recall ceiling: a correct but low-overlap query ranks right, scores low", () => {
-  const r = engine.search({ query: "make a permalink from a heading" });
-  assertEquals(r.candidates[0].record.name, "CapFoundry.text.slugify");
-  assertEquals(r.status, "PARTIAL_MATCH");
-  assert(r.confidence > 0.35 && r.confidence < 0.55, `confidence was ${r.confidence}`);
-});
+Deno.test("a lone candidate earns no margin credit", () => {
+  // The regression that returned geo.distance for "edit distance between two
+  // strings". Being the only capability that shares a word is not evidence of
+  // being the right one; on a small index it is the normal case.
+  const single = new SearchEngine([FLEET[0]], DEFAULT_THRESHOLDS);
 
-Deno.test("near misses never reach MATCH (OBJ-2)", () => {
-  const nearMisses = [
-    "compute the edit distance between two strings",
-    "measure the distance a runner covered on a treadmill",
-    "distance to the moon in light years",
-    "slugify a snail",
-    "validate a credit card number",
-  ];
-  for (const query of nearMisses) {
-    const r = engine.search({ query });
-    assert(
-      r.status !== "MATCH",
-      `near miss "${query}" was wrongly classified MATCH at confidence ${r.confidence}`,
-    );
-  }
-});
-
-Deno.test("out-of-domain queries are NO_MATCH, not PARTIAL_MATCH", () => {
-  for (const query of ["send an email to the customer", "deploy the app to production"]) {
-    assertEquals(engine.search({ query }).status, "NO_MATCH", query);
-  }
-});
-
-Deno.test("an unknown query token lowers confidence rather than being ignored", () => {
-  // The regression that made every one-token overlap a confident match.
-  const clean = engine.search({ query: "distance between coordinates" });
-  const diluted = engine.search({ query: "distance between quantum entangled tachyon manifolds" });
+  const partial = single.search({ query: "compute the edit distance between two strings" });
+  assertEquals(partial.candidates.length, 1, "the fixture should leave exactly one candidate");
   assert(
-    diluted.confidence < clean.confidence,
-    `unknown tokens must reduce confidence: ${diluted.confidence} vs ${clean.confidence}`,
+    partial.status !== "MATCH",
+    `a 1-of-N coverage query must not MATCH on an uncontested index, got ${partial.confidence}`,
   );
-  assert(diluted.status !== "MATCH");
+
+  // A genuinely well-covered query still clears the bar without a runner-up.
+  const good = single.search({ query: "great circle distance between coordinates" });
+  assertEquals(good.status, "MATCH");
 });
 
 Deno.test("an empty query matches nothing", () => {

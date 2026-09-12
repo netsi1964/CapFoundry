@@ -46,7 +46,18 @@ const RECALL: [string, string][] = [
  * else; out-of-domain queries are simply not covered.
  */
 const MUST_NOT_MATCH = [
+  // The first three came from a real trial session and are the reason the
+  // single-candidate rule changed. The original set only had the "levenshtein"
+  // spelling, whose unknown token diluted coverage enough to hide the bug:
+  // drop that one word and geo.distance was returned as a confident MATCH for
+  // a string problem.
+  "compute the edit distance between two strings",
+  "levenshtein distance",
+  "beregn edit distance mellem to strenge",
+  "how similar are these two strings",
   "compute the levenshtein edit distance between two strings",
+  "compute the hamming distance between two bit vectors",
+  "measure how long the flight distance is in air miles",
   "how far did the runner travel on the treadmill",
   "distance to the moon in light years",
   "validate a credit card number with the luhn algorithm",
@@ -115,6 +126,33 @@ Deno.test("OBJ-2: nothing outside a capability's meaning reaches MATCH", async (
       wrongRate <= 0.05,
       `wrong-match rate ${wrongRate.toFixed(3)} exceeds 0.05\n${wrong.join("\n")}`,
     );
+  });
+});
+
+/**
+ * The measured lexical recall ceiling (CH-1), pinned against the real index.
+ *
+ * An earlier version of this measurement lived in search_test.ts against a
+ * hand-built fixture and reported "make a permalink from a heading" as the
+ * ceiling. That was an artifact of a thin fixture, not a property of the
+ * system: the shipped slugify capability lists almost that exact phrase as an
+ * example query, so it matches at full confidence. The lesson is that a
+ * recall claim is only meaningful against the descriptors that actually ship.
+ *
+ * This is the real one. "how far is it from one gps point to another" is
+ * unambiguously a distance question to a human, but only "far", "gps" and
+ * "point" carry signal and coverage lands near 0.30. Tuning the threshold down
+ * to catch it would re-admit the wrong matches above, which is the trade AD-2
+ * exists to measure rather than guess at.
+ *
+ * If this starts failing because the query now matches, that is an
+ * improvement — update it, do not delete it.
+ */
+Deno.test("recall ceiling: a correct but low-overlap query is missed", async () => {
+  await withCfcm(async (cfcm) => {
+    const found = await cfcm.search("how far is it from one gps point to another");
+    assert(found.status !== "MATCH", `expected a miss, got ${found.status}`);
+    assert(found.confidence < 0.55, `confidence was ${found.confidence}`);
   });
 });
 

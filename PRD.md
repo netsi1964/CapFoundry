@@ -1,6 +1,6 @@
 # CapFoundry MVP — Implementeringsplan (PRD)
 
-**Version 1.2** · **Sidst opdateret: 2026-09-12** · **Status: Fase 0–2 leveret, Fase 3 er næste**
+**Version 1.3** · **Sidst opdateret: 2026-09-12** · **Status: Fase 0–2 leveret, Fase 3 er næste**
 
 Dette dokument omsætter [MVP v0.2](docs/mvp/CapFoundry-MVP-v0.2.md) til en plan der kan kodes efter. Det tilføjer ingen ambition til MVP'en — det lukker de huller der forhindrede den i at blive bygget, og det respekterer §5 (hvad vi bevidst ikke bygger), §27 (fejlreglen) og §28 (whiteboard-reglen) som bindende begrænsninger.
 
@@ -708,7 +708,7 @@ Dette er fasen hvor arkitekturen kan vise sig forkert. Bliver den det, har vi ku
 
 **Exit:** syv offentlige + én privat + én lokal capability i ét søgerum (OBJ-6). Artefakt-retur virker på `ui.dataTable` (OBJ-7).
 
-*Opfyldt. Ni capabilities i ét søgerum, 249 tests grønne. Målt på det rigtige indeks: **OBJ-1 = 0,938** (15/16 omskrivninger, mod et mål på 0,80) og **OBJ-2 = 0,000** (0/13 near-misses og out-of-domain, mod et loft på 0,05). Ingen forkert capability nåede toppen på et `MATCH`. To fund undervejs — F3 og F4 — er håndteret. Se «Fund fra Fase 2».*
+*Opfyldt. Ni capabilities i ét søgerum, 250 tests grønne. Målt på det rigtige indeks efter F5-rettelsen: **OBJ-1 = 0,941** (16/17 omskrivninger, mod et mål på 0,80) og **OBJ-2 = 0,000** (0/19 near-misses og out-of-domain, mod et loft på 0,05). Fire fund undervejs — F3 og F4 under byggeriet, F5 og F6 ved første rigtige brug. Se «Fund fra Fase 2» og «Fund fra første rigtige brug».*
 
 ### Fase 3 · Loopet lukkes · ~3 dage · ⬅ **næste**
 
@@ -763,10 +763,8 @@ forespørgselstokens, hvor ukendte tælles til `ln(1 + (N + 0,5) / 0,5)`.
 
 ### Målt recall-loft
 
-`"make a permalink from a heading"` rangerer korrekt `text.slugify` øverst, men lander på 0,43 og
-bliver `PARTIAL_MATCH`. Det er CH-1 i praksis. Det er fastholdt som en test (`recall ceiling: …`)
-frem for tunet væk — at sænke tærsklen ville handle OBJ-1's recall direkte mod OBJ-2's
-wrong-match rate. Det er præcis den afvejning AD-2 er sat i verden for at måle frem for at gætte.
+> **Tilbagetrukket i v1.3.** Denne måling kørte mod en håndbygget testfixture, ikke mod de
+> deskriptorer der faktisk udsendes, og holder ikke. Se F6.
 
 ---
 
@@ -796,9 +794,13 @@ igennem.
 
 | Mål | Måling | Tærskel | |
 |---|---|---|---|
-| OBJ-1 hit rate | **0,938** (15/16) | ≥ 0,80 | ✅ |
-| OBJ-2 wrong-match | **0,000** (0/13) | ≤ 0,05 | ✅ |
+| OBJ-1 hit rate | **0,941** (16/17) | ≥ 0,80 | ✅ |
+| OBJ-2 wrong-match | **0,000** (0/19) | ≤ 0,05 | ✅ |
 | Forkert top-hit på et `MATCH` | **0** | 0 | ✅ |
+
+> **Rettelse.** v1.2 rapporterede OBJ-2 = 0,000. Det tal var forkert. Den faktiske rate var
+> **0,105**, altså mere end det dobbelte af loftet — se F5 nedenfor. Tallene i tabellen er efter
+> rettelsen.
 
 **Vigtigt forbehold, og det står også i `tests/objectives_test.ts`:** forespørgslerne er skrevet af
 den samme person som skrev capabilities' aliases. Målingen viser intern konsistens, ikke uafhængig
@@ -806,9 +808,52 @@ recall. Den ærlige måling er A/B-harnesset i Fase 4, hvis scenarier er opgavef
 forespørgselsformede. Tallene her er en regressionsvagt, ikke et bevis for at OBJ-1 og OBJ-2 er
 indfriet.
 
-Den ene miss — «how far is it from one gps point to another» — rangerer korrekt `geo.distance`
-øverst men lander på 0,51, lige under tærsklen på 0,55. Tærsklen gør altså reelt arbejde her frem
-for at være dekoration.
+Den ene miss er «how far is it from one gps point to another», som lander på 0,30. Den er nu
+fastholdt som recall-loftet i `tests/objectives_test.ts`.
+
+---
+
+## Fund fra første rigtige brug
+
+### F5 · En enlig kandidat fik konfidens forærende — og det brød OBJ-2
+
+Fundet af en agent i en almindelig session, ikke af testsuiten. Brugeren bad om «beregn edit
+distance mellem to strenge». Agenten afviste korrekt `geo.distance` som urelateret og skrev koden
+selv — men den afvisning var agentens dømmekraft, ikke CFCM's. CFCM havde svaret **`MATCH` med
+konfidens 0,571** på den engelske formulering.
+
+**Årsag.** Konfidensformlen gav `margin = 1` når der kun var én kandidat. På et niveindeks når de
+fleste forespørgsler præcis én kandidat, så næsten alle fik hele margin-vægten på 0,3 forærende.
+«compute the edit distance between two strings» dækkede 39% af sin forespørgsel og klarede alligevel
+tærsklen på 0,55 udelukkende på den bonus. At være den eneste capability der deler ét ord er ikke
+bevis for at være den rigtige — det er bevis for at indekset er lille.
+
+**Rettelse.** Uden en nummer to er der ingen separation at måle, så konfidensen hviler på dækning
+alene. Ingen fabrikeret margin.
+
+**Måling før og efter, på det rigtige indeks:**
+
+| | Før | Efter |
+|---|---|---|
+| OBJ-2 wrong-match | **0,105** (2/19) | **0,000** (0/19) |
+| OBJ-1 hit rate | 0,941 | 0,941 uændret |
+
+**Hvorfor testsuiten ikke fangede det.** Mit near-miss-sæt indeholdt
+«compute the *levenshtein* edit distance between two strings». Ordet «levenshtein» er ukendt for
+indekset og tæller derfor med maksimal vægt i nævneren — lige nok til at trykke konfidensen under
+tærsklen. Fjern det ene ord, og fejlen træder frem. Jeg havde skrevet en test der bekræftede det
+svar jeg håbede på. De fire formuleringer fra den rigtige session er nu i sættet.
+
+### F6 · Recall-loftet fra Fase 1 var en artefakt, ikke et fund
+
+v1.1 rapporterede «make a permalink from a heading» som et målt leksikalsk recall-loft. Det holder
+ikke. Målingen kørte mod en håndbygget 3-record fixture, og den rigtige `text.slugify`-deskriptor
+har næsten præcis den formulering som `exampleQuery` — på det ægte indeks giver den `MATCH` med
+konfidens 1,0.
+
+En recall-påstand er kun meningsfuld mod de deskriptorer der faktisk udsendes. Fixturen er nu kopieret
+ordret fra de rigtige `capability.json`-filer, og recall-loftet er flyttet til
+`tests/objectives_test.ts`, hvor det måles mod det ægte indeks.
 
 ---
 
@@ -956,6 +1001,14 @@ Alle 28 afsnit i MVP v0.2 er enten dækket af en feature eller er en begrænsnin
 ---
 
 ## Changelog
+
+### v1.3 — 2026-09-12
+- **Rettelse af v1.2:** OBJ-2 blev rapporteret som 0,000; den faktiske rate var 0,105
+- F5: enlig kandidat fik margin-vægten forærende, hvilket gav forkerte `MATCH`. Rettet — konfidens
+  hviler nu på dækning alene uden en nummer to. OBJ-2 0,105 → 0,000, OBJ-1 uændret
+- F6: Fase 1's «recall-loft» var en artefakt af en tynd testfixture. Fixturen er nu kopieret ordret
+  fra de rigtige deskriptorer, og recall-loftet måles mod det ægte indeks
+- Near-miss-sættet udvidet med de formuleringer der afslørede F5
 
 ### v1.2 — 2026-09-12
 - Fase 2 leveret: alle syv offentlige capabilities, privat fixture, `Local.*` fixture, return modes

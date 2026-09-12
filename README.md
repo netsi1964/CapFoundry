@@ -22,7 +22,7 @@ executes them in zero-permission Deno subprocesses, and writes local telemetry.
 
 Nine capabilities now share **one search space** — seven public, one private, one machine-local —
 with different policies per namespace. Measured on that index: search finds the right capability
-for 15 of 16 rephrasings that never mention its name, and none of 13 near-miss or out-of-domain
+for 16 of 17 rephrasings that never mention its name, and none of 19 near-miss or out-of-domain
 queries produce a confident match. Overhead is ~40 ms p95 against a 250 ms budget.
 
 Still ahead: candidate submission, the Capability Awareness Skill, the A/B evaluation harness that

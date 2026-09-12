@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-12T11:14:26.082Z",
+  "generatedAt": "2026-09-12T11:38:34.103Z",
   "capabilities": [
     {
       "schemaVersion": 1,
@@ -44,7 +44,7 @@
       "cfpLocation": "capabilities/CapFoundry.csv.detectDelimiter",
       "artifactLocation": "capabilities/CapFoundry.csv.detectDelimiter/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T11:14:26.082Z"
+      "indexedAt": "2026-09-12T11:38:34.103Z"
     },
     {
       "schemaVersion": 1,
@@ -88,7 +88,7 @@
       "cfpLocation": "capabilities/CapFoundry.date.businessDaysBetween",
       "artifactLocation": "capabilities/CapFoundry.date.businessDaysBetween/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T11:14:26.082Z"
+      "indexedAt": "2026-09-12T11:38:34.103Z"
     },
     {
       "schemaVersion": 1,
@@ -136,7 +136,7 @@
       "cfpLocation": "capabilities/CapFoundry.geo.distance",
       "artifactLocation": "capabilities/CapFoundry.geo.distance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T11:14:26.082Z"
+      "indexedAt": "2026-09-12T11:38:34.103Z"
     },
     {
       "schemaVersion": 1,
@@ -184,7 +184,7 @@
       "cfpLocation": "capabilities/CapFoundry.json.schema.infer",
       "artifactLocation": "capabilities/CapFoundry.json.schema.infer/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T11:14:26.082Z"
+      "indexedAt": "2026-09-12T11:38:34.103Z"
     },
     {
       "schemaVersion": 1,
@@ -228,7 +228,7 @@
       "cfpLocation": "capabilities/CapFoundry.text.slugify",
       "artifactLocation": "capabilities/CapFoundry.text.slugify/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T11:14:26.082Z"
+      "indexedAt": "2026-09-12T11:38:34.103Z"
     },
     {
       "schemaVersion": 1,
@@ -273,7 +273,7 @@
       "cfpLocation": "capabilities/CapFoundry.ui.dataTable",
       "artifactLocation": "capabilities/CapFoundry.ui.dataTable/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T11:14:26.082Z"
+      "indexedAt": "2026-09-12T11:38:34.103Z"
     },
     {
       "schemaVersion": 1,
@@ -317,7 +317,7 @@
       "cfpLocation": "capabilities/CapFoundry.validation.iban",
       "artifactLocation": "capabilities/CapFoundry.validation.iban/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T11:14:26.082Z"
+      "indexedAt": "2026-09-12T11:38:34.103Z"
     }
   ]
 }
