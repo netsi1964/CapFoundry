@@ -1,74 +1,75 @@
-# Forslag: `CapFoundry.geo.addresses.distance`
+# Proposal: `CapFoundry.geo.addresses.distance`
 
-**Status:** udkast til diskussion · **Dato:** 2026-09-12 · **Opdateret:** 2026-09-12 (§5 efter `9a109b5`) · **Berører:** `PRD-FEAT-001`, `PRD-FEAT-006`, `SEC-1`, `SEC-10`
+**Status:** draft for discussion · **Date:** 2026-09-12 · **Updated:** 2026-09-12 (§5 after `9a109b5`) · **Touches:** `PRD-FEAT-001`, `PRD-FEAT-006`, `SEC-1`, `SEC-10`
 
-Afstand mellem to *adresser eller byer* — angivet som tekst, på tværs af landegrænser — i stedet for
-mellem to koordinatpar.
+Distance between two *addresses or cities*, given as text, across national borders — rather than
+between two coordinate pairs.
 
 ---
 
-## 1. Hvorfor det ikke bare er `geo.distance` med en parser foran
+## 1. Why this is not just `geo.distance` with a parser in front
 
-`CapFoundry.geo.distance` er `PURE`: samme input giver samme output, for altid, uden omverden. Det er
-grunden til at den kan køre i nul-rettigheds-sandboxen.
+`CapFoundry.geo.distance` is `PURE`: the same input gives the same output, forever, with no outside
+world. That is why it can run in the zero-permission sandbox.
 
-Adresse → koordinat kan ikke være `PURE`. Det kræver et opslag i en ekstern geokoder, og så flytter
-tre ting sig på én gang:
+Address → coordinate cannot be `PURE`. It requires a lookup against an external geocoder, and three
+things move at once:
 
 | | `geo.distance` | `geo.addresses.distance` |
 |---|---|---|
-| Effekt | `PURE` | `NETWORK` |
-| Determinisme | Total | Svaret ændrer sig når kortdata opdateres |
-| Fejltilstande | Ugyldigt input | Tvetydighed, rate limits, nedetid, ingen træffer |
-| Test | Ren enhedstest | Kræver fixtures / optagede svar |
-| Licens | Kun vores egen kode | Data-licens følger med (ODbL ved OSM) |
+| Effect | `PURE` | `NETWORK` |
+| Determinism | Total | The answer changes as map data updates |
+| Failure modes | Invalid input | Ambiguity, rate limits, downtime, no hit |
+| Testing | Plain unit test | Requires fixtures / recorded responses |
+| Licence | Only our own code | A data licence comes along (ODbL for OSM) |
 
-Den vigtigste af dem er ikke netværket. Det er **tvetydigheden**.
+The most important of these is not the network. It is **ambiguity**.
 
-## 2. Tvetydighed er hele designproblemet
+## 2. Ambiguity is the entire design problem
 
-Fra et faktisk opslag mod Nominatim under udarbejdelsen af dette forslag:
+From an actual lookup against Nominatim while preparing this proposal:
 
 ```
-"Viborg"      -> Viborg, Danmark (56.447, 9.406)
+"Viborg"      -> Viborg, Denmark (56.447, 9.406)
                  Viborg, South Dakota, USA (43.170, -97.081)
-                 Выборг, Leningrad oblast, Rusland (60.709, 28.744)
+                 Выборг, Leningrad oblast, Russia (60.709, 28.744)
 
-"Springfield" -> Illinois / Massachusetts / Missouri, USA (og ~30 flere)
+"Springfield" -> Illinois / Massachusetts / Missouri, USA (and ~30 more)
 ```
 
-En capability der stiltiende vælger den første træffer, vil regne rigtigt på et forkert sted og
-returnere et tal der ser fuldstændig troværdigt ud. Det er den værste form for fejl et registry kan
-distribuere: forkert, plausibel, og genbrugt af alle.
+A capability that silently takes the first hit will compute correctly against the wrong place and
+return a number that looks entirely credible. That is the worst kind of error a registry can
+distribute: wrong, plausible, and reused by everyone.
 
-**Designprincip: capability'en skal hellere nægte end gætte.** Tvetydigt input giver `resolved:
-false` med kandidatlisten, ikke et tal. Kalderen afklarer og spørger igen med `countryCode` eller et
-valgt `placeId`.
+**Design principle: the capability must refuse rather than guess.** Ambiguous input returns
+`resolved: false` with the candidate list, not a number. The caller disambiguates and asks again
+with a `countryCode` or a chosen `placeId`.
 
-Det gør også `country`-feltet til mere end bekvemmelighed — det er den primære måde at gøre et
-tvetydigt navn entydigt.
+That also makes the `country` field more than a convenience — it is the primary way to make an
+ambiguous name unambiguous.
 
-## 3. Anbefaling: del den i to, ikke én
+## 3. Recommendation: split it in two, not one
 
-Jeg foreslår at *ikke* bygge én capability der både geokoder og regner. Tre grunde: geokodning er
-værdifuld alene (adressevalidering, landeopslag, normalisering); den urene del bliver isoleret ét
-sted; og `geo.distance` forbliver `PURE` og uændret.
+I propose *not* building a single capability that both geocodes and measures. Three reasons:
+geocoding is valuable on its own (address validation, country lookup, normalisation); the impure
+part gets isolated in one place; and `geo.distance` stays `PURE` and untouched.
 
 ```
-CapFoundry.geo.geocode            NETWORK   "Hamburg"        -> {lat, lon, ...} + kandidater
-CapFoundry.geo.distance           PURE      to koordinater   -> km            [findes allerede]
-CapFoundry.geo.addresses.distance NETWORK   to tekststrenge  -> km + hvad der blev slået op
+CapFoundry.geo.geocode            NETWORK   "Hamburg"        -> {lat, lon, ...} + candidates
+CapFoundry.geo.distance           PURE      two coordinates  -> km            [already exists]
+CapFoundry.geo.addresses.distance NETWORK   two text strings -> km + what was looked up
 ```
 
-Den tredje bliver en tynd komposition af de to første. Den beholdes fordi den er det folk faktisk
-søger efter ("hvor langt er der mellem to byer"), og fordi den kan returnere begge geokodninger i
-outputtet, så resultatet kan revideres.
+The third becomes a thin composition of the first two. It is kept because it is what people actually
+search for ("how far between two cities"), and because it can return both geocodings in its output
+so the result can be audited.
 
-Hvis vi kun har råd til én: byg `geo.geocode`. `addresses.distance` kan altid komponeres bagefter.
+If we can only afford one: build `geo.geocode`. `addresses.distance` can always be composed later.
 
-## 4. Kontraktudkast
+## 4. Draft contract
 
-Bemærk at `permissions` **ikke** er med — det felt findes ikke i `capability.schema.json` i dag. Se §5.
+Note that `permissions` is **not** included — that field did not exist in `capability.schema.json`
+when this was written. See §5.
 
 ```jsonc
 {
@@ -170,77 +171,76 @@ Bemærk at `permissions` **ikke** er med — det felt findes ikke i `capability.
   "tests": "./tests/"
 }
 ```
+Three deliberate choices in the contract:
 
-Tre bevidste valg i kontrakten:
+- **`resolved` is required, `distance` is not.** An answer without a number is a valid, expected
+  state — not an error. It forces the caller to confront whether the lookup succeeded.
+- **`placeId` goes in and comes back out.** The first call returns candidates; the second sends the
+  chosen `placeId` and becomes unambiguous. That is the disambiguation loop, expressed in the
+  contract itself.
+- **`attribution` is in the output, not in the documentation.** OSM data requires credit. If it sits
+  in the response, a caller cannot drop it without doing so deliberately.
 
-- **`resolved` er påkrævet, `distance` er ikke.** Et svar uden tal er en gyldig, forventet tilstand —
-  ikke en fejl. Det tvinger kalderen til at forholde sig til om opslaget lykkedes.
-- **`placeId` går ind og ud igen.** Første kald returnerer kandidater; andet kald sender det valgte
-  `placeId` og bliver entydigt. Det er afklaringsloopet, udtrykt i selve kontrakten.
-- **`attribution` er i outputtet, ikke i dokumentationen.** OSM-data kræver kreditering. Hvis den
-  ligger i svaret, kan en kalder ikke komme til at droppe den uden at gøre det med vilje.
+### Open question: what *is* the distance between two cities?
 
-### Åbent spørgsmål: hvad *er* afstanden mellem to byer?
+`geo.distance` measures point to point. A city is not a point. Nominatim returns a representative
+point whose definition varies by place. Viborg→Hamburg gives **324.3 km** with the coordinates
+above, but that number is only meaningful alongside `displayName` for both endpoints — which is
+exactly why they are in the output.
 
-`geo.distance` måler punkt til punkt. En by er ikke et punkt. Nominatim returnerer et
-repræsentativt punkt, hvis definition varierer efter sted. Viborg→Hamburg giver **324,3 km** med
-ovenstående koordinater, men det tal er kun meningsfuldt sammen med `displayName` for begge
-endepunkter — hvilket er præcis derfor de er med i outputtet.
+Road distance is deliberately omitted. That is a routing problem, not a geometry problem, and it has
+its own failure modes (no route across water, ferries, border closures). If it is wanted, it should
+be a separate `CapFoundry.geo.route` with `mode` and `duration` — not a flag on this one.
 
-Vejafstand er bevidst udeladt. Det er et ruteproblem, ikke et geometriproblem, og det har sine egne
-fejltilstande (ingen rute over vand, færger, grænselukninger). Hvis det skal med, bør det være en
-selvstændig `CapFoundry.geo.route` med `mode` og `duration` — ikke et flag på denne her.
+## 5. Platform status — two of three blockers are gone
 
-## 5. Platformstatus — to af tre blokkere er væk
+*Updated 2026-09-12 after `9a109b5`. All three were open when this was written.*
 
-*Opdateret 2026-09-12 efter `9a109b5`. Da forslaget blev skrevet var alle tre åbne.*
+**5.1 The sandbox now runs NETWORK.** ~~Rejects everything non-`PURE`.~~ `cfcm/runtime/execute.ts:117`
+permits `PURE` and `NETWORK`; `READ` and `WRITE` are explicitly rejected. A NETWORK artifact with no
+granted hosts fails with `NETWORK_NOT_PERMITTED` rather than running without network.
 
-**5.1 Sandboxen kører nu NETWORK.** ~~Afviser alt ikke-`PURE`.~~ `cfcm/runtime/execute.ts:117`
-tillader `PURE` og `NETWORK`; `READ` og `WRITE` afvises eksplicit. Et NETWORK-artefakt uden tildelte
-hosts fejler med `NETWORK_NOT_PERMITTED` frem for at køre uden netværk.
+**5.2 `permissions.network` exists.** ~~No way to declare hosts.~~ The field is in
+`capability.schema.json`, required when `effect` is `NETWORK`, and enforced as
+`--allow-net=<hosts>`. The design is an **intersection**: the declaration is a request, not a grant,
+and `cfcm.json`'s `execution.network.allow` decides what is actually given — off by default. That is
+stricter than what I proposed, and better: a capability cannot grant itself access by asking.
 
-**5.2 `permissions.network` findes.** ~~Ingen måde at deklarere hosts.~~ Feltet er i
-`capability.schema.json`, påkrævet når `effect` er `NETWORK`, og håndhæves som
-`--allow-net=<hosts>`. Designet er en **intersektion**: deklarationen er en ansøgning, ikke en
-tildeling, og `cfcm.json`s `execution.network.allow` afgør hvad der faktisk gives — slukket som
-udgangspunkt. Det er strammere end det jeg foreslog, og bedre: en capability kan ikke give sig selv
-adgang ved at bede om den.
+`--no-remote` and `--no-npm` are retained, so SEC-10 remains closed.
 
-`--no-remote` og `--no-npm` er beholdt, så SEC-10 er stadig lukket.
+**5.3 The test and provenance model still assumes determinism.** The only one left. NETWORK tests
+cannot call a live API in CI — it is flakey, rate-limited, and turns a red build into noise.
+Recorded fixtures are needed, and the artifact needs a separable pure transform. A small change in
+artifact shape, but it becomes the pattern for every NETWORK capability after the first, so it
+should be decided deliberately rather than allowed to emerge.
 
-**5.3 Test- og provenance-modellen antager stadig determinisme.** Den eneste tilbageværende.
-NETWORK-tests kan ikke kalde et live-API i CI — det er flakey, rate-limited og gør en rød build til
-støj. Der skal bruges optagede fixtures, og artefaktet skal have et injicerbart fetch-lag. Lille
-ændring i artefaktets form, men den bliver mønsteret for hver NETWORK-capability efter den første,
-så den bør besluttes bevidst frem for at opstå.
+## 6. Choosing a provider
 
-## 6. Valg af udbyder
-
-| | Nominatim (OSM) | Photon | Kommerciel (Google/Mapbox/HERE) |
+| | Nominatim (OSM) | Photon | Commercial (Google/Mapbox/HERE) |
 |---|---|---|---|
-| Nøgle | Nej | Nej | Ja → secrets-håndtering, som ikke findes endnu |
-| Rate limit | 1 req/s, hård | Mild | Efter abonnement |
-| Licens | ODbL, kræver kreditering | ODbL | Proprietær, ofte forbud mod caching |
-| Egnet til | Prototype, lav volumen | Lav volumen | Produktion |
+| Key | No | No | Yes → secrets handling, which does not exist yet |
+| Rate limit | 1 req/s, hard | Mild | Per subscription |
+| Licence | ODbL, credit required | ODbL | Proprietary, often forbids caching |
+| Suited to | Prototype, low volume | Low volume | Production |
 
-Nominatim er det rigtige valg *til dette forslag*, fordi det ikke kræver at vi først løser
-secrets-håndtering. Men 1 req/s betyder at capability'en ikke kan bruges i en løkke over tusind
-adresser, og det bør stå i `description` frem for at blive opdaget af den første der prøver.
+Nominatim is the right choice *for this proposal*, because it does not require solving secrets
+handling first. But 1 req/s means the capability cannot be used in a loop over a thousand addresses,
+and that belongs in `description` rather than being discovered by the first person who tries.
 
-En `provider`-parameter i inputtet er fravalgt med vilje: den ville lække udbyderens særheder ind i
-kontrakten og gøre outputtet umuligt at holde stabilt.
+A `provider` parameter in the input is deliberately rejected: it would leak the provider's quirks
+into the contract and make the output impossible to keep stable.
 
-## 7. Foreslået rækkefølge
+## 7. Proposed order
 
-1. ~~Scoped netværk i sandboxen~~ — gjort i `9a109b5`.
-2. ~~`permissions.network` + validatorregel~~ — gjort, som intersektion med lokal policy.
-3. **Fixture-mønsteret for NETWORK-tests** (5.3) — én gang, så det er sat for alle senere.
-4. `CapFoundry.geo.geocode` som første NETWORK-capability. Mindre overflade, samme problemer.
-5. `CapFoundry.geo.addresses.distance` som komposition ovenpå.
+1. ~~Scoped network in the sandbox~~ — done in `9a109b5`.
+2. ~~`permissions.network` plus validator rule~~ — done, as an intersection with local policy.
+3. **The fixture pattern for NETWORK tests** (5.3) — once, so it is set for everything after.
+4. `CapFoundry.geo.geocode` as the first NETWORK capability. Smaller surface, same problems.
+5. `CapFoundry.geo.addresses.distance` as a composition on top.
 
-Trin 3 er platformarbejde og bør ikke gemme sig inde i en capability-PR. Vejen er nu fri fra trin 4.
+Step 3 is platform work and should not hide inside a capability PR. The path is clear from step 4.
 
 ---
 
-**Ikke i scope:** vejafstand/rutelægning, batch-geokodning, reverse geocoding, adressevalidering,
-autocomplete. Hver af dem er sin egen capability.
+**Not in scope:** road distance/routing, batch geocoding, reverse geocoding, address validation,
+autocomplete. Each is its own capability.

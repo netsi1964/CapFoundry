@@ -1,115 +1,114 @@
-# SunCalc som CapFoundry-capabilities
+# SunCalc as CapFoundry capabilities
 
-**Status:** `CapFoundry.sun.times` er implementeret og indekseret · resten er forslag · **Dato:** 2026-09-12
+**Status:** `CapFoundry.sun.times` is implemented and indexed · the rest are proposals · **Date:** 2026-09-12
 
-SunCalc ([mourner/suncalc](https://github.com/mourner/suncalc), BSD-2-Clause) er et usædvanligt
-godt match for registret: ren matematik, ingen omverden, ingen afhængigheder. Alt i biblioteket er
-`PURE` og kører uændret i nul-rettigheds-sandboxen. Det gør det også til den billigste måde at
-afprøve licens- og provenance-historien fra README §"CFP" på rigtig tredjepartskode.
+SunCalc ([mourner/suncalc](https://github.com/mourner/suncalc), BSD-2-Clause) is an unusually good
+match for the registry: pure mathematics, no outside world, no dependencies. Everything in the
+library is `PURE` and runs unchanged in the zero-permission sandbox. That also makes it the cheapest
+way to exercise the licence and provenance story from README §"CFP" against real third-party code.
 
 ## Status
 
-| Capability | SunCalc-metode | Effekt | Status |
+| Capability | SunCalc method | Effect | Status |
 |---|---|---|---|
-| `CapFoundry.sun.times` | `getTimes` | `PURE` | **Implementeret**, 11 tests, i indekset |
-| `CapFoundry.sun.position` | `getPosition` | `PURE` | Foreslået — lille |
-| `CapFoundry.moon.illumination` | `getMoonIllumination` | `PURE` | Foreslået — lille |
-| `CapFoundry.moon.position` | `getMoonPosition` | `PURE` | Foreslået |
-| `CapFoundry.moon.times` | `getMoonTimes` | `PURE` | Foreslået |
-| — | `addTime` | — | **Fravalgt**, se §4 |
+| `CapFoundry.sun.times` | `getTimes` | `PURE` | **Implemented**, 11 tests, indexed |
+| `CapFoundry.sun.position` | `getPosition` | `PURE` | Proposed — small |
+| `CapFoundry.moon.illumination` | `getMoonIllumination` | `PURE` | Proposed — small |
+| `CapFoundry.moon.position` | `getMoonPosition` | `PURE` | Proposed |
+| `CapFoundry.moon.times` | `getMoonTimes` | `PURE` | Proposed |
+| — | `addTime` | — | **Excluded**, see §4 |
 
-## 1. Beslutninger der allerede er truffet i `sun.times`
+## 1. Decisions already made in `sun.times`
 
-De gælder for alle fem. De er værd at kopiere frem for at genforhandle:
+These apply to all five. They are worth copying rather than renegotiating.
 
-**Tid er input, aldrig aflæst.** `date` er påkrævet og defaulter ikke til "nu". SunCalc's
-`getMoonIllumination(date = new Date())` har en clock-default — den skal fjernes i porten. En
-capability der læser væguret er ikke `PURE`: den kan ikke testes, ikke caches, og giver et nyt svar
-hver gang. Det er den eneste ændring i upstreams adfærd der er nødvendig.
+**Time is an input, never read.** `date` is required and does not default to "now". SunCalc's
+`getMoonIllumination(date = new Date())` has a clock default — it must be removed in the port. A
+capability that reads the wall clock is not `PURE`: it cannot be tested, cannot be cached, and gives
+a different answer on every call. This is the only change to upstream behaviour that is necessary.
 
-**Output er ISO 8601, og `timeZone` ændrer kun hvordan et øjeblik læses.** Uden zone: `Z`. Med zone:
-zonens offset. Begge parser til samme epoch-millisekund. Intl's tidszonedatabase er verificeret
-tilgængelig med nul rettigheder — ingen `--allow-read`, ingen medfølgende datafil.
+**Output is ISO 8601, and `timeZone` only changes how an instant reads.** Without a zone: `Z`. With
+one: that zone's offset. Intl's time-zone database is verified available under zero permissions — no
+`--allow-read`, no bundled data file.
 
-**`null` betyder "sker ikke", ikke "fejl".** Og når noget er `null`, skal outputtet sige hvorfor.
-`sun.times` returnerer `polarDay`/`polarNight`; `moon.times` skal tilsvarende returnere
-`alwaysUp`/`alwaysDown`. Et tomt resultat uden forklaring er den samme fælde som et geokodnings-gæt:
-plausibelt og forkert.
+**`null` means "does not occur", not "error".** And when something is `null`, the output must say
+why. `sun.times` returns `polarDay`/`polarNight`; `moon.times` should likewise return
+`alwaysUp`/`alwaysDown`. An empty result with no explanation is the same trap as a geocoding guess:
+plausible and wrong.
 
-**Licensen følger med i pakken.** `license/LICENSE` indeholder upstreams BSD-2-Clause-tekst
-ordret — redistribution kræver det — og `provenance.json` har `origin: "derived"` med `derivedFrom`,
-version og hentedato. `sun.times` er skabelonen.
+**The licence travels in the package.** `license/LICENSE` holds upstream's BSD-2-Clause text
+verbatim — redistribution requires it — and `provenance.json` carries `origin: "derived"` with
+`derivedFrom`, version and retrieval date. `sun.times` is the template.
 
-## 2. `CapFoundry.sun.position` — anbefalet næste skridt
+## 2. `CapFoundry.sun.position` — recommended next
 
-Mindst arbejde, og den deler `sunCoords`, `siderealTime` og `altitude` med den implementerede.
+Least work, and it shares `sunCoords`, `siderealTime` and `altitude` with the implemented one.
 
 ```jsonc
-// ind
+// in
 { "lat": 56.4602, "lon": 9.4054, "date": "2026-09-12T14:30:00Z" }
-// ud
+// out
 { "azimuth": 218.4, "altitude": 31.2, "date": "2026-09-12T14:30:00Z", "coordinates": {...} }
 ```
 
-To ting kontrakten skal sige højt, som upstream kun siger i en kommentar:
+Two things the contract must state out loud that upstream only says in a comment:
 
-- **Azimut er nordbaseret og med uret** (0° = N, 90° = Ø, 180° = S, 270° = V). SunCalc v1 brugte
-  sydbaseret azimut i radianer. Enhver der husker v1 vil gætte forkert, så feltet skal have en
-  `description` der siger det, ikke bare et tal.
-- **`altitude` er refraktionskorrigeret** og i grader, ikke radianer.
+- **Azimuth is north-based and clockwise** (0° = N, 90° = E, 180° = S, 270° = W). SunCalc v1 used
+  south-based azimuth in radians. Anyone who remembers v1 will guess wrong, so the field needs a
+  `description` saying so, not merely a number.
+- **`altitude` is refraction-corrected** and in degrees, not radians.
 
-Grader frem for radianer overalt er et bevidst brud med upstream. Registret er et API for mennesker
-og agenter, ikke et matematikbibliotek.
+Degrees rather than radians throughout is a deliberate break with upstream. The registry is an API
+for humans and agents, not a mathematics library.
 
-## 3. Månen
+## 3. The Moon
 
-`moon.illumination` er den mest interessante af de tre, fordi den **kun tager en dato** — ingen
-position. Det gør den til en usædvanlig ren capability, og "hvilken måne­fase er det" er noget folk
-faktisk søger efter.
+`moon.illumination` is the most interesting of the three because it **takes only a date** — no
+position. That makes it an unusually clean capability, and "what phase is the Moon in" is something
+people actually search for.
 
 ```jsonc
-// ind
+// in
 { "date": "2026-09-12" }
-// ud
+// out
 { "fraction": 0.42, "phase": 0.27, "angle": -1.2, "phaseName": "waxing crescent" }
 ```
 
-`phaseName` findes ikke i upstream. Den er værd at tilføje, fordi `phase: 0.27` er ubrugelig uden at
-slå op hvad tallet betyder, og fordi et navn er det folk søgte efter i første omgang. Otte
-standardfaser, afledt deterministisk af `phase`. Det er den slags kontrakt-værdi der retfærdiggør en
-capability frem for bare at pege på npm-pakken.
+`phaseName` does not exist upstream. It is worth adding, because `phase: 0.27` is useless without
+looking up what the number means, and a name is what the person was searching for in the first
+place. Eight standard phases, derived deterministically from `phase`. That is the kind of contract
+value that justifies a capability rather than pointing at the npm package.
 
-`moon.times` har `alwaysUp`/`alwaysDown` og en ekstra krølle upstream advarer om: månen kan stå op og
-gå ned **to gange** i samme kalenderdøgn, fordi månedøgnet er ~24t 50m. Kontrakten skal kunne udtrykke
-det frem for at tabe den ene hændelse.
+`moon.times` has `alwaysUp`/`alwaysDown` and one extra wrinkle upstream warns about: the Moon can
+rise and set **twice** in the same calendar day, because the lunar day is ~24h 50m. The contract
+must be able to express that rather than dropping one of the events.
 
-`moon.position` er ligetil, men tilføj `distance` i km og overvej at udelade `parallacticAngle` —
-den er kun relevant for teleskopmontering og koster kontraktoverflade.
+`moon.position` is straightforward, but add `distance` in km and consider omitting
+`parallacticAngle` — it matters only for telescope mounts and costs contract surface.
 
-## 4. Hvorfor `addTime` er fravalgt
+## 4. Why `addTime` is excluded
 
-`SunCalc.addTime(angle, riseName, setName)` muterer et modul-globalt array. To kald i samme proces
-påvirker hinanden, og outputtets form afhænger af kaldshistorik frem for af input. Det er
-uforeneligt med en kontrakt hvor `outputSchema` har `additionalProperties: false`.
+`SunCalc.addTime(angle, riseName, setName)` mutates a module-global array. Two calls in the same
+process affect each other, and the shape of the output depends on call history rather than on input.
+That is incompatible with a contract whose `outputSchema` has `additionalProperties: false`.
 
-Hvis brugerdefinerede vinkler skal understøttes, hører de hjemme som **input**, ikke som global
-konfiguration:
+If custom angles are to be supported, they belong as **input**, not as global configuration:
 
 ```jsonc
 { "lat": 56.46, "lon": 9.41, "date": "2026-06-21",
   "customPhases": [{ "angle": -4, "riseName": "myDawn", "setName": "myDusk" }] }
 ```
 
-Det er en additiv ændring til `sun.times` og kan vente til nogen faktisk beder om den. `YAGNI` er
-det rigtige svar indtil videre.
+That is an additive change to `sun.times` and can wait until someone actually asks for it. YAGNI is
+the right answer for now.
 
-## 5. Rækkefølge
+## 5. Order
 
-1. `sun.position` — lille, deler kode med den implementerede, lukker sol-halvdelen.
-2. `moon.illumination` — kun dato ind, høj søgeværdi, `phaseName` som tilført værdi.
-3. `moon.times` — kræver at dobbelt op/nedgang besluttes først.
-4. `moon.position` — lavest værdi, tag den når de andre er der.
+1. `sun.position` — small, shares code with the implemented one, closes the solar half.
+2. `moon.illumination` — date-only input, high search value, `phaseName` as added value.
+3. `moon.times` — needs the double rise/set question decided first.
+4. `moon.position` — lowest value; take it once the others exist.
 
-En fælles `artifact/astro.ts` delt mellem sol-capabilities er fristende, men hver CFP skal være
-selvstændig on-disk. Lidt dubleret matematik på tværs af pakker er den rigtige pris for at hver
-pakke kan distribueres alene.
+A shared `artifact/astro.ts` across the solar capabilities is tempting, but each CFP has to be
+self-contained on disk. A little duplicated mathematics across packages is the right price for each
+package being distributable alone.

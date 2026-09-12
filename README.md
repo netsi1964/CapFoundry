@@ -128,8 +128,11 @@ The current documents are:
 - **[Vision & Architecture v0.5](docs/vision/CapFoundry-Vision-Architecture-v0.5.md)** — the broader product model, architectural principles, CFCM, namespaces, governance, security, discovery, telemetry and future direction.
 - **[MVP v0.2](docs/mvp/CapFoundry-MVP-v0.2.md)** — the deliberately smaller first implementation and the experiments needed to prove or falsify the core idea.
 - **[Implementation PRD v1.0](PRD.md)** — the buildable plan derived from MVP v0.2: architecture decisions, features with acceptance criteria, explicit data model, and phased delivery.
+- **[Falsification scoreboard](docs/falsification.md)** — the seven conditions from MVP section 27 that would mean this idea does not work, tracked against evidence as it arrives.
 
 The Vision document describes where CapFoundry may go. The MVP document describes what should actually be built first. The PRD describes how to build it.
+
+CapFoundry is an experiment and is allowed to fail. Three of the seven falsification conditions are not yet measured, and one measured number has already been corrected downward in public. The verdict gets published whichever way it lands.
 
 ## Capabilities
 

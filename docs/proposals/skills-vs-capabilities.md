@@ -1,89 +1,88 @@
-# Skills og capabilities: hvad CF kan erstatte, og hvad det ikke kan
+# Skills and capabilities: what CF can replace, and what it cannot
 
-**Status:** analyse med ét konkret forslag i §4 · **Dato:** 2026-09-12 · **Berører:** Vision §28, §39, `PRD-FEAT-017`
+**Status:** analysis with one concrete proposal in §4 · **Date:** 2026-09-12 · **Touches:** Vision §28, §39, `PRD-FEAT-017`
 
-Opstået af et spørgsmål der er værd at stille højt: *kan CapFoundry, sådan som det er bygget, være
-et alternativ til skills?*
+Prompted by a question worth asking out loud: *given how it is built, could CapFoundry be an
+alternative to skills?*
 
-Kort svar: **nej til eksekveringen, muligvis ja til distributionen.** Den anden halvdel er den
-interessante, og den er ikke dækket af visionen i dag.
+Short answer: **no to execution, possibly yes to distribution.** The second half is the interesting
+one, and it is not covered by the vision today.
 
-## 1. Visionen har allerede en position
+## 1. The vision already has a position
 
-Vision §28 skiller dem ad:
+Vision §28 separates them:
 
 ```
-SKILL                    "Hvad skal jeg gøre?"
-MCP / API / SDK          "Hvordan interagerer jeg?"
-CAPFOUNDRY + CFCM        "Hvilken capability findes, hvordan resolver jeg den?"
+SKILL                    "What should I do?"
+MCP / API / SDK          "How do I interact?"
+CAPFOUNDRY + CFCM        "What capability exists, how do I resolve it?"
 ```
 
-Dette repo er selv beviset. `capability-awareness` er en **skill** hvis eneste opgave er at lære
-agenten hvornår den skal spørge registret — hvornår en søgning er værd at betale for, hvordan et
-`PARTIAL_MATCH` skal bedømmes, hvornår noget nyskrevet er værd at indlevere. Den kan ikke laves om
-til en capability, for den har intet `inputSchema`. Den er dømmekraft, ikke beregning.
+This repository is its own proof. `capability-awareness` is a **skill** whose only job is to teach
+an agent when to ask the registry — when a search is worth paying for, how to judge a
+`PARTIAL_MATCH`, when something newly written is worth submitting. It cannot be turned into a
+capability, because it has no `inputSchema`. It is judgement, not computation.
 
-Forholdet er altså **lag, ikke konkurrenter**: skill som politik, capability som mekanisme.
+The relationship is therefore **layers, not competitors**: skill as policy, capability as mechanism.
 
-## 2. Hvorfor CF ikke kan erstatte skills
+## 2. Why CF cannot replace skills
 
-**En skill ændrer adfærd; en capability producerer en værdi.** En skill siger "når du gør X, så gør
-det sådan her" — modellen udfører stadig arbejdet. En capability siger "giv mig dette input, få
-dette output" — modellen udfører intet.
+**A skill changes behaviour; a capability produces a value.** A skill says "when you do X, do it
+this way" — the model still does the work. A capability says "give me this input, get this output" —
+the model does none of it.
 
-**Skills er stærkest præcis hvor determinisme er en fejl.** "Hvordan strukturerer jeg en PRD" skal
-give forskellige svar i forskellige situationer. En capability der gjorde det, ville være i stykker.
+**Skills are strongest exactly where determinism would be a defect.** "How should I structure a PRD"
+must give different answers in different situations. A capability that did that would be broken.
 
-**Prosa er outputtet, ikke et biprodukt.** Der findes intet `outputSchema` der kan fange "god
-formidling". Alt hvor leverancen er tekst til et menneske, ligger uden for kontraktmodellen.
+**Prose is the output, not a by-product.** There is no `outputSchema` that captures "explained
+well". Anything whose deliverable is text for a human sits outside the contract model.
 
-**Dialog kan ikke kontraktbindes.** En skill der interviewer brugeren gennem femten spørgsmål har
-ingen enkelt input-til-output-relation at forsegle.
+**Dialogue cannot be put under contract.** A skill that interviews a user through fifteen questions
+has no single input-to-output relation to seal.
 
-## 3. Hvor CF er strukturelt stærkere
+## 3. Where CF is structurally stronger
 
 | | Skill | CFP |
 |---|---|---|
-| Kontekstomkostning | Permanent, når loadet | Ét kald; kun svaret returneres |
-| Determinisme | Går gennem modellen | Forseglet `sha256`, samme bytes hver gang |
-| Tillid | Prosa modellen læser og *lover* at følge | `effect` håndhævet af runtime |
-| Afvisning | Loadet eller ej | `NO_MATCH` + `matchedOn` som inspicerbar evidens |
-| Versionering | Ingen | `version` + forsegling + provenance |
+| Context cost | Permanent once loaded | One call; only the answer returns |
+| Determinism | Passes through the model | Sealed `sha256`, same bytes every time |
+| Trust | Prose the model reads and *promises* to follow | `effect` enforced by the runtime |
+| Rejection | Loaded or not | `NO_MATCH` plus inspectable `matchedOn` evidence |
+| Versioning | None | `version` plus sealing plus provenance |
 
-**Kontekst.** SunCalc-porten i `CapFoundry.sun.times` er ~330 linjer. Et kald returnerer
-`{"sunrise": "2026-09-12T06:47:24+02:00", ...}`. Koden kommer aldrig ind i konteksten. Et registry
-med 10.000 capabilities koster nul indtil ét kald; 10.000 skills er fysisk umuligt. Det er ikke en
-gradsforskel, det er forskellen på om et katalog kan skalere.
+**Context.** The SunCalc port in `CapFoundry.sun.times` is ~330 lines. One call returns
+`{"sunrise": "2026-09-12T06:47:24+02:00", ...}`. The code never enters context. A registry of 10,000
+capabilities costs nothing until one call; 10,000 skills is physically impossible. That is not a
+difference of degree, it is the difference between a catalogue that can scale and one that cannot.
 
-**Tillid — det stærkeste punkt.** En skill der siger "jeg rører ikke netværket" afgiver et **løfte**.
-En capability der erklærer `effect: PURE` er underlagt en **begrænsning**: subprocessen får ikke ét
-eneste `--allow-*`-flag, plus `--no-remote` og `--no-npm` fordi nul rettigheder alene ikke er nok
-(SEC-10). For `NETWORK` er tildelingen en *skæring* mellem capability'ens `permissions.network` og
-den lokale politik i `cfcm.json` — en capability kan ikke give sig selv adgang ved at bede om den.
-Den garanti kan en skill strukturelt ikke give, uanset hvor omhyggeligt den er skrevet.
+**Trust — the strongest point.** A skill saying "I don't touch the network" is making a **promise**.
+A capability declaring `effect: PURE` is under a **constraint**: the subprocess gets no `--allow-*`
+flag at all, plus `--no-remote` and `--no-npm`, because zero permissions alone is not sufficient
+(SEC-10). For `NETWORK`, the grant is an *intersection* of the capability's `permissions.network`
+and local policy in `cfcm.json` — a capability cannot grant itself access by asking. A skill cannot
+offer that guarantee, however carefully it is written.
 
-**Evidens.** Observeret i en rigtig session: forespørgslen "compute edit distance between two
-strings" gav `PARTIAL_MATCH` med konfidens 0,508 mod `CapFoundry.geo.distance`, fordi ordet
-*distance* optrådte i navn, aliases, beskrivelse, summaries **og** exampleQueries. Agenten kunne
-læse `matchedOn`, se at det var ét generisk ord to fremmede domæner deler, afvise matchet og skrive
-koden selv. En skill bliver loadet eller ej — der er intet at inspicere, og derfor heller ingen måde
-at tage fejl på en synlig måde.
+**Evidence.** Observed in a real session: the query "compute the edit distance between two strings"
+returned a confident `MATCH` against `CapFoundry.geo.distance`, because the word *distance* appeared
+in the name, aliases, description, summaries **and** example queries. The agent rejected the match
+and wrote the code itself. A skill is loaded or it is not — there is nothing to inspect, and
+therefore no way to be wrong in a visible manner.
 
-## 4. Forslag: CFP som pakkeformat for skills
+## 4. Proposal: CFP as a packaging format for skills
 
-Her er der noget CF har, som skills mangler. En skill er i dag en fil uden:
+Here CF has something skills lack. A skill today is a file with:
 
-- `sha256` — du kan ikke verificere at den skill der kører er den du reviewede
-- provenance — en skill afledt af andres arbejde har ingen `derivedFrom`
-- licens i pakken
-- version og forsegling
-- maskinlæsbar test-suite
+- no `sha256` — you cannot verify that the skill running is the one you reviewed
+- no provenance — a skill derived from someone else's work has no `derivedFrom`
+- no licence in the package
+- no version and no sealing
+- no machine-readable test suite
 
-Forskellen er mærkbar i praksis. Under arbejdet med `CapFoundry.sun.times` tvang CFP-formatet en
-gennem licenstekst ordret, `derivedFrom` med version og hentedato, og en validator der afviser
-pakken uden dem. Var det samme arbejde skrevet som en skill, havde intet spurgt om nogen af delene.
+The difference is felt in practice. Building `CapFoundry.sun.times` forced the author through
+upstream's licence text verbatim, a `derivedFrom` entry with version and retrieval date, and a
+validator that rejects the package without them. Written as a skill, nothing would have asked.
 
-**Forslaget er derfor ikke at afskaffe skills, men at pakke dem som CFP'er:**
+**The proposal is therefore not to abolish skills, but to package them as CFPs:**
 
 ```jsonc
 {
@@ -94,31 +93,31 @@ pakken uden dem. Var det samme arbejde skrevet som en skill, havde intet spurgt 
 }
 ```
 
-Samme kontrakt, samme forsegling, samme provenance-krav — men `type: "instructions"` frem for
-`type: "typescript"`, og `execution: false`, fordi en skill ikke eksekveres i en sandbox. Den
-**loades i kontekst**. `exposure.artifact: true` er præcis den rigtige mekanik: at hente en skill
-*er* at hente dens artefakt.
+Same contract, same sealing, same provenance requirements — but `type: "instructions"` rather than
+`type: "typescript"`, and `execution: false`, because a skill is not run in a sandbox. It is
+**loaded into context**. `exposure.artifact: true` is exactly the right mechanic: fetching a skill
+*is* fetching its artifact.
 
-Det følger sporet visionen allerede er på. §39 beskriver en Skill der forvandler eksisterende
-software til governed capabilities. Dette er samme idé anvendt på instruktioner frem for på kode.
+This follows a track the vision is already on. §39 describes a Skill that turns existing software
+into governed capabilities. This is the same idea applied to instructions rather than to code.
 
-### Hvad forslaget ikke løser
+### What the proposal does not solve
 
-`outputSchema` giver ikke mening for instruktioner, og validatoren kræver det. Enten skal feltet
-gøres betinget af `artifact.type`, eller `type: "instructions"` skal have sin egen validatorgren.
-Det er en reel skema-ændring bag en `schemaVersion`-bump, ikke en tilføjelse — og derfor er dette
-et forslag frem for en opgave.
+`outputSchema` is meaningless for instructions, and the validator requires it. Either the field
+becomes conditional on `artifact.type`, or `type: "instructions"` gets its own validator branch.
+That is a breaking descriptor change behind a `schemaVersion` bump, not an additive field — which is
+why this is a proposal rather than a task.
 
-Der er heller intet der måler om en skill *virker*. En capability har tests; en skill har
-formulering. A/B-harnessen i `PRD-FEAT-015` er faktisk den nærmeste ting til en test for en skill,
-og scenariet `search-should-be-skipped` er allerede mærket "Skill-kvalitet" i PRD'en. Det er værd at
-bemærke inden nogen antager at forsegling alene giver kvalitetssikring.
+Nothing measures whether a skill *works*, either. A capability has tests; a skill has wording. The
+A/B harness in `PRD-FEAT-015` is the closest thing to a test for a skill, and the
+`search-should-be-skipped` scenario is already tagged "Skill quality" in the PRD. Worth noting
+before anyone assumes that sealing alone provides quality assurance.
 
-## 5. Konklusion
+## 5. Conclusion
 
-CF's **eksekveringsmodel** kan ikke bære skills — determinisme, sandbox og kontrakter er forkerte
-værktøjer til dømmekraft og prosa.
+CF's **execution model** cannot carry skills — determinism, sandboxing and contracts are the wrong
+tools for judgement and prose.
 
-CF's **pakkedisciplin** kunne bære dem, og det er nok den mest oversete del af arkitekturen: CFP'en
-er ikke først og fremmest en måde at køre kode på, men en måde at gøre noget ansvarligt for sin
-oprindelse, sin licens og sin identitet.
+CF's **packaging discipline** could carry them, and that is probably the most overlooked part of the
+architecture: a CFP is not primarily a way to run code, but a way to be accountable for its origin,
+its licence and its identity.
