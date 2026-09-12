@@ -119,6 +119,50 @@ async function validateCfp(dir: string, problems: Problem[]): Promise<void> {
   if (descriptor.effect === "READ" || descriptor.effect === "WRITE") {
     fail(`effect ${descriptor.effect} is not executable: CFCM supports PURE and NETWORK`);
   }
+
+  // A NETWORK capability is tested against recorded responses, and a recorded
+  // response is third-party data: Nominatim payloads are ODbL, most APIs
+  // attach terms of some kind. Without a trail the repository quietly
+  // accumulates redistributed data with no licence attached — the same problem
+  // provenance.json solves for ported code, one level down.
+  if (descriptor.effect === "NETWORK") {
+    const fixturesDir = join(dir, "tests", "fixtures");
+    if (await pathExists(fixturesDir)) {
+      const recorded: string[] = [];
+      for await (const entry of Deno.readDir(fixturesDir)) {
+        if (entry.isFile && entry.name !== "provenance.json") recorded.push(entry.name);
+      }
+
+      if (recorded.length > 0) {
+        const manifestPath = join(fixturesDir, "provenance.json");
+        if (!await pathExists(manifestPath)) {
+          fail(
+            `tests/fixtures/ holds ${recorded.length} recorded response(s) but no provenance.json. ` +
+              "Record the source URL, retrieval date and licence for each.",
+          );
+        } else {
+          const manifest = JSON.parse(await Deno.readTextFile(manifestPath));
+          const covered = new Map<string, Record<string, unknown>>(
+            (manifest.recordings ?? []).map((
+              r: Record<string, unknown>,
+            ) => [String(r.file), r]),
+          );
+          for (const file of recorded) {
+            const record = covered.get(file);
+            if (!record) {
+              fail(`tests/fixtures/${file} is recorded but not listed in provenance.json`);
+              continue;
+            }
+            for (const field of ["source", "retrievedAt", "license"]) {
+              if (!record[field]) {
+                fail(`tests/fixtures/provenance.json: ${file} is missing "${field}"`);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 const dirs = await listCfpDirs(CAPABILITIES_ROOT);

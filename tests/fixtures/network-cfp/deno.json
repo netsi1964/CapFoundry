@@ -1,0 +1,7 @@
+{
+  "//": "Separate config so these fixtures can be run explicitly by network_contract_test.ts while staying out of the main suite, where the 'bad' one is meant to fail.",
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^1.0.8",
+    "@std/path": "jsr:@std/path@^1.0.8"
+  }
+}

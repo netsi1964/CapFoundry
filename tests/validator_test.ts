@@ -163,6 +163,81 @@ Deno.test("a PURE effect that requests hosts is rejected", async () => {
   assertStringIncludes(output, "PURE capability reaches nothing");
 });
 
+Deno.test("a NETWORK capability must account for its recorded responses", async () => {
+  const { code, output } = await runValidator(
+    (d) => {
+      d.effect = "NETWORK";
+      d.permissions = { network: ["quotes.example"] };
+    },
+    async (dir) => {
+      await Deno.mkdir(join(dir, "tests", "fixtures"), { recursive: true });
+      await Deno.writeTextFile(join(dir, "tests", "fixtures", "response.json"), "{}");
+    },
+  );
+  assertEquals(code, 1);
+  assertStringIncludes(output, "no provenance.json");
+});
+
+Deno.test("a recorded response listed with source, date and licence is accepted", async () => {
+  const { code, output } = await runValidator(
+    (d) => {
+      d.effect = "NETWORK";
+      d.permissions = { network: ["quotes.example"] };
+    },
+    async (dir) => {
+      await Deno.mkdir(join(dir, "tests", "fixtures"), { recursive: true });
+      await Deno.writeTextFile(join(dir, "tests", "fixtures", "response.json"), "{}");
+      await Deno.writeTextFile(
+        join(dir, "tests", "fixtures", "provenance.json"),
+        JSON.stringify({
+          recordings: [{
+            file: "response.json",
+            source: "https://quotes.example/v1/quote",
+            retrievedAt: "2026-09-12",
+            license: "ODbL",
+          }],
+        }),
+      );
+    },
+  );
+  assertEquals(code, 0, output);
+});
+
+Deno.test("a provenance entry missing its licence is rejected", async () => {
+  const { code, output } = await runValidator(
+    (d) => {
+      d.effect = "NETWORK";
+      d.permissions = { network: ["quotes.example"] };
+    },
+    async (dir) => {
+      await Deno.mkdir(join(dir, "tests", "fixtures"), { recursive: true });
+      await Deno.writeTextFile(join(dir, "tests", "fixtures", "response.json"), "{}");
+      await Deno.writeTextFile(
+        join(dir, "tests", "fixtures", "provenance.json"),
+        JSON.stringify({
+          recordings: [{
+            file: "response.json",
+            source: "https://x.example",
+            retrievedAt: "2026-09-12",
+          }],
+        }),
+      );
+    },
+  );
+  assertEquals(code, 1);
+  assertStringIncludes(output, 'missing "license"');
+});
+
+Deno.test("a PURE capability is not asked for recording provenance", async () => {
+  // The rule is about redistributed third-party data, which a PURE capability
+  // has none of; applying it everywhere would be ceremony.
+  const { code, output } = await runValidator(() => {}, async (dir) => {
+    await Deno.mkdir(join(dir, "tests", "fixtures"), { recursive: true });
+    await Deno.writeTextFile(join(dir, "tests", "fixtures", "cases.json"), "[]");
+  });
+  assertEquals(code, 0, output);
+});
+
 Deno.test("READ and WRITE effects are rejected as unexecutable", async () => {
   for (const effect of ["READ", "WRITE"]) {
     const { code, output } = await runValidator((d) => {

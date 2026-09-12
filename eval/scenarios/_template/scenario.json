@@ -1,0 +1,15 @@
+{
+  "id": "_template",
+  "title": "One line: what this scenario puts under test",
+  "rationale": "One sentence: what would be true about CapFoundry if this failed?",
+  "objectives": ["OBJ-1"],
+  "origin": "designed",
+  "expect": {
+    "search": "MATCH",
+    "capability": "CapFoundry.example.name",
+    "invoked": true,
+    "fellBackToGeneration": false,
+    "candidateSubmitted": false
+  },
+  "timeoutSeconds": 300
+}

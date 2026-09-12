@@ -1,0 +1,11 @@
+{
+  "recordings": [
+    {
+      "file": "response.json",
+      "source": "https://quotes.example/v1/quote?symbol=NOVO",
+      "retrievedAt": "2026-09-12",
+      "license": "invented for this fixture; no real service was called",
+      "notes": "A recorded response is third-party data. Real recordings carry the licence of the service that produced them — Nominatim responses are ODbL, for instance — and without this file the repository quietly accumulates redistributed data with no licence trail."
+    }
+  ]
+}

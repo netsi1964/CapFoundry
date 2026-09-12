@@ -8,3 +8,4 @@ eval/reports/*.md
 
 # Local CFCM configuration (cfcm.example.json is the template)
 cfcm.json
+tests/fixtures/network-cfp/deno.lock
