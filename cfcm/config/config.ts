@@ -9,7 +9,7 @@
 
 import { dirname, isAbsolute, join, resolve } from "@std/path";
 import { CfcmError } from "../types.ts";
-import type { CfcmConfig, NamespaceConfig } from "../types.ts";
+import type { CfcmConfig, NamespaceConfig, NetworkPolicy } from "../types.ts";
 import { DEFAULT_THRESHOLDS } from "../search/engine.ts";
 
 export const RESERVED_NAMESPACES = ["Local", "CapFoundry"];
@@ -17,7 +17,11 @@ export const RESERVED_NAMESPACES = ["Local", "CapFoundry"];
 export const DEFAULT_CONFIG: CfcmConfig = {
   capfoundry: { registry: null, enabled: true },
   search: { ...DEFAULT_THRESHOLDS },
-  execution: { defaultTimeoutMs: 5000, maxOutputBytes: 4 * 1024 * 1024 },
+  execution: {
+    defaultTimeoutMs: 5000,
+    maxOutputBytes: 4 * 1024 * 1024,
+    network: { enabled: false, allow: [] },
+  },
   telemetry: { local: true, upload: false, endpoint: null },
   namespaces: [],
 };
@@ -87,6 +91,42 @@ function parseNamespaces(raw: unknown, baseDir: string): NamespaceConfig[] {
       },
     };
   });
+}
+
+/**
+ * Machine-level network policy.
+ *
+ * Disabled by default and empty by default, so upgrading CFCM never silently
+ * grants a machine something it did not have. Turning it on is a decision a
+ * person makes in a file they own.
+ */
+function parseNetworkPolicy(raw: unknown): NetworkPolicy {
+  if (raw === undefined || raw === null) return { enabled: false, allow: [] };
+  if (typeof raw !== "object") {
+    throw new CfcmError("CONFIG_INVALID", 'cfcm.json: "execution.network" must be an object');
+  }
+  const r = raw as Record<string, unknown>;
+
+  const allow = r.allow ?? [];
+  if (!Array.isArray(allow) || allow.some((h) => typeof h !== "string" || h.length === 0)) {
+    throw new CfcmError(
+      "CONFIG_INVALID",
+      'cfcm.json: "execution.network.allow" must be an array of host strings',
+    );
+  }
+  // A wildcard would turn a host allowlist into no allowlist at all, which is
+  // worse than disabling the feature because it looks like a policy.
+  for (const host of allow as string[]) {
+    if (host.includes("*")) {
+      throw new CfcmError(
+        "CONFIG_INVALID",
+        `cfcm.json: "execution.network.allow" entry "${host}" contains a wildcard. ` +
+          "List hosts explicitly; a wildcard allowlist is not an allowlist.",
+      );
+    }
+  }
+
+  return { enabled: r.enabled === true, allow: (allow as string[]).map((h) => h.toLowerCase()) };
 }
 
 export function parseConfig(raw: unknown, baseDir: string): CfcmConfig {
@@ -163,6 +203,7 @@ export function parseConfig(raw: unknown, baseDir: string): CfcmConfig {
         1024,
         512 * 1024 * 1024,
       ),
+      network: parseNetworkPolicy(exec.network),
     },
     telemetry: {
       local: tel.local === undefined ? true : tel.local === true,

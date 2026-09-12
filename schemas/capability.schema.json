@@ -23,60 +23,145 @@
     "tests"
   ],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": {
+      "const": 1
+    },
     "name": {
       "type": "string",
       "pattern": "^[A-Z][A-Za-z0-9]*(\\.[a-zA-Z][a-zA-Z0-9]*)+$",
       "description": "Namespaced identity, e.g. CapFoundry.geo.distance"
     },
-    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
-    "description": { "type": "string", "minLength": 10, "maxLength": 300 },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 300
+    },
     "aliases": {
       "type": "array",
       "minItems": 3,
-      "items": { "type": "string", "minLength": 2 },
+      "items": {
+        "type": "string",
+        "minLength": 2
+      },
       "description": "Alternative names a caller might use. Must not restate the capability name."
     },
     "exampleQueries": {
       "type": "array",
       "minItems": 3,
-      "items": { "type": "string", "minLength": 8 },
+      "items": {
+        "type": "string",
+        "minLength": 8
+      },
       "description": "Natural-language queries that should resolve to this capability."
     },
-    "tags": { "type": "array", "items": { "type": "string" } },
-    "inputSummary": { "type": "string", "minLength": 5, "maxLength": 200 },
-    "outputSummary": { "type": "string", "minLength": 5, "maxLength": 200 },
-    "runtime": { "const": "deno" },
-    "effect": { "enum": ["PURE", "READ", "WRITE", "NETWORK"] },
-    "inputSchema": { "type": "object" },
-    "outputSchema": { "type": "object" },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "inputSummary": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 200
+    },
+    "outputSummary": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 200
+    },
+    "runtime": {
+      "const": "deno"
+    },
+    "effect": {
+      "enum": [
+        "PURE",
+        "READ",
+        "WRITE",
+        "NETWORK"
+      ]
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object"
+    },
     "artifact": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "entrypoint", "sha256"],
+      "required": [
+        "type",
+        "entrypoint",
+        "sha256"
+      ],
       "properties": {
-        "type": { "const": "typescript" },
-        "entrypoint": { "type": "string", "pattern": "^\\./" },
-        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        "type": {
+          "const": "typescript"
+        },
+        "entrypoint": {
+          "type": "string",
+          "pattern": "^\\./"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
       }
     },
     "exposure": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["execution", "artifact"],
+      "required": [
+        "execution",
+        "artifact"
+      ],
       "properties": {
-        "execution": { "type": "boolean" },
-        "artifact": { "type": "boolean" }
+        "execution": {
+          "type": "boolean"
+        },
+        "artifact": {
+          "type": "boolean"
+        }
       }
     },
     "limits": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "timeoutMs": { "type": "integer", "minimum": 1, "maximum": 600000 },
-        "maxOutputBytes": { "type": "integer", "minimum": 1024 }
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600000
+        },
+        "maxOutputBytes": {
+          "type": "integer",
+          "minimum": 1024
+        }
       }
     },
-    "tests": { "type": "string", "pattern": "^\\./" }
+    "tests": {
+      "type": "string",
+      "pattern": "^\\./"
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What the capability declares it needs. Required when effect is NETWORK. A declaration is a request; CFCM intersects it with local policy.",
+      "properties": {
+        "network": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*(:[0-9]{1,5})?$"
+          }
+        }
+      }
+    }
   }
 }

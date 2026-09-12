@@ -26,6 +26,7 @@ import type { CapabilitySource } from "./sources/mod.ts";
 import { ArtifactCache } from "./cache/cache.ts";
 import { Resolver } from "./resolver/resolver.ts";
 import { execute } from "./runtime/execute.ts";
+import { computeGrant } from "./runtime/permissions.ts";
 import { Telemetry } from "./telemetry/telemetry.ts";
 import { formatIssues, validate } from "./util/json_schema.ts";
 import { CandidateQueue } from "./candidates/candidates.ts";
@@ -318,6 +319,7 @@ export class Cfcm {
           effect: descriptor.effect,
           runtime: descriptor.runtime,
           exposure: descriptor.exposure,
+          permissions: descriptor.permissions ?? null,
           inputSchema: descriptor.inputSchema,
           outputSchema: descriptor.outputSchema,
           namespaceType: record.namespaceType,
@@ -345,9 +347,14 @@ export class Cfcm {
         );
       }
 
+      // Computed before the process is spawned, so a policy refusal is a clean
+      // error rather than a permission failure mid-run.
+      const grant = computeGrant(record, this.config);
+
       const executed = await execute({
         artifactPath: artifact.path,
         input: request.input,
+        grantedHosts: grant.network,
         timeoutMs: request.options?.timeoutMs ?? record.limits?.timeoutMs ??
           this.config.execution.defaultTimeoutMs,
         maxOutputBytes: record.limits?.maxOutputBytes ?? this.config.execution.maxOutputBytes,

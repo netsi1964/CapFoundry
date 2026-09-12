@@ -137,12 +137,40 @@ Deno.test("an alias that merely restates the name is rejected", async () => {
   assertStringIncludes(output, "adds no recall");
 });
 
-Deno.test("a non-PURE effect is rejected in the MVP", async () => {
+Deno.test("a NETWORK effect without declared hosts is rejected", async () => {
   const { code, output } = await runValidator((d) => {
     d.effect = "NETWORK";
   });
   assertEquals(code, 1);
-  assertStringIncludes(output, "PURE capabilities only");
+  assertStringIncludes(output, "unbounded network capability cannot be granted");
+});
+
+Deno.test("a NETWORK effect with declared hosts is accepted", async () => {
+  // The format allows it; whether this machine grants it is a separate,
+  // runtime decision made against cfcm.json.
+  const { code, output } = await runValidator((d) => {
+    d.effect = "NETWORK";
+    d.permissions = { network: ["www.dr.dk"] };
+  });
+  assertEquals(code, 0, output);
+});
+
+Deno.test("a PURE effect that requests hosts is rejected", async () => {
+  const { code, output } = await runValidator((d) => {
+    d.permissions = { network: ["www.dr.dk"] };
+  });
+  assertEquals(code, 1);
+  assertStringIncludes(output, "PURE capability reaches nothing");
+});
+
+Deno.test("READ and WRITE effects are rejected as unexecutable", async () => {
+  for (const effect of ["READ", "WRITE"]) {
+    const { code, output } = await runValidator((d) => {
+      d.effect = effect;
+    });
+    assertEquals(code, 1, `${effect} should be rejected`);
+    assertStringIncludes(output, "not executable");
+  }
 });
 
 Deno.test("an unknown effect value is rejected by the schema", async () => {

@@ -103,8 +103,21 @@ async function validateCfp(dir: string, problems: Problem[]): Promise<void> {
     fail("aliases contains duplicates; each should offer a different way to find this capability");
   }
 
-  if (descriptor.effect !== "PURE") {
-    fail(`effect is ${descriptor.effect}; the MVP executes PURE capabilities only`);
+  // effect and permissions must agree. A PURE capability that asks for hosts,
+  // or a NETWORK one that names none, is a descriptor whose author changed
+  // their mind halfway — and either reading of it is wrong.
+  const declaredHosts = descriptor.permissions?.network ?? [];
+  if (descriptor.effect === "PURE" && declaredHosts.length > 0) {
+    fail("effect is PURE but permissions.network lists hosts; a PURE capability reaches nothing");
+  }
+  if (descriptor.effect === "NETWORK" && declaredHosts.length === 0) {
+    fail(
+      "effect is NETWORK but permissions.network is empty; list the exact hosts it needs, " +
+        "because an unbounded network capability cannot be granted",
+    );
+  }
+  if (descriptor.effect === "READ" || descriptor.effect === "WRITE") {
+    fail(`effect ${descriptor.effect} is not executable: CFCM supports PURE and NETWORK`);
   }
 }
 

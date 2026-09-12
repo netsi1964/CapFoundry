@@ -1,6 +1,6 @@
 # CapFoundry MVP — Implementeringsplan (PRD)
 
-**Version 1.4** · **Sidst opdateret: 2026-09-12** · **Status: Fase 0–3 leveret — MVP §25's milepæl er nået. Fase 4 er næste**
+**Version 1.5** · **Sidst opdateret: 2026-09-12** · **Status: Fase 0–3 leveret — MVP §25's milepæl er nået. Fase 4 er næste**
 
 Dette dokument omsætter [MVP v0.2](docs/mvp/CapFoundry-MVP-v0.2.md) til en plan der kan kodes efter. Det tilføjer ingen ambition til MVP'en — det lukker de huller der forhindrede den i at blive bygget, og det respekterer §5 (hvad vi bevidst ikke bygger), §27 (fejlreglen) og §28 (whiteboard-reglen) som bindende begrænsninger.
 
@@ -894,6 +894,50 @@ anden algoritme på andre data, og at svare med Levenshtein ville være selvsikk
 
 ---
 
+## Tillæg · Netværks-capabilities (`effect: NETWORK`)
+
+Bygget efter Fase 3 på eksplicit anmodning. **Mekanismen findes og er håndhævet; ingen capability i
+det første sæt bruger den**, og en test fastholder at alle otte forbliver `PURE`.
+
+### Reglen
+
+```text
+tilladte værter  =  deskriptorens permissions.network     (hvad capability'en erklærer den skal bruge)
+                 ∩  cfcm.json's execution.network.allow    (hvad denne maskine tillader)
+                 ∪  namespacets egne permissions.network   (kun for private namespaces)
+```
+
+Begge halvdele bærer. Deskriptoren alene ville være selvcertificering — en capability der tildeler
+sig selv rettigheder er en kommentar, ikke en rettighedsmodel. Politikken alene ville kræve at du
+kender hver capability's behov før installation.
+
+Deno håndhæver `--allow-net=vært1,vært2` **pr. vært i runtime**, ikke rådgivende. Verificeret:
+med `--allow-net=www.dr.dk` når dr.dk igennem og example.com afvises.
+
+### Fire bevidste valg
+
+| Valg | Hvorfor |
+|---|---|
+| **Slukket som standard** (`enabled: false`, tom `allow`) | Ingen maskine får netværksadgang ved at opgradere CFCM |
+| **Underskud afvises, indsnævres ikke** | To ud af tre erklærede værter ville fejle midtvejs i arbejdet, på et punkt kalderen ikke kan fortolke. Afvisningen navngiver den manglende vært |
+| **Wildcards afvist i konfigurationen** | `*.dr.dk` gør en allowlist til ingen allowlist, men ser ud som en politik |
+| **`PURE` + erklærede værter afvises** | Enten er effekten forkert eller erklæringen er; at gætte betyder enten over-tildeling eller at bryde capability'en |
+
+### Hvorfor intet i det første sæt bruger den
+
+En netværks-capability kan ikke holde den determinisme-kontrakt hver eneste nuværende capability
+hævder — «samme input → bit-identisk output over 100 kørsler» — og det er også dén egenskab der gør
+artefakt-hashen meningsfuld som kontrakt. Den ville desuden gøre `executionMs` til en måling af
+fremmed oppetid og dermed gøre Fase 4's A/B-tal svære at læse.
+
+Mekanismen er der, når efterspørgslen kommer. Målingen forbliver ren imens.
+
+**Bemærk:** Claude Codes permission mode har intet med dette at gøre. Den styrer om *Claude* må køre
+en kommando; Deno-flagene styrer hvad *artefaktet* må røre. Auto mode åbner ikke sandboxen — bevist
+ved at en forælder med `--allow-net` nåede dr.dk mens dens barn blev afvist.
+
+---
+
 ## PRD-SEC-009 · Udfordringer og løsninger
 
 | ID | Udfordring | Løsning | Restrisiko |
@@ -1038,6 +1082,14 @@ Alle 28 afsnit i MVP v0.2 er enten dækket af en feature eller er en begrænsnin
 ---
 
 ## Changelog
+
+### v1.5 — 2026-09-12
+- `effect: NETWORK` implementeret som en trevejs-fællesmængde mellem deskriptor og lokal politik.
+  Slukket som standard; `permissions`-feltet i `cfcm.json` er ikke længere dødt
+- Ingen capability i det første sæt bruger den — en test fastholder at alle otte er `PURE`
+- Validatoren håndhæver nu at `effect` og `permissions` stemmer overens; `READ` og `WRITE` afvises
+  eksplicit som ikke-eksekverbare
+- Kandidat-svaret returnerer `promoteCommand` som selvstændigt felt frem for prosa
 
 ### v1.4 — 2026-09-12
 - Fase 3 leveret: `PRD-FEAT-013` kandidatindlevering og `PRD-FEAT-014` Capability Awareness Skill.

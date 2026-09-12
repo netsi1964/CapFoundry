@@ -84,10 +84,15 @@ Deno.test("oversized output is capped and terminated", async () => {
   assertStringIncludes(err.code, "OUTPUT_TOO_LARGE");
 });
 
-Deno.test("a non-PURE effect is refused before anything is spawned", async () => {
-  const err = await assertRejects(
-    () => run("net.ts", { effect: "NETWORK" }),
-    CfcmError,
-  );
+Deno.test("a NETWORK effect without a grant is refused before anything is spawned", async () => {
+  // The grant is computed by cfcm/runtime/permissions.ts. Arriving here
+  // without one means it was never computed, and running anyway would produce
+  // a permission error indistinguishable from a policy decision.
+  const err = await assertRejects(() => run("net.ts", { effect: "NETWORK" }), CfcmError);
+  assertStringIncludes(err.code, "NETWORK_NOT_PERMITTED");
+});
+
+Deno.test("an unexecutable effect is refused before anything is spawned", async () => {
+  const err = await assertRejects(() => run("net.ts", { effect: "WRITE" }), CfcmError);
   assertStringIncludes(err.code, "EFFECT_UNSUPPORTED");
 });

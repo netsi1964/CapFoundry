@@ -33,6 +33,11 @@ export interface ExecuteOptions {
   maxOutputBytes: number;
   effect: Effect;
   capability: string;
+  /**
+   * Hosts this run may reach, already intersected with local policy by
+   * computeGrant. Empty means no network, which is the only correct default.
+   */
+  grantedHosts?: string[];
 }
 
 export interface ExecuteResult {
@@ -100,21 +105,42 @@ async function ensureRunner(artifactPath: string): Promise<string> {
 }
 
 export async function execute(opts: ExecuteOptions): Promise<ExecuteResult> {
-  if (opts.effect !== "PURE") {
-    // The MVP grants no permissions to anything, so a non-PURE capability
-    // could only fail confusingly at runtime. Refuse it up front instead.
+  const granted = opts.grantedHosts ?? [];
+
+  if (opts.effect === "PURE" && granted.length > 0) {
     throw new CfcmError(
       "EFFECT_UNSUPPORTED",
-      `${opts.capability} declares effect ${opts.effect}; the MVP executes PURE capabilities only`,
+      `${opts.capability} is PURE but was given network hosts; refusing rather than over-granting`,
+      { capability: opts.capability },
+    );
+  }
+  if (opts.effect !== "PURE" && opts.effect !== "NETWORK") {
+    throw new CfcmError(
+      "EFFECT_UNSUPPORTED",
+      `${opts.capability} declares effect ${opts.effect}; CFCM executes PURE and NETWORK only`,
       { capability: opts.capability, effect: opts.effect },
+    );
+  }
+  if (opts.effect === "NETWORK" && granted.length === 0) {
+    // Reaching here means the grant was never computed. Running anyway would
+    // produce a permission error the caller cannot distinguish from a policy
+    // decision.
+    throw new CfcmError(
+      "NETWORK_NOT_PERMITTED",
+      `${opts.capability} declares effect NETWORK but no hosts were granted`,
+      { capability: opts.capability },
     );
   }
 
   const runner = await ensureRunner(opts.artifactPath);
   const spawnStarted = performance.now();
 
+  // The only permission a capability can ever receive, and only for the exact
+  // hosts policy agreed to. Deno enforces this per host at the runtime level.
+  const networkFlag = granted.length > 0 ? [`--allow-net=${granted.join(",")}`] : [];
+
   const command = new Deno.Command(Deno.execPath(), {
-    args: [...SANDBOX_FLAGS, runner],
+    args: [...SANDBOX_FLAGS, ...networkFlag, runner],
     stdin: "piped",
     stdout: "piped",
     stderr: "piped",

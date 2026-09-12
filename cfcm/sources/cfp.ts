@@ -72,6 +72,7 @@ export function toIndexRecord(
     effect: descriptor.effect,
     artifact: { type: descriptor.artifact.type, sha256: descriptor.artifact.sha256 },
     exposure: descriptor.exposure,
+    ...(descriptor.permissions ? { permissions: descriptor.permissions } : {}),
     ...(descriptor.limits ? { limits: descriptor.limits } : {}),
     cfpLocation,
     artifactLocation,

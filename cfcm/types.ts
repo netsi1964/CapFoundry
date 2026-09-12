@@ -40,6 +40,16 @@ export interface CapabilityDescriptor {
     execution: boolean;
     artifact: boolean;
   };
+  /**
+   * What the capability declares it needs. Required when effect is NETWORK.
+   *
+   * A declaration is a request, never a grant: CFCM intersects it with local
+   * policy before anything runs. A capability that could permit itself would
+   * be self-certifying, which is not a permission model.
+   */
+  permissions?: {
+    network?: string[];
+  };
   limits?: {
     timeoutMs?: number;
     maxOutputBytes?: number;
@@ -74,6 +84,10 @@ export interface IndexRecord {
     execution: boolean;
     artifact: boolean;
   };
+  /** Carried into the index so a caller can see where a capability would reach. */
+  permissions?: {
+    network?: string[];
+  };
   limits?: {
     timeoutMs?: number;
     maxOutputBytes?: number;
@@ -101,9 +115,17 @@ export interface SearchThresholds {
   marginWeight: number;
 }
 
+export interface NetworkPolicy {
+  /** Master switch. Off by default: no machine gains network capabilities by upgrading. */
+  enabled: boolean;
+  /** Hosts this machine permits, before any capability's own declaration. */
+  allow: string[];
+}
+
 export interface ExecutionLimits {
   defaultTimeoutMs: number;
   maxOutputBytes: number;
+  network: NetworkPolicy;
 }
 
 export interface TelemetryConfig {

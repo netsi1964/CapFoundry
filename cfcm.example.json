@@ -11,12 +11,28 @@
   },
   "execution": {
     "defaultTimeoutMs": 5000,
-    "maxOutputBytes": 4194304
+    "maxOutputBytes": 4194304,
+    "network": {
+      "enabled": false,
+      "allow": []
+    }
   },
   "telemetry": {
     "local": true,
     "upload": false,
     "endpoint": null
   },
-  "namespaces": []
+  "namespaces": [
+    {
+      "name": "Netsi",
+      "type": "private",
+      "source": {
+        "type": "filesystem",
+        "path": "./capabilities/netsi"
+      },
+      "permissions": {
+        "network": []
+      }
+    }
+  ]
 }
