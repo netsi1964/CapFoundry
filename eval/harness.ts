@@ -122,6 +122,16 @@ function checkBehaviour(
     if (!returned) problems.push("expected an artifact to be returned, none was");
   }
 
+  // What was actually searched, so a divergence can be diagnosed from the
+  // report instead of replayed by hand.
+  if (problems.length > 0 && searches.length > 0) {
+    problems.push(
+      "searched " +
+        searches.map((s) => `"${s.queryText ?? "?"}" → ${s.status} ${s.capability ?? ""}`.trim())
+          .join(", "),
+    );
+  }
+
   return { matched: problems.length === 0, detail: problems.join("; ") };
 }
 

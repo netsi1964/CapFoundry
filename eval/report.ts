@@ -206,7 +206,16 @@ export function buildReport(
   const nearMiss = results.filter((r) =>
     r.condition === "capfoundry" && byId.get(r.scenario)?.objectives.includes("OBJ-2")
   );
-  const wrongBehaviour = nearMiss.filter((r) => r.behaviourMatched === false).length;
+  // Condition 3 is about a wrong capability *running* and the work suffering
+  // for it. Counting every OBJ-2 divergence instead put a candidate submitted
+  // on a Roman-numeral task under "wrong matches degrade quality", and the
+  // pilot's report claimed 2 of 2 wrong matches when neither run produced
+  // wrong work.
+  const wronglyRan = nearMiss.filter((r) =>
+    byId.get(r.scenario)?.expect.invoked === false &&
+    r.telemetry.some((e) => e.eventType === "invoke" && e.status === "OK")
+  );
+  const degraded = wronglyRan.filter((r) => !r.correct).length;
   const comparableA = aggregate(comparable.flatMap((s) => of(s.id, "capfoundry")));
   const comparableB = aggregate(comparable.flatMap((s) => of(s.id, "control")));
 
@@ -218,8 +227,8 @@ export function buildReport(
       `vs ${ms(comparableB.medianDurationMs)} |`,
   );
   push(
-    `| 3 | Wrong matches degrade quality | ${wrongBehaviour} of ${nearMiss.length} near-miss runs ` +
-      `behaved wrongly |`,
+    `| 3 | Wrong matches degrade quality | ${wronglyRan.length} of ${nearMiss.length} OBJ-2 runs ` +
+      `ran a capability they should not have; ${degraded} of those produced wrong work |`,
   );
   push("| 4 | Artifact distribution is cumbersome | see `custom-element-artifact` |");
   push("| 5 | Candidates are mostly noise | see `candidate-worthy`, `candidate-not-worthy` |");

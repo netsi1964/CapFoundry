@@ -8,7 +8,8 @@
  */
 
 import { assert, assertEquals } from "@std/assert";
-import { ClaudeCodeDriver } from "../eval/drivers.ts";
+import { ClaudeCodeDriver, evalConfig } from "../eval/drivers.ts";
+import { parseConfig } from "../cfcm/config/config.ts";
 
 const REPO_ROOT = new URL("..", import.meta.url).pathname;
 
@@ -89,4 +90,32 @@ Deno.test("the two arms differ by exactly the variable under test", async () => 
       assert(onlyInA.has(arg), `condition A has an unexplained extra flag: ${arg}`);
     }
   }
+});
+
+Deno.test("an evaluation run logs query text without moving any path", () => {
+  // Without query text the pilot's PARTIAL_MATCH could only be guessed at.
+  // Copying the config into the run's home must not make "./capabilities"
+  // resolve somewhere else, or condition A searches an empty registry.
+  const original = {
+    capfoundry: { registry: "./", enabled: true },
+    telemetry: { local: true, logQueryText: false },
+    namespaces: [{
+      name: "Netsi",
+      type: "private",
+      source: { type: "filesystem", path: "./netsi" },
+    }],
+  };
+  const derived = evalConfig(original, "/repo");
+  const before = parseConfig(original, "/repo");
+  const after = parseConfig(derived, "/somewhere/else");
+
+  assertEquals(after.telemetry.logQueryText, true);
+  assertEquals(after.capfoundry.registry, before.capfoundry.registry);
+  assertEquals(after.namespaces[0].source.path, before.namespaces[0].source.path);
+  assertEquals(original.telemetry.logQueryText, false, "the user's own config must not change");
+});
+
+Deno.test("a remote registry URL is left alone", () => {
+  const derived = evalConfig({ capfoundry: { registry: "https://example.org/r/" } }, "/repo");
+  assertEquals((derived.capfoundry as { registry: string }).registry, "https://example.org/r/");
 });

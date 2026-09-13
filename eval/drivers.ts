@@ -12,7 +12,7 @@
  * CapFoundry.
  */
 
-import { join } from "@std/path";
+import { dirname, isAbsolute, join, resolve } from "@std/path";
 
 export interface AgentRun {
   transcript: string;
@@ -33,6 +33,36 @@ export interface DriverOptions {
   timeoutSeconds: number;
   /** Per-run CFCM home, so one run's telemetry is not another's. */
   cfcmHome: string;
+}
+
+/**
+ * The CFCM config an evaluation run uses: the user's own, with query text logged.
+ *
+ * Query text is off by default because a person's searches are theirs. An
+ * evaluation's searches are an agent answering a prompt we wrote, and without
+ * them a behaviour divergence says *that* the search missed and never *what*
+ * was searched: the pilot's PARTIAL_MATCH on the slug scenario could only be
+ * guessed at by replaying plausible phrasings by hand.
+ *
+ * The copy lives in the run's CFCM home, so relative paths are made absolute
+ * against the original file first. Otherwise "./capabilities" would quietly
+ * point somewhere else and condition A would search an empty registry.
+ */
+export function evalConfig(raw: Record<string, unknown>, baseDir: string): Record<string, unknown> {
+  const config = structuredClone(raw);
+  const absolute = (path: string) =>
+    /^[a-z][a-z0-9+.-]*:\/\//i.test(path) || isAbsolute(path) ? path : resolve(join(baseDir, path));
+
+  const capfoundry = config.capfoundry as Record<string, unknown> | undefined;
+  if (capfoundry && typeof capfoundry.registry === "string" && capfoundry.registry.length > 0) {
+    capfoundry.registry = absolute(capfoundry.registry);
+  }
+  for (const ns of (config.namespaces as Record<string, unknown>[] | undefined) ?? []) {
+    const source = ns?.source as Record<string, unknown> | undefined;
+    if (source && typeof source.path === "string") source.path = absolute(source.path);
+  }
+  config.telemetry = { ...(config.telemetry as Record<string, unknown> ?? {}), logQueryText: true };
+  return config;
 }
 
 export interface AgentDriver {
@@ -70,6 +100,15 @@ export class ClaudeCodeDriver implements AgentDriver {
 
   private async writeMcpConfig(dir: string, cfcmHome: string): Promise<string> {
     const path = join(dir, "mcp.json");
+    let raw: Record<string, unknown> = {};
+    try {
+      raw = JSON.parse(await Deno.readTextFile(this.configPath));
+    } catch (err) {
+      if (!(err instanceof Deno.errors.NotFound)) throw err;
+    }
+    const configPath = join(cfcmHome, "cfcm.json");
+    await Deno.writeTextFile(configPath, JSON.stringify(evalConfig(raw, dirname(this.configPath))));
+
     await Deno.writeTextFile(
       path,
       JSON.stringify({
@@ -86,7 +125,7 @@ export class ClaudeCodeDriver implements AgentDriver {
               "--quiet",
               join(this.repoRoot, "cfcm/mcp/server.ts"),
             ],
-            env: { CFCM_CONFIG: this.configPath, CFCM_HOME: cfcmHome },
+            env: { CFCM_CONFIG: configPath, CFCM_HOME: cfcmHome },
           },
         },
       }),
