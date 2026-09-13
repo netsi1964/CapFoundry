@@ -1003,6 +1003,18 @@ Det er værd at sige højt, fordi en liste over vagter uden det oversælger dem.
 ikke «vi har vagter», men at hver overraskelse bliver omsat til én. Den ærlige grænse er at den
 næste klasse per definition er udækket.
 
+**Og en grænse tabellen ikke selv afslører: alle seks vagter kigger indad.** De tjekker capabilities,
+deskriptorer, artefakter, historik — ting inde i repoet. Der findes ingen kontrol overhovedet på det
+der *forlader* det: slide-dækket, en post, et svar til en bidragyder.
+
+Det blev demonstreret samme dag det blev bemærket. Marie skrev et svar på 1157 tegn til et medie med
+en grænse på 280, efter at have verificeret indholdet men ikke den begrænsning outputtet skulle
+overholde. Det er samme form som den forældede branch-reference: **man verificerer det man tænker på,
+ikke den betingelse resultatet faktisk skal opfylde.**
+
+Ingen maskineri foreslået. Ved dette volumen er et menneske der læser det før det sendes den rigtige
+kontrol — men det er værd at vide at *den* kontrol er den eneste der findes på den side.
+
 ### En rettelse: 015 *var* maskinelt fangbar
 
 Jeg skrev i `8661ff9` at ingen vagt ville have fanget at `PRD-FEAT-015` var markeret leveret på
