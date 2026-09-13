@@ -1163,9 +1163,8 @@ OBJ-8's rentes rente-effekt (§2.8) kræver en længere måleperiode end MVP'en.
 
 ### Åbent: søgeomkostning styres af dømmekraft, ikke af en tæller
 
-**Rejst af en udefrakommende bidragyder** — en AI-ingeniør der bygger agent-harnesses og
-evalueringer. Krediteringen mangler et navn og et issue-link; begge skal ind her frem for at blive i
-en tråd.
+**Rejst af [@kartikb753](https://x.com/kartikb753)**, en AI-ingeniør der bygger agent-harnesses og
+evalueringer, i en tråd på X. Issue-linket mangler stadig og skal ind her når det findes.
 
 `capability-awareness` styrer hvornår en agent søger med et **filter**: deterministisk,
 generelt anvendeligt, nyttigt andre steder — alle tre — plus «en søgning du allerede ved vil fejle
