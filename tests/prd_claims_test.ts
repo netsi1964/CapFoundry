@@ -22,17 +22,37 @@ import { exists } from "@std/fs";
 
 const REPO_ROOT = new URL("..", import.meta.url).pathname;
 
-/** Reports produced by anything other than the mock driver. */
-async function realReports(): Promise<string[]> {
-  const dir = join(REPO_ROOT, "eval/reports");
-  if (!await exists(dir)) return [];
+/**
+ * Committed reports produced by anything other than the mock driver.
+ *
+ * Committed, not merely present. eval/reports/*.md is gitignored, and the
+ * first version of this test read the directory — so it passed on a fresh
+ * clone and failed on any machine where someone had run the harness. A test
+ * whose verdict depends on scratch files is not guarding a public claim.
+ *
+ * It also turned out to be the wrong question one level down. The first real
+ * claude-code run came from a driver that could neither write files nor call
+ * MCP tools, and read 0% correct in both arms: a real-driver report that is
+ * not a valid result. Distinguishing mock from real was not enough; the report
+ * that justifies marking PRD-FEAT-015 delivered is one someone chose to commit
+ * as evidence, which is what Phase 5 produces.
+ */
+async function committedRealReports(): Promise<string[]> {
+  const listed = new Deno.Command("git", {
+    args: ["ls-files", "eval/reports/"],
+    cwd: REPO_ROOT,
+    stdout: "piped",
+    stderr: "null",
+  });
+  const out = await listed.output();
+  if (!out.success) return [];
 
   const real: string[] = [];
-  for await (const entry of Deno.readDir(dir)) {
-    if (!entry.isFile || !entry.name.endsWith(".md")) continue;
-    const text = await Deno.readTextFile(join(dir, entry.name));
+  for (const path of new TextDecoder().decode(out.stdout).split("\n")) {
+    if (!path.endsWith(".md")) continue;
+    const text = await Deno.readTextFile(join(REPO_ROOT, path));
     const driver = /Driver `([a-z-]+)`/.exec(text)?.[1];
-    if (driver && driver !== "mock") real.push(entry.name);
+    if (driver && driver !== "mock") real.push(path);
   }
   return real;
 }
@@ -43,20 +63,20 @@ Deno.test("PRD-FEAT-015 is not marked delivered without a real evaluation run", 
   assert(heading, "PRD-FEAT-015 has no heading; the marker this guards has moved");
 
   const claimsDelivered = heading.includes("✅");
-  const reports = await realReports();
+  const reports = await committedRealReports();
 
   if (claimsDelivered) {
     assert(
       reports.length > 0,
-      "PRD.md marks PRD-FEAT-015 delivered, but every report in eval/reports/ is from the mock " +
-        "driver. The harness existing is not the experiment being run — add the marker after a " +
-        "real run, not after the code.",
+      "PRD.md marks PRD-FEAT-015 delivered, but no committed report comes from a real driver. " +
+        "The harness existing is not the experiment being run, and a local run is not evidence " +
+        "until someone commits it as such.",
     );
   } else {
     assert(
       reports.length === 0,
-      `A real evaluation report exists (${reports.join(", ")}) but PRD-FEAT-015 is still marked ` +
-        "as not run. Update the PRD — the marker is now understating the work.",
+      `A committed real evaluation report exists (${reports.join(", ")}) but PRD-FEAT-015 is ` +
+        "still marked as not run. Update the PRD — the marker is now understating the work.",
     );
   }
 });

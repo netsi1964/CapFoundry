@@ -138,6 +138,8 @@ async function runOnce(
   const workspace = await Deno.makeTempDir({ prefix: `eval-${scenario.id}-${condition}-` });
   const cfcmHome = await Deno.makeTempDir({ prefix: `eval-home-${scenario.id}-` });
 
+  let keep = false;
+
   try {
     const fixtures = join(dir, "fixtures");
     if (await exists(fixtures)) {
@@ -167,20 +169,28 @@ async function runOnce(
       ? checkBehaviour(scenario, telemetry)
       : null;
 
+    keep = !verdict.pass;
+
     return {
       scenario: scenario.id,
       condition,
       repetition,
       correct: verdict.pass,
-      detail: verdict.detail,
+      detail: keep ? `${verdict.detail} (workspace kept: ${workspace})` : verdict.detail,
       behaviourMatched: behaviour?.matched ?? null,
       behaviourDetail: behaviour?.detail ?? "",
       run,
       telemetry,
     };
   } finally {
-    await Deno.remove(workspace, { recursive: true }).catch(() => {});
-    await Deno.remove(cfcmHome, { recursive: true }).catch(() => {});
+    // Kept when the run did not pass. Deleting it destroyed the only evidence
+    // of what the agent actually did: Marie could see what the claude-code
+    // driver had *not* written, never what it had tried, and had to spend a
+    // separate experiment to find out.
+    if (!keep) {
+      await Deno.remove(workspace, { recursive: true }).catch(() => {});
+      await Deno.remove(cfcmHome, { recursive: true }).catch(() => {});
+    }
   }
 }
 

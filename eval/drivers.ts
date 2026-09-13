@@ -56,6 +56,18 @@ export class ClaudeCodeDriver implements AgentDriver {
     private readonly configPath: string,
   ) {}
 
+  private skillText: string | null = null;
+
+  /** The skill body without its frontmatter, as condition A's standing instruction. */
+  private async awarenessSkill(): Promise<string> {
+    if (this.skillText !== null) return this.skillText;
+    const raw = await Deno.readTextFile(
+      join(this.repoRoot, "skills/capability-awareness/SKILL.md"),
+    );
+    this.skillText = raw.replace(/^---[\s\S]*?---\s*/, "").trim();
+    return this.skillText;
+  }
+
   private async writeMcpConfig(dir: string, cfcmHome: string): Promise<string> {
     const path = join(dir, "mcp.json");
     await Deno.writeTextFile(
@@ -82,16 +94,76 @@ export class ClaudeCodeDriver implements AgentDriver {
     return path;
   }
 
-  async run(options: DriverOptions): Promise<AgentRun> {
-    const args = ["-p", options.prompt, "--output-format", "json"];
+  /**
+   * The command line for one run. Separate so the flags that decide whether
+   * the experiment measures anything can be tested without spending money.
+   */
+  async buildArgs(options: DriverOptions): Promise<string[]> {
+    const args = [
+      "-p",
+      options.prompt,
+      "--output-format",
+      "json",
+      // Without a permission mode, print mode refuses Write: there is nobody to
+      // approve it, so the agent reasons, is denied, and exits clean with an
+      // empty workspace. Every scenario then fails in both conditions, which
+      // reads as a falsification result and is a harness bug.
+      //
+      // acceptEdits rather than bypassPermissions. An agent that never has to
+      // ask is not the agent anyone runs, and changing what the agent is
+      // allowed to do changes what is being measured. Found by Marie.
+      "--permission-mode",
+      "acceptEdits",
+      // A skill installed in the user's global skills directory loads in both
+      // conditions. capability-awareness was installed that way, so the
+      // control arm was being told to search for capabilities with no tool to
+      // search with — the variable under test leaking into the control.
+      // Disabling skills in both arms, then supplying the one condition A is
+      // meant to have, makes its presence a design decision rather than an
+      // accident of whoever runs the harness.
+      "--disable-slash-commands",
+    ];
+
     if (options.cfcmEnabled) {
       args.push("--mcp-config", await this.writeMcpConfig(options.workspace, options.cfcmHome));
+      // acceptEdits covers file edits and nothing else. MCP tools need their own
+      // grant, and without it condition A can *see* CFCM and is refused the
+      // moment it tries to use it. That produced a probe run with zero searches
+      // that read as "the agent chose not to search" and was really "the agent
+      // was not allowed to". A full evaluation run in that state would have
+      // reported CapFoundry giving no advantage — a falsification-shaped
+      // result caused by a missing flag.
+      //
+      // Named explicitly rather than granting the whole server, so condition A
+      // is allowed exactly the four tools CFCM exposes and nothing it grows
+      // later without someone deciding to.
+      args.push(
+        "--allowedTools",
+        ["cfcm_search", "cfcm_invoke", "cfcm_describe", "cfcm_submit_candidate"]
+          .map((tool) => `mcp__cfcm__${tool}`)
+          .join(","),
+      );
+      // MVP section 22 defines condition A as CFCM *and* the Capability
+      // Awareness Skill. An MCP server the agent has not been told about is a
+      // different experiment: in a probe the agent solved the task correctly
+      // and never searched.
+      args.push("--append-system-prompt", await this.awarenessSkill());
     }
+
+    return args;
+  }
+
+  async run(options: DriverOptions): Promise<AgentRun> {
+    const args = await this.buildArgs(options);
 
     const started = performance.now();
     const command = new Deno.Command("claude", {
       args,
       cwd: options.workspace,
+      // Without this the CLI waits three seconds for stdin on every run —
+      // wall-clock noise charged identically to both arms, but noise all the
+      // same in the one number the latency comparison reads.
+      stdin: "null",
       stdout: "piped",
       stderr: "piped",
     });
