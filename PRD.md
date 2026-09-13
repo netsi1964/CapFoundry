@@ -647,6 +647,12 @@ Det er her design betyder mest, fordi det er her tokens bruges.
 
 - **Ét kald til det almindelige tilfælde.** En høj-konfidens søgning kan returnere resultatet direkte (`PRD-FEAT-008.4`).
 - **`NO_MATCH` skal være billigt.** Kort svar, ingen forslagsliste der frister til opfølgende kald.
+  Den skarpeste formulering af hvorfor kom fra en udefrakommende læser:
+
+  > *«once inventing an answer is cheaper than admitting a miss, eval scores lie»*
+
+  Det er den generelle form. Et registry der tilbyder næsten-match gør det billigere at finde på et
+  svar end at indrømme et miss — og så måler enhver evaluering bagefter noget andet end den tror.
 - **Evidens frem for autoritet.** Svaret siger *hvorfor* der er match, så agenten kan afvise det. Det er den eneste beskyttelse mod OBJ-2's wrong-match-rate når konfidensen ligger tæt på tærsklen.
 - **Fejl er svar, ikke undtagelser.** Hver fejl indeholder en handlingsanvisning agenten kan følge uden at spørge igen.
 
@@ -1154,6 +1160,32 @@ afhængigheders, og rettighedsporten skal se hele afhængighedstræet frem for k
 ### Udskudt uanset resultat
 
 OBJ-8's rentes rente-effekt (§2.8) kræver en længere måleperiode end MVP'en. Design en opfølgende måling — kør ikke MVP'en længere for at ramme den.
+
+### Åbent: søgeomkostning styres af dømmekraft, ikke af en tæller
+
+**Rejst af en udefrakommende bidragyder** — en AI-ingeniør der bygger agent-harnesses og
+evalueringer. Krediteringen mangler et navn og et issue-link; begge skal ind her frem for at blive i
+en tråd.
+
+`capability-awareness` styrer hvornår en agent søger med et **filter**: deterministisk,
+generelt anvendeligt, nyttigt andre steder — alle tre — plus «en søgning du allerede ved vil fejle
+koster tokens og returnerer intet». Det er dømmekraft.
+
+Hans forslag er en **tæller**: stop efter N forgæves søgninger. Og hans kontrol er bedre end vores,
+af en grund der er værd at skrive ned: **et filter kan ræsonneres udenom af netop den evne der er
+upålidelig. En tæller kan ikke.**
+
+**Delvist forsvar, som også er det ærlige forbehold:** designet er én søgning pr. opgave, ikke en
+retry-løkke, så der er intet N at begrænse — medmindre en agent nedbryder en opgave og søger på hver
+del. **Vi ved ikke om de gør det.** `search-should-be-skipped` er scenariet der ville vise det, og
+det har aldrig kørt mod en rigtig agent.
+
+Så størrelsen af det problem hans rettelse løser er ukendt, og det afgør om den skal bygges: løber
+agenter ikke i løkker, er tælleren maskineri ingen har brug for — og vi har begge argumenteret imod
+den slags i dag. **Beslutningen hører til efter Fase 4's data.**
+
+To designspørgsmål er hans at besvare frem for vores at gætte: N pr. opgave eller pr. session, og
+hvad der sker *ved* grænsen — stopper agenten, eller holder den blot op med at søge?
 
 ### Åbne spørgsmål der venter på afgørelse
 
