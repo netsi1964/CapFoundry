@@ -6,6 +6,7 @@
  * type and in the name prefix they will accept.
  */
 
+import { join } from "@std/path";
 import { CfcmError } from "../types.ts";
 import type { CapabilityDescriptor, IndexRecord, NamespaceType } from "../types.ts";
 import type { CapabilitySource, SourceStatus } from "./mod.ts";
@@ -31,6 +32,25 @@ export class FilesystemSource implements CapabilitySource {
      */
     private readonly optional = false,
   ) {}
+
+  async freshness(): Promise<string | null> {
+    if (!await pathExists(this.root)) return "missing";
+    // The *listing* is part of the token, not just mtimes: adding a CFP always
+    // changes the set of names, so a promoted capability is detected exactly
+    // rather than depending on the filesystem's mtime granularity.
+    const parts: string[] = [];
+    for (const dir of (await listCfpDirs(this.root)).sort()) {
+      let stamp = "0:0";
+      try {
+        const stat = await Deno.stat(join(dir, "capability.json"));
+        stamp = `${stat.mtime?.getTime() ?? 0}:${stat.size}`;
+      } catch {
+        // A half-written CFP counts as changed, and will be read again next time.
+      }
+      parts.push(`${dir}@${stamp}`);
+    }
+    return parts.join("|");
+  }
 
   async load(): Promise<IndexRecord[]> {
     if (!await pathExists(this.root)) {

@@ -157,6 +157,11 @@ const cfcm = await Cfcm.create();
 const degraded = cfcm.sourceReports.filter((r) => r.status !== "ok" && r.status !== "shadowed");
 
 async function callTool(name: string, args: Record<string, unknown>): Promise<unknown> {
+  // This process outlives the index it loaded at startup, and a capability
+  // added since then would otherwise be invisible for the life of the session
+  // (F9). Every source is local in practice, so this is a handful of stats.
+  await cfcm.ensureFresh();
+
   switch (name) {
     case "cfcm_search": {
       const query = String(args.query ?? "");

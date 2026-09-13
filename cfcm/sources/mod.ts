@@ -18,6 +18,13 @@ export interface CapabilitySource {
   /** Why the source is stale or unavailable, if it is. */
   statusDetail?: string;
   load(): Promise<IndexRecord[]>;
+  /**
+   * A cheap value that changes when this source's contents change, or null
+   * when the source cannot say without doing real work — a remote registry
+   * would need an HTTP round trip, and that belongs at load time, not in
+   * front of every search. Never parsed for meaning, only compared (F9).
+   */
+  freshness?(): Promise<string | null>;
   /** Full descriptor, including the schemas the index omits. */
   describe(record: IndexRecord): Promise<CapabilityDescriptor>;
   /** Raw artifact bytes. Integrity is verified by the resolver, not here. */

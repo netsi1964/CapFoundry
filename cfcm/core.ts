@@ -52,6 +52,8 @@ export class Cfcm {
   private sourceByName = new Map<string, CapabilitySource>();
   private recordByName = new Map<string, IndexRecord>();
   private engine: SearchEngine | null = null;
+  private freshnessToken: string | null = null;
+  private refreshing: Promise<void> | null = null;
   private reports: SourceReport[] = [];
   private readonly resolver: Resolver;
   readonly telemetry: Telemetry;
@@ -125,6 +127,48 @@ export class Cfcm {
     }
 
     this.engine = new SearchEngine(this.records, this.config.search);
+    this.freshnessToken = await this.currentFreshness();
+  }
+
+  private async currentFreshness(): Promise<string> {
+    const parts: string[] = [];
+    for (const source of this.sources) {
+      parts.push(source.freshness ? (await source.freshness() ?? "?") : "?");
+    }
+    return parts.join("||");
+  }
+
+  /**
+   * Reloads if any source changed on disk since the last load. Returns whether
+   * it did.
+   *
+   * Only one CFCM process is long-lived — the MCP server — and before this it
+   * answered from the index it read at startup for as long as it ran. The
+   * failure was invisible rather than noisy: a capability added since then
+   * simply returned NO_MATCH, which is a normal answer the Skill tells the
+   * agent to act on silently. A frozen index was therefore indistinguishable
+   * from an empty registry, and it broke the candidate loop exactly where it
+   * is supposed to close, since the session that submits a capability was the
+   * one that could never see it (F9).
+   *
+   * Reloading unconditionally would be the simpler wire and the wrong one: it
+   * re-reads every CFP off disk on every query to discover that nothing
+   * changed, spending the OBJ-3 budget for no information.
+   */
+  async ensureFresh(): Promise<boolean> {
+    // Overlapping tool calls must not each start their own reload.
+    if (this.refreshing) {
+      await this.refreshing;
+      return false;
+    }
+    if (await this.currentFreshness() === this.freshnessToken) return false;
+    this.refreshing = this.reload();
+    try {
+      await this.refreshing;
+    } finally {
+      this.refreshing = null;
+    }
+    return true;
   }
 
   get sourceReports(): SourceReport[] {

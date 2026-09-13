@@ -62,6 +62,18 @@ export class RegistrySource implements CapabilitySource {
     await Deno.writeTextFile(await this.cacheFile(), JSON.stringify(entry));
   }
 
+  async freshness(): Promise<string | null> {
+    // A remote base would need a round trip per search, which is the opposite
+    // of what this is for. Remote staleness stays the ETag check in load().
+    if (this.remote) return null;
+    try {
+      const stat = await Deno.stat(this.childUrl("registry/index.json"));
+      return `${stat.mtime?.getTime() ?? 0}:${stat.size}`;
+    } catch {
+      return "missing";
+    }
+  }
+
   async load(): Promise<IndexRecord[]> {
     const cached = await this.readCache();
 
