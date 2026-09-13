@@ -60,8 +60,18 @@ export interface ExpectedBehaviour {
   invoked?: boolean;
   /** Whether the agent should have written the code itself. */
   fellBackToGeneration?: boolean;
-  /** Whether a candidate should have been offered. */
-  candidateSubmitted?: boolean;
+  /**
+   * Whether a candidate should have been offered.
+   *
+   * "any" where the scenario has no business holding an opinion. The Skill
+   * tells the agent to submit anything deterministic, general-purpose and
+   * useful elsewhere, so a scenario whose task meets that description cannot
+   * demand silence without penalising the behaviour it asked for. The pilot
+   * hit this: the agent offered a Roman-numeral candidate in
+   * no-capability-exists and was scored as diverging, though it had done
+   * exactly what candidate-worthy rewards.
+   */
+  candidateSubmitted?: boolean | "any";
   /** Whether an artifact, rather than a result, should have been returned. */
   artifactReturned?: boolean;
 }

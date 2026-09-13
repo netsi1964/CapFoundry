@@ -1,7 +1,7 @@
 {
   "id": "no-capability-exists",
   "title": "A reasonable, general-purpose task the registry has nothing for",
-  "rationale": "NO_MATCH must cost almost nothing and leave no trace in the work. If a failed search degrades the answer, search-before-generate is a net loss on every miss.",
+  "rationale": "NO_MATCH must cost almost nothing and leave no trace in the work. If a failed search degrades the answer, search-before-generate is a net loss on every miss. Candidate submission is \"any\" deliberately: Roman-numeral parsing is deterministic, general-purpose and useful elsewhere, which is precisely what the Skill says to offer, so this scenario has no business scoring it either way.",
   "objectives": ["OBJ-2"],
   "origin": "designed",
   "expect": {
@@ -9,7 +9,7 @@
     "capability": null,
     "invoked": false,
     "fellBackToGeneration": true,
-    "candidateSubmitted": false
+    "candidateSubmitted": "any"
   },
   "timeoutSeconds": 300
 }

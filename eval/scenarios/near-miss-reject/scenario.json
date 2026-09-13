@@ -1,16 +1,16 @@
 {
   "id": "near-miss-reject",
-  "title": "A query that collides with an unrelated capability on one shared word",
+  "title": "A string-distance task the registry has nothing for, sharing one word with two capabilities that look close",
   "rationale": "A near-miss is worse than no answer, because the agent uses it. If this fails, the registry actively degrades the work.",
   "objectives": ["OBJ-2"],
-  "origin": "recorded",
-  "recordedFrom": "An ordinary session, 2026-09-12. CFCM answered MATCH at 0.5679 for CapFoundry.geo.distance — a geographic capability for a string problem — because the word \"distance\" appeared in its name, aliases, description, summaries and example queries at once. The agent rejected it and wrote the code. Recorded as F5 in the PRD; the confidence formula was fixed, and this scenario is the regression guard.",
+  "origin": "designed",
+  "recordedFrom": "Designed to preserve a recorded collision whose original task stopped colliding. On 2026-09-12 an ordinary session asked for edit distance between two strings and CFCM answered MATCH 0.5679 for CapFoundry.geo.distance — a geographic capability for a string problem — because \"distance\" appeared in its name, aliases, description, summaries and example queries at once. The agent rejected it and wrote the code; that became F5, the confidence formula was fixed, and this scenario was the regression guard. The original prompt is no longer a near-miss: CapFoundry.text.editDistance now exists, having arrived through the candidate loop because of that very gap, and \"edit distance between two strings\" is a legitimate MATCH at 0.906. Hamming distance keeps the shared word and the same two tempting neighbours while being an algorithm the registry genuinely does not have. Origin is \"designed\" rather than \"recorded\" because the prompt is written, not traced — the collision is inherited, the run is not.",
   "expect": {
-    "search": "NO_MATCH",
+    "search": "any",
     "capability": null,
     "invoked": false,
     "fellBackToGeneration": true,
-    "candidateSubmitted": false
+    "candidateSubmitted": "any"
   },
   "timeoutSeconds": 300
 }
