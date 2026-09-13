@@ -104,6 +104,27 @@ took that query as an alias, geocode still won, but the margin fell to 0.225. A 
 neither check reads it. So a passing guard means "nothing was taken outright", not "this description
 is well-scoped" — and the difference is exactly the case that has already broken OBJ-2 once.
 
+## 7. Never write what it does _not_ do into a searchable field
+
+Measured, not theorised. `geo.geocode` was matching a reverse-geocoding query at 0.7388, so the
+description gained the clause _"Does not reverse coordinates back into an address"_ — an honest,
+accurate sentence.
+
+The score went **up**, to 0.8862.
+
+Lexical search has no negation. "Does not reverse coordinates back into an address" and "reverses
+coordinates back into an address" are the same bag of words, so the disclaimer handed the query
+every token it was looking for. **Stating a limit in an indexed field makes the capability match the
+thing it disclaims.**
+
+Limits belong in the README, which a human reads and the index does not. `description`, `aliases`,
+`exampleQueries`, `inputSummary`, `outputSummary` and `tags` are search surface — write only what
+the capability _is_ there.
+
+The same trap in miniature: `sun.times` matched "what phase is the moon in tonight" because its
+output summary said "solar phase" and an example query ended "tonight". Two ordinary words, neither
+about the moon.
+
 ## What this skill does not do
 
 No automatic conversion, and no unattended runs. If the process has not been done by hand for the

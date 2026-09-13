@@ -56,6 +56,50 @@
     {
       "query": "resize an uploaded image to a thumbnail",
       "why": "No image capability exists."
+    },
+    {
+      "query": "add thirty days to this date and tell me where it lands",
+      "why": "Plain date arithmetic. businessDaysBetween counts working days between two dates; it does not shift a date forward."
+    },
+    {
+      "query": "how old is someone born on this date in years and months",
+      "why": "Age from a birth date. Shares 'date' and 'between' vocabulary with businessDaysBetween and shares nothing else."
+    },
+    {
+      "query": "find the driving route and turn by turn directions between two addresses",
+      "why": "Routing, not geocoding. geocode resolves one address to a point; it knows nothing about roads, and answering would invent a journey."
+    },
+    {
+      "query": "turn these latitude and longitude coordinates back into a street address",
+      "why": "Reverse geocoding — the opposite direction. The vocabulary overlaps almost completely, which is exactly why it must be written down."
+    },
+    {
+      "query": "which timezone is this postal address in",
+      "why": "A timezone lookup that happens to start from an address. geocode returns a position and no zone, and a caller could easily mistake one for the other."
+    },
+    {
+      "query": "what phase is the moon in tonight",
+      "why": "Lunar, not solar. Adjacent astronomy that this registry deliberately does not ship, so the honest answer is that nothing covers it."
+    },
+    {
+      "query": "what is the weather forecast and cloud cover for tomorrow morning",
+      "why": "Weather, not geometry. sun.times says where the sun will be, never whether you will see it."
+    },
+    {
+      "query": "find the longest common substring shared by two strings",
+      "why": "A different algorithm with a different output. Both compare two strings, which is the whole of the overlap."
+    },
+    {
+      "query": "check whether these two words are anagrams of each other",
+      "why": "A character-multiset comparison. Edit distance would answer with a number that does not address the question."
+    },
+    {
+      "query": "percent encode this query string for a url",
+      "why": "URL encoding preserves the original text and escapes it; slugify discards characters to produce a stable readable identifier. Opposite goals, near-identical vocabulary."
+    },
+    {
+      "query": "convert these camelCase identifiers to snake_case",
+      "why": "An identifier casing transform. slugify is for human-readable text becoming a URL segment, and would mangle code identifiers."
     }
   ]
 }

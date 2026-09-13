@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-12T14:38:17.534Z",
+  "generatedAt": "2026-09-13T18:39:37.393Z",
   "capabilities": [
     {
       "schemaVersion": 1,
@@ -44,7 +44,7 @@
       "cfpLocation": "capabilities/CapFoundry.csv.detectDelimiter",
       "artifactLocation": "capabilities/CapFoundry.csv.detectDelimiter/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:38:17.534Z"
+      "indexedAt": "2026-09-13T18:39:37.393Z"
     },
     {
       "schemaVersion": 1,
@@ -88,7 +88,7 @@
       "cfpLocation": "capabilities/CapFoundry.date.businessDaysBetween",
       "artifactLocation": "capabilities/CapFoundry.date.businessDaysBetween/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:38:17.534Z"
+      "indexedAt": "2026-09-13T18:39:37.393Z"
     },
     {
       "schemaVersion": 1,
@@ -136,34 +136,31 @@
       "cfpLocation": "capabilities/CapFoundry.geo.distance",
       "artifactLocation": "capabilities/CapFoundry.geo.distance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:38:17.534Z"
+      "indexedAt": "2026-09-13T18:39:37.393Z"
     },
     {
       "schemaVersion": 1,
       "name": "CapFoundry.geo.geocode",
       "version": "1.0.0",
-      "description": "Resolve an address or place name to coordinates, refusing when the name is ambiguous",
+      "description": "Resolve an address or place name forward into coordinates, refusing when the name is ambiguous",
       "aliases": [
         "address to coordinates",
-        "look up latitude and longitude for a place",
-        "find where a street address is",
         "turn a city name into a position",
-        "postal address lookup",
         "place name to lat lon",
-        "forward geocoding"
+        "forward geocoding",
+        "which country is this town in",
+        "where is this place on the map"
       ],
       "exampleQueries": [
-        "what are the coordinates of this street address",
         "convert a city name into latitude and longitude",
-        "find the position of a postal address in Denmark",
         "resolve a place name to a point on the map",
         "geocode an address so I can measure from it",
-        "which country is this town in"
+        "find the position of a town in Denmark",
+        "what are the coordinates of this address"
       ],
       "tags": [
         "geo",
         "geocoding",
-        "address",
         "coordinates",
         "nominatim",
         "openstreetmap",
@@ -193,7 +190,7 @@
       "cfpLocation": "capabilities/CapFoundry.geo.geocode",
       "artifactLocation": "capabilities/CapFoundry.geo.geocode/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:38:17.534Z"
+      "indexedAt": "2026-09-13T18:39:37.393Z"
     },
     {
       "schemaVersion": 1,
@@ -241,7 +238,7 @@
       "cfpLocation": "capabilities/CapFoundry.json.schema.infer",
       "artifactLocation": "capabilities/CapFoundry.json.schema.infer/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:38:17.534Z"
+      "indexedAt": "2026-09-13T18:39:37.393Z"
     },
     {
       "schemaVersion": 1,
@@ -252,17 +249,17 @@
         "sunrise and sunset times",
         "what time does the sun rise",
         "golden hour calculator",
-        "twilight times",
         "day length for a location",
         "solar noon",
         "blue hour and dusk",
-        "midnight sun and polar night"
+        "midnight sun and polar night",
+        "twilight and blue hour times"
       ],
       "exampleQueries": [
         "what time does the sun rise and set at these coordinates",
         "calculate golden hour for a photo shoot on a given date",
         "how long is the day at this latitude in December",
-        "when does civil twilight end tonight",
+        "when does civil twilight end at this location",
         "find solar noon for a location",
         "does the sun set at all here in midsummer"
       ],
@@ -277,7 +274,7 @@
         "daylight"
       ],
       "inputSummary": "A latitude, longitude and ISO date, plus optional observer height and IANA time zone",
-      "outputSummary": "Each solar phase as an ISO 8601 instant or null, with solar noon and polar day/night flags",
+      "outputSummary": "Each daylight stage as an ISO 8601 instant or null, with solar noon and polar day/night flags",
       "runtime": "deno",
       "effect": "PURE",
       "artifact": {
@@ -294,7 +291,7 @@
       "cfpLocation": "capabilities/CapFoundry.sun.times",
       "artifactLocation": "capabilities/CapFoundry.sun.times/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:38:17.534Z"
+      "indexedAt": "2026-09-13T18:39:37.393Z"
     },
     {
       "schemaVersion": 1,
@@ -339,7 +336,7 @@
       "cfpLocation": "capabilities/CapFoundry.text.editDistance",
       "artifactLocation": "capabilities/CapFoundry.text.editDistance/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:38:17.534Z"
+      "indexedAt": "2026-09-13T18:39:37.393Z"
     },
     {
       "schemaVersion": 1,
@@ -383,7 +380,7 @@
       "cfpLocation": "capabilities/CapFoundry.text.slugify",
       "artifactLocation": "capabilities/CapFoundry.text.slugify/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:38:17.534Z"
+      "indexedAt": "2026-09-13T18:39:37.393Z"
     },
     {
       "schemaVersion": 1,
@@ -429,7 +426,7 @@
       "cfpLocation": "capabilities/CapFoundry.ui.dataTable",
       "artifactLocation": "capabilities/CapFoundry.ui.dataTable/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:38:17.534Z"
+      "indexedAt": "2026-09-13T18:39:37.393Z"
     },
     {
       "schemaVersion": 1,
@@ -473,7 +470,7 @@
       "cfpLocation": "capabilities/CapFoundry.validation.iban",
       "artifactLocation": "capabilities/CapFoundry.validation.iban/artifact/index.ts",
       "namespaceType": "public",
-      "indexedAt": "2026-09-12T14:38:17.534Z"
+      "indexedAt": "2026-09-13T18:39:37.393Z"
     }
   ]
 }

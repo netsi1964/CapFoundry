@@ -7,17 +7,17 @@
     "sunrise and sunset times",
     "what time does the sun rise",
     "golden hour calculator",
-    "twilight times",
     "day length for a location",
     "solar noon",
     "blue hour and dusk",
-    "midnight sun and polar night"
+    "midnight sun and polar night",
+    "twilight and blue hour times"
   ],
   "exampleQueries": [
     "what time does the sun rise and set at these coordinates",
     "calculate golden hour for a photo shoot on a given date",
     "how long is the day at this latitude in December",
-    "when does civil twilight end tonight",
+    "when does civil twilight end at this location",
     "find solar noon for a location",
     "does the sun set at all here in midsummer"
   ],
@@ -32,7 +32,7 @@
     "daylight"
   ],
   "inputSummary": "A latitude, longitude and ISO date, plus optional observer height and IANA time zone",
-  "outputSummary": "Each solar phase as an ISO 8601 instant or null, with solar noon and polar day/night flags",
+  "outputSummary": "Each daylight stage as an ISO 8601 instant or null, with solar noon and polar day/night flags",
   "runtime": "deno",
   "effect": "PURE",
   "inputSchema": {
