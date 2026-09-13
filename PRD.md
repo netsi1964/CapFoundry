@@ -905,6 +905,57 @@ strenge — så et ufærdigt skelet kunne være blevet publiceret som om nogen h
 Validatoren afviser nu `TODO` i ethvert søgbart felt, og afviser gentagne aliases. Sidstnævnte er
 signaturen på et skelet udfyldt mekanisk.
 
+### F9 · MCP-serveren genindlæser aldrig sit indeks, og fejlen ligner et tomt registry
+
+`cfcm/mcp/server.ts:153` er hele indlæsningen:
+
+```ts
+const cfcm = await Cfcm.create();
+```
+
+`create()` kalder `reload()` én gang ved opstart. Der er ingen watcher, intet interval, intet
+mtime-tjek. Serveren holder én `Cfcm`-instans i hele sin proceslevetid.
+
+Målt i en session hvis server var startet før `sun.times` og `geo.geocode` fandtes:
+
+| Overflade | Forespørgsel | Svar |
+|---|---|---|
+| MCP | «calculate sunrise and sunset times for a date and location» | `NO_MATCH` 0.1147 — `sun.times` ikke engang blandt kandidaterne |
+| CLI | «What time does the sun get up?» | `MATCH` 0.8837 på fem felter |
+
+CLI'en svarer altså rigtigt på den **dårligere** formulerede forespørgsel. Serverens eget banner
+sagde stadig «9 capabilities indexed» mens `registry/index.json` holdt 10 og `cfcm list` viste 12.
+
+Det er ikke søgningen der er gal. `RegistrySource.load()` læser filen fra disk ved hvert kald i den
+lokale sti (`cfcm/sources/registry.ts:69`) — staleness opstår udelukkende fordi serveren aldrig
+kalder `load()` igen.
+
+**To ting gør den værre end en genstart-gene.**
+
+Den første er at fejlen er formløs. `NO_MATCH` er et normalt svar, og `capability-awareness` siger
+udtrykkeligt «write the code, say nothing about having searched». En stale server er derfor
+observationelt identisk med et tomt registry: agenten skriver koden selv, tier, og der findes ingen
+fejlbesked at fange. Sammenlign med F7 — dér fyldte agenten et hul ud med en gætning. Her er der
+ikke engang et hul at se.
+
+Den anden er at det rammer kandidat-loopet, altså den mekanisme §16 hviler på og som F5's
+efterskrift fremhæver som beviset for at loopet betaler sig. En capability der kommer ind gennem
+loopet bliver aldrig synlig for en session der allerede kører. **Agenten der indsender kandidaten er
+den agent der aldrig får den at se.**
+
+**Fase 4 er ikke ramt.** Hver eval-kørsel spawner en frisk server via `--mcp-config` og læser derfor
+indekset ved opstart hver gang. Det holder, men det er held frem for design: intet i harnesset
+udtrykker den afhængighed, og en fremtidig optimering der genbrugte én server på tværs af kørsler
+ville lydløst måle et forældet indeks.
+
+**Det samme forhold gør serverfilen urørlig under en kørsel.** Kørslerne læser `cfcm/mcp/server.ts`,
+`skills/capability-awareness/SKILL.md`, `cfcm.json`, `registry/index.json` og `capabilities/` fra
+disk undervejs. En redigering midt i et sæt gør kørslerne ikke-identiske, og så adskiller de to
+betingelser sig ved mere end CFCM.
+
+Rettelsen er udskudt til efter pilotkørslen af netop den grund. Det billigste der virker er et
+mtime-tjek på `registry/index.json` før hver søgning — ingen watcher, ingen baggrundstråd.
+
 ### Loopet betalte for sig selv med det samme
 
 De forespørgsler der afslørede F5 — «compute the edit distance between two strings» og
