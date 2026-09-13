@@ -1198,6 +1198,23 @@ den slags i dag. **Beslutningen hører til efter Fase 4's data.**
 To designspørgsmål er hans at besvare frem for vores at gætte: N pr. opgave eller pr. session, og
 hvad der sker *ved* grænsen — stopper agenten, eller holder den blot op med at søge?
 
+**Hans tredje spørgsmål, stillet direkte:** tælles der op *før* søgningen returnerer, eller først
+når resultatet er accepteret? Det har ingen semantik endnu, fordi tælleren ikke findes. Men hans
+eget argument afgør det: **tæl forsøget, før svaret returneres.** En optælling efter accept lægger
+en vurdering foran tælleren. Så er det agenten, der afgør om noget var et miss, og det er netop den
+evne tælleren skal gå udenom.
+
+Samme argument gælder nulstillingen. Den skal ske på **status `MATCH` fra CFCM**, ikke på et match
+agenten har *accepteret*. Ellers er vurderingen bare flyttet fra optællingen til nulstillingen.
+
+**Og det begrænser hans første spørgsmål.** En tæller kan kun ikke ræsonneres udenom, hvis CFCM
+håndhæver den: værktøjet afviser søgning nummer N+1. En regel i `capability-awareness` er igen et
+filter. Men MCP-serveren kender ingen opgavegrænser, kun sin egen proceslevetid. **N pr. opgave kan
+derfor ikke håndhæves uden at agenten selv melder hvornår en opgave starter.** Så er
+dømmekraften tilbage. Det der kan håndhæves er N pr. session eller pr. tidsvindue. Om det er
+godt nok, afhænger af det samme ubesvarede spørgsmål som resten: om agenter overhovedet søger i
+løkker.
+
 ### Åbne spørgsmål der venter på afgørelse
 
 | ID | Spørgsmål | Blokerer |
