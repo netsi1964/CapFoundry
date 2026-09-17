@@ -176,3 +176,87 @@ Deno.test("OBJ-3: search plus cached invoke stays inside the 250 ms budget", asy
     assert(p95 <= 250, `p95 overhead was ${p95.toFixed(1)} ms, budget is 250 ms`);
   });
 });
+
+/**
+ * Single-candidate confidence is quantized, and the steps collide.
+ *
+ * F5 correctly removed the free margin a lone candidate used to collect. What
+ * it left behind is a path with exactly one signal: `idfCoverage`, a ratio of
+ * summed IDFs over a handful of query tokens. Few tokens means few possible
+ * ratios, so confidence lands on a small set of discrete steps rather than a
+ * continuum — and correct answers share those steps with noise.
+ *
+ * Measured on the twelve-capability index, these four queries return four
+ * different capabilities at the *same* confidence. Three are right; the fourth
+ * is a YAML question answered by a CSV capability. No value of
+ * `matchThreshold` separates them, because there is no value between two
+ * identical numbers.
+ *
+ * This is the concrete limit of AD-2's lexical-first bet: the cut-off is
+ * exhausted, so either the signal changes or both errors stand. Recorded as
+ * F9, with the options in "Adjudicator over PARTIAL_MATCH" in PRD-SEC-010.
+ *
+ * If this test fails because the values diverge, that is good news — the
+ * signal got finer. Re-measure before editing the PRD entry.
+ */
+Deno.test("PARTIAL band: correct answers and noise land on the same confidence step", async () => {
+  await withCfcm(async (cfcm) => {
+    const correct = [
+      ["clean up a title so it can go in a link", "CapFoundry.text.slugify"],
+      ["i need a table element i can drop into a page", "CapFoundry.ui.dataTable"],
+      ["how similar are these two strings", "CapFoundry.text.editDistance"],
+    ] as const;
+    const noise = "parse a yaml configuration file";
+
+    const values: number[] = [];
+    for (const [query, expected] of correct) {
+      const found = await cfcm.search(query);
+      assertEquals(found.candidates[0]?.record.name, expected, query);
+      assertEquals(found.candidates.length, 1, `${query} should reach exactly one candidate`);
+      values.push(found.confidence);
+    }
+
+    const wrong = await cfcm.search(noise);
+    assertEquals(wrong.candidates[0]?.record.name, "CapFoundry.csv.detectDelimiter");
+    values.push(wrong.confidence);
+
+    assertEquals(
+      new Set(values).size,
+      1,
+      `expected one shared confidence step, got ${JSON.stringify(values)}`,
+    );
+    // And it sits inside the band, where the caller is told to check for
+    // itself — which is precisely the decision an adjudicator would take over.
+    assert(values[0] >= 0.35 && values[0] < 0.55, `step was ${values[0]}, outside the band`);
+  });
+});
+
+Deno.test("single-candidate searches produce only a handful of distinct confidences", async () => {
+  await withCfcm(async (cfcm) => {
+    const queries = [
+      "clean up a title so it can go in a link",
+      "i need a table element i can drop into a page",
+      "how similar are these two strings",
+      "parse a yaml configuration file",
+      "a title for a link",
+      "table element page",
+      "gap between map positions",
+      "account string customer",
+    ];
+
+    const single = new Set<number>();
+    for (const query of queries) {
+      const found = await cfcm.search(query);
+      if (found.candidates.length === 1) single.add(found.confidence);
+    }
+
+    // Quantization is the point: the assertion is that the step count stays
+    // small relative to the query count, not that it equals any one number.
+    assert(single.size > 0, "expected some single-candidate searches");
+    assert(
+      single.size <= queries.length / 2,
+      `expected coarse steps, got ${single.size} distinct values from ${queries.length} queries: ` +
+        JSON.stringify([...single].sort()),
+    );
+  });
+});

@@ -1,6 +1,6 @@
 # CapFoundry MVP — Implementeringsplan (PRD)
 
-**Version 1.6** · **Sidst opdateret: 2026-09-12**
+**Version 1.7** · **Sidst opdateret: 2026-09-17**
 
 > **Status: alle 17 features er bygget. Eksperimentet er ubesvaret.**
 >
@@ -957,6 +957,37 @@ ved at en forælder med `--allow-net` nåede dr.dk mens dens barn blev afvist.
 
 ---
 
+### F9 · Konfidensen er kvantiseret, og trinnene kolliderer
+
+F5 fjernede med rette den gratis margin en enlig kandidat fik forærende. Det efterlod en sti med
+præcis ét signal: `idfCoverage`, et forhold mellem summerede IDF'er over en håndfuld
+forespørgselstokens. Få tokens giver få mulige forhold, så konfidensen lander på **diskrete trin**
+frem for et kontinuum — og korrekte svar deler trin med støj.
+
+Målt på det nuværende tolv-capability-indeks:
+
+```text
+conf = 0,3955  ->  CapFoundry.text.slugify        "clean up a title so it can go in a link"      korrekt
+conf = 0,3955  ->  CapFoundry.ui.dataTable        "i need a table element i can drop into a page" korrekt
+conf = 0,3955  ->  CapFoundry.text.editDistance   "how similar are these two strings"             korrekt
+conf = 0,3955  ->  CapFoundry.csv.detectDelimiter "parse a yaml configuration file"               falsk
+```
+
+Fire forespørgsler, fire forskellige capabilities, samme tal. Tre er rigtige; den fjerde er et
+YAML-spørgsmål besvaret af en CSV-capability. **Ingen værdi af `matchThreshold` adskiller dem**,
+fordi der ikke findes en værdi mellem to identiske tal. Otte enlig-kandidat-søgninger gav i alt tre
+distinkte konfidensværdier.
+
+Det er den konkrete grænse for AD-2. Tærskeltuning er udtømt her; enten skifter man **signal**,
+eller også accepterer man begge fejl. Fastholdt som to tests i `tests/objectives_test.ts`.
+
+**Metodisk note, fordi den gælder alle F-numre:** det oprindelige fund var en kollision ved 0,5047
+mellem en geo-forespørgsel og en levenshtein-forespørgsel. Den forsvandt mellem to målinger — F5's
+rettelse og `text.editDistance`s ankomst opløste den. Konklusionen holdt, mekanismen gjorde ikke.
+Et fund målt mod en ældre kodebase skal måles om før det skrives ned, ikke genfortælles.
+
+---
+
 ## Fund: at udvide en beskrivelse er en præcisionsændring
 
 F5 og regressionen i `ui.dataTable` 1.1.0 er **samme mekanisme i to forklædninger**, og en tredje
@@ -1094,12 +1125,67 @@ en near-miss med en skrevet grund er en nogen har tænkt over.
 
 | Udvidelse | Udløses hvis |
 |---|---|
+| **Adjudikator over `PARTIAL_MATCH`** (se nedenfor) | A/B-harnesset viser at de korrekte svar der sidder fast i båndet koster mere end adjudikatoren. Forudsætningen — at båndet er blandet og at tærskler ikke kan opløse det — er **allerede målt** som F9 |
 | Lokale embeddings / hybridsøgning | OBJ-1 < 0,80 **og** fejlanalysen viser omskrivning som årsag (CH-1) |
 | Worker-baseret eksekvering | OBJ-3 fejler **og** `spawnMs` dominerer (CH-2) |
 | Rigere match-statusser og afvisningsregler | OBJ-2 > 0,05 |
 | Kandidat-kvalitetsfilter | OBJ-5 < 0,50 |
 | Signerede CFP'er, delta-CFCM-pakker, assurance-niveauer | Registryet får eksterne bidragydere |
 | Organisationsregistries, remote executor, flere runtimes | Efterspørgsel dokumenteret i Explores `Missing` |
+
+### Registreret beslutning: adjudikator over `PARTIAL_MATCH`-båndet
+
+**Status: registreret kandidat, ikke besluttet.** Udløses af tabellen ovenfor, ikke af interesse.
+
+#### Problemet, målt
+
+Båndet 0,35–0,55 er ikke et randfænomen. På et bredere forespørgselssæt lander omkring en fjerdedel
+af alle afgørelser i det, og båndet er **blandet**: korrekte svar sidder fast dér sammen med
+out-of-domain-forespørgsler. F9 viser hvorfor tærskeljustering ikke hjælper — konfidensen er
+kvantiseret, og korrekt og forkert deler trin.
+
+Spørgsmålet der skal besvares i båndet har en fast form: *«opfylder capability X faktisk
+forespørgsel Q?»*. Det er et ja/nej med en sandsynlighed, ikke en rangering.
+
+#### Kandidater
+
+| Kandidat | Form |
+|---|---|
+| Lokal embedding-model som re-ranker | Ingen netværk, ingen vendor. Modelvægte skal distribueres |
+| Lille lokal cross-encoder | Bedst præcision lokalt; tungest at indlejre |
+| **TypeSafe AI / Jev** | Hostet «System One»-model: struktureret spørgsmål ind, **typet beslutning med sandsynlighed** ud. Formen passer præcist på båndets spørgsmål |
+
+#### Indvendinger, der skal besvares før en hostet adjudikator adopteres
+
+1. **Local-first.** §13 lover at brugerens input ikke forlader maskinen for at køre en
+   util-capability. Forespørgslen er ikke capability-input, men en forespørgsel er ofte mere
+   afslørende end inputtet («slå intern kunde op for …»). En hostet adjudikator underløber ånden i
+   §13, også hvor den overholder bogstavet.
+2. **Latens.** OBJ-3 er 250 ms og vi ligger langt under. Mitigering: adjudikatoren kaldes **kun** i
+   båndet, aldrig ved sikre match — altså på omkring en fjerdedel af afgørelserne.
+3. **Offline.** CFCM degraderer i dag pænt til cachet indeks. Adjudikatoren skal være
+   **fail-open**: falder den ud, står `PARTIAL_MATCH` som i dag. Aldrig en hård afhængighed.
+4. **Kasserbarhed.** CH-8 siger at nær-nul infrastrukturomkostning er det der gør §27's fejlregel
+   billig at håndhæve. En vendor med løbende forbrug gør CapFoundry dyrere at kassere, præcis når
+   man måske skal. En lokal model har ikke den ulempe.
+5. **Uafklaret.** `typesafe.ai` og `docs.typesafe.ai` var utilgængelige fra udviklingsmiljøet, så
+   vurderingen bygger på pressedækning. Pris, latens-SLA, self-hosting og databehandling er
+   **ikke undersøgt**, og hver af dem kan afgøre sagen alene.
+
+#### Beslutningsregel
+
+Intet før Fase 4's A/B-rapport. Den skal besvare ét spørgsmål:
+
+> Koster de korrekte svar der sidder fast i `PARTIAL_MATCH` mere, i opgavefejl og spildte tokens,
+> end en adjudikator ville koste i latens, penge og afhængighed?
+
+Falder svaret ud til adjudikatorens fordel, prøves **lokal model først** af hensyn til indvending 1
+og 4. En hostet adjudikator kræver at den lokale er målt utilstrækkelig.
+
+**Billigere at prøve først, uanset:** skarpere `aliases`. `csv.detectDelimiter`s
+`"parse an unknown flat file"` er stadig det der trækker YAML-forespørgslen ind på generiske tokens
+(`parse`, `file`). Det er ikke rørt her, fordi en alias-indsnævring handler recall mod præcision og
+bør måles i samme kørsel som resten — ikke bundtes ind i en beslutningsnote.
 
 ### Registreret beslutning: skills pakket som CFP'er
 
@@ -1265,6 +1351,16 @@ Alle 28 afsnit i MVP v0.2 er enten dækket af en feature eller er en begrænsnin
 ---
 
 ## Changelog
+
+### v1.7 — 2026-09-17
+- F9 tilføjet: enlig-kandidat-konfidensen er kvantiseret, så korrekte svar og støj deler trin.
+  Fire forespørgsler, fire capabilities, samme tal — ingen tærskel kan opløse det. To tests
+- «Registreret beslutning: adjudikator over `PARTIAL_MATCH`» tilføjet til `PRD-SEC-010`, med
+  TypeSafe AI / Jev som navngiven kandidat og fem indvendinger der skal besvares før en hostet
+  adjudikator adopteres. Lokal model prøves først
+- Adjudikatoren tilføjet til den betingede tabel; dens forudsætning er allerede målt
+- Metodisk note under F9: det oprindelige fund var en kollision ved 0,5047 som forsvandt mellem to
+  målinger. Konklusionen holdt, mekanismen gjorde ikke
 
 ### v1.6 — 2026-09-12
 - Statusrevision mod koden frem for mod markeringerne: ni features stod umarkerede selv om de var
